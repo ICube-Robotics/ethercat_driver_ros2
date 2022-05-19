@@ -29,9 +29,10 @@ public :
             case 0:
                 control_word_ = EC_READ_U8(domain_address);
                 control_word_ = transition(state_, control_word_);
-                if(allowReset_){
-                    reset_command_ = command_interface_ptr_->at(std::stoi(paramters_["command_interface/"+paramters_["encoder_reset"]]));
-                    state_interface_ptr_->at(std::stoi(paramters_["state_interface/"+paramters_["encoder_reset"]])) = reset_command_;
+                if(cii_reset_ >= 0){
+                    reset_command_ = command_interface_ptr_->at(cii_reset_);
+                    if(sii_reset_ >= 0)
+                        state_interface_ptr_->at(sii_reset_) = reset_command_;
                     if(reset_command_ == 1.0 && last_reset_command_ != 1.0)
                         cmd_ = CMD_WRITE_REQUEST;
                     last_reset_command_ = reset_command_;
@@ -52,7 +53,8 @@ public :
             case 3:
                 last_position_ = position_;
                 position_ = EC_READ_S32(domain_address);
-                state_interface_ptr_->at(std::stoi(paramters_["state_interface/"+paramters_["encoder_position"]])) = (double)position_*convertion_factor_;
+                if(sii_position_ >= 0)
+                    state_interface_ptr_->at(sii_position_) = (double)position_*convertion_factor_;
                 dposition_ = position_ - last_position_;
                 break;
             case 4:
@@ -95,8 +97,16 @@ public :
         paramters_ = slave_paramters;
         if(paramters_.find("convertion_factor")!= paramters_.end())
             convertion_factor_ = std::stod(paramters_["convertion_factor"]);
-        if(paramters_.find("encoder_reset")!= paramters_.end())
-            allowReset_ = true;
+        if(paramters_.find("encoder_reset")!= paramters_.end()){
+            if(paramters_.find("command_interface/"+paramters_["encoder_reset"]) != paramters_.end())
+                cii_reset_ = std::stoi(paramters_["command_interface/"+paramters_["encoder_reset"]]);
+            if(paramters_.find("state_interface/"+paramters_["encoder_reset"]) != paramters_.end())
+                sii_reset_ = std::stoi(paramters_["state_interface/"+paramters_["encoder_reset"]]);
+        }
+        if(paramters_.find("encoder_position")!= paramters_.end()){
+            if(paramters_.find("state_interface/"+paramters_["encoder_position"]) != paramters_.end())
+                sii_position_ = std::stoi(paramters_["state_interface/"+paramters_["encoder_position"]]);
+        }
         return true;
     }
 
@@ -122,7 +132,9 @@ private:
     uint8_t error_type_			= 0; //read
     bool b_process_ack			= false;
     double convertion_factor_   = 1;
-    bool allowReset_            = false;
+    int cii_reset_              = -1;
+    int sii_reset_              = -1;
+    int sii_position_           = -1;
 
 
     ec_pdo_entry_info_t channels_[25] = {
