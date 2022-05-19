@@ -25,12 +25,12 @@ public:
     Beckhoff_EL4134() : EcSlave(0x00000002, 0x10263052) {}
     virtual ~Beckhoff_EL4134() {}
     virtual void processData(size_t index, uint8_t* domain_address){
-        auto isRequested = paramters_.find("ao."+std::to_string(index+1))!= paramters_.end();
-        if(isRequested){
-            double data = command_interface_ptr_->at(std::stoi(paramters_["command_interface/"+paramters_["ao."+std::to_string(index+1)]]));
+        if(cii_ao_[index] >= 0){
+            double data = command_interface_ptr_->at(cii_ao_[index]);
             if(data>10) data = 10;
             if(data<-10) data = -10;
-            state_interface_ptr_->at(std::stoi(paramters_["state_interface/"+paramters_["ao."+std::to_string(index+1)]])) = data;
+            if(sii_ao_[index] >= 0)
+                state_interface_ptr_->at(sii_ao_[index]) = data;
             int16_t dac_data = (int16_t)(data*(double)65534/20);
             EC_WRITE_S16(domain_address, dac_data);
         }
@@ -45,7 +45,29 @@ public:
     virtual void domains(DomainMap& domains) const {
         domains = domains_;
     }
+    virtual bool setupSlave(
+                std::unordered_map<std::string, std::string> slave_paramters,
+                std::vector<double> * state_interface,
+                std::vector<double> * command_interface){
+
+        state_interface_ptr_ = state_interface;
+        command_interface_ptr_ = command_interface;
+        paramters_ = slave_paramters;
+
+        for(auto index = 0ul; index < 4; index++){
+            if(paramters_.find("ao."+std::to_string(index+1))!= paramters_.end()){
+                if(paramters_.find("command_interface/"+paramters_["ao."+std::to_string(index+1)]) != paramters_.end())
+                    cii_ao_[index] = std::stoi(paramters_["command_interface/"+paramters_["ao."+std::to_string(index+1)]]);
+                if(paramters_.find("state_interface/"+paramters_["ao."+std::to_string(index+1)]) != paramters_.end())
+                    sii_ao_[index] = std::stoi(paramters_["state_interface/"+paramters_["ao."+std::to_string(index+1)]]);
+            }
+        }
+        return true;
+    }
 private:
+    int cii_ao_[4] = {-1, -1, -1, -1};
+    int sii_ao_[4] = {-1, -1, -1, -1};
+
     ec_pdo_entry_info_t channels_[4] = {
         {0x7000, 0x01, 16}, /* Analog output */
         {0x7010, 0x01, 16}, /* Analog output */
@@ -73,12 +95,12 @@ public :
     Beckhoff_EL4132() : EcSlave(0x00000002, 0x10243052) {}
     virtual ~Beckhoff_EL4132() {}
     virtual void processData(size_t index, uint8_t* domain_address){
-        auto isRequested = paramters_.find("ao."+std::to_string(index+1))!= paramters_.end();
-        if(isRequested){
-            double data = command_interface_ptr_->at(std::stoi(paramters_["command_interface/"+paramters_["ao."+std::to_string(index+1)]]));
+        if(cii_ao_[index] >= 0){
+            double data = command_interface_ptr_->at(cii_ao_[index]);
             if(data>10) data = 10;
             if(data<-10) data = -10;
-            state_interface_ptr_->at(std::stoi(paramters_["state_interface/"+paramters_["ao."+std::to_string(index+1)]])) = data;
+            if(sii_ao_[index] >= 0)
+                state_interface_ptr_->at(sii_ao_[index]) = data;
             int16_t dac_data = (int16_t)(data*(double)65534/20);
             EC_WRITE_S16(domain_address, dac_data);
         }
@@ -93,9 +115,29 @@ public :
     virtual void domains(DomainMap& domains) const {
         domains = domains_;
     }
-    // analog write values
-    int16_t write_data_[2] = {0};
+    virtual bool setupSlave(
+                std::unordered_map<std::string, std::string> slave_paramters,
+                std::vector<double> * state_interface,
+                std::vector<double> * command_interface){
+
+        state_interface_ptr_ = state_interface;
+        command_interface_ptr_ = command_interface;
+        paramters_ = slave_paramters;
+
+        for(auto index = 0ul; index < 2; index++){
+            if(paramters_.find("ao."+std::to_string(index+1))!= paramters_.end()){
+                if(paramters_.find("command_interface/"+paramters_["ao."+std::to_string(index+1)]) != paramters_.end())
+                    cii_ao_[index] = std::stoi(paramters_["command_interface/"+paramters_["ao."+std::to_string(index+1)]]);
+                if(paramters_.find("state_interface/"+paramters_["ao."+std::to_string(index+1)]) != paramters_.end())
+                    sii_ao_[index] = std::stoi(paramters_["state_interface/"+paramters_["ao."+std::to_string(index+1)]]);
+            }
+        }
+        return true;
+    }
 private:
+    int cii_ao_[2] = {-1, -1};
+    int sii_ao_[2] = {-1, -1};
+
     ec_pdo_entry_info_t channels_[2] = {
         {0x3001, 0x01, 16}, /* Analog Output */
         {0x3002, 0x01, 16}, /* Analog Output */
