@@ -27,35 +27,27 @@ public:
     virtual void processData(size_t index, uint8_t* domain_address){
         uint8_t digital_out_;
 	    digital_out_ = 0;
-
-        bool isRequested[8] = {false};
         for(auto i=0ul;i<8;i++){
-            isRequested[i] = paramters_.find("do."+std::to_string(i+1))!= paramters_.end();
-            if(isRequested[i]){
-                int command_iface = std::stoi(paramters_["command_interface/"+paramters_["do."+std::to_string(i+1)]]);
-                int state_iface = std::stoi(paramters_["state_interface/"+paramters_["do."+std::to_string(i+1)]]);
-
-                if(command_interface_ptr_->at(command_iface) == command_interface_ptr_->at(command_iface)){
-                    if(command_interface_ptr_->at(command_iface))
-                        write_data_[i] = true;
-                    else
-                        write_data_[i] = false;
-                    state_interface_ptr_->at(state_iface) = command_interface_ptr_->at(command_iface);
+            if(cii_do_[i] >= 0){
+                if(command_interface_ptr_->at(cii_do_[i]) == command_interface_ptr_->at(cii_do_[i])){
+                    write_data_[i] = (command_interface_ptr_->at(cii_do_[i])) ? true : false;
+                    if(sii_do_[i] >= 0)
+                        state_interface_ptr_->at(sii_do_[i]) = command_interface_ptr_->at(cii_do_[i]);
                 }
             }
         }
 
-	  // bit masking to get individual input values
-          digital_out_ += ( write_data_[0] << 0 ) ; // bit 0
-          digital_out_ += ( write_data_[1] << 1 ); // bit 1
-          digital_out_ += ( write_data_[2] << 2 ); // bit 2
-          digital_out_ += ( write_data_[3] << 3 ); // bit 3
-          digital_out_ += ( write_data_[4] << 4 ); // bit 4
-          digital_out_ += ( write_data_[5] << 5 ); // bit 5
-          digital_out_ += ( write_data_[6] << 6 ); // bit 6
-          digital_out_ += ( write_data_[7] << 7 ); // bit 7
+	    // bit masking to get individual input values
+        digital_out_ += ( write_data_[0] << 0 ); // bit 0
+        digital_out_ += ( write_data_[1] << 1 ); // bit 1
+        digital_out_ += ( write_data_[2] << 2 ); // bit 2
+        digital_out_ += ( write_data_[3] << 3 ); // bit 3
+        digital_out_ += ( write_data_[4] << 4 ); // bit 4
+        digital_out_ += ( write_data_[5] << 5 ); // bit 5
+        digital_out_ += ( write_data_[6] << 6 ); // bit 6
+        digital_out_ += ( write_data_[7] << 7 ); // bit 7
 
-	  EC_WRITE_U8(domain_address , digital_out_);
+	    EC_WRITE_U8(domain_address , digital_out_);
     }
     virtual const ec_sync_info_t* syncs() { return &syncs_[0]; }
     virtual size_t syncSize() {
@@ -67,9 +59,31 @@ public:
     virtual void domains(DomainMap& domains) const {
         domains = domains_;
     }
+    virtual bool setupSlave(
+                std::unordered_map<std::string, std::string> slave_paramters,
+                std::vector<double> * state_interface,
+                std::vector<double> * command_interface){
+
+        state_interface_ptr_ = state_interface;
+        command_interface_ptr_ = command_interface;
+        paramters_ = slave_paramters;
+
+        for(auto index = 0ul; index < 8; index++){
+            if(paramters_.find("do."+std::to_string(index+1))!= paramters_.end()){
+                if(paramters_.find("command_interface/"+paramters_["do."+std::to_string(index+1)]) != paramters_.end())
+                    cii_do_[index] = std::stoi(paramters_["command_interface/"+paramters_["do."+std::to_string(index+1)]]);
+                if(paramters_.find("state_interface/"+paramters_["do."+std::to_string(index+1)]) != paramters_.end())
+                    sii_do_[index] = std::stoi(paramters_["state_interface/"+paramters_["do."+std::to_string(index+1)]]);
+            }
+        }
+        return true;
+    }
+
+private:
+    int cii_do_[8] = {-1};
+    int sii_do_[8] = {-1};
     // digital write values
     bool write_data_[8] = {false};
-private:
     ec_pdo_entry_info_t channels_[8] = {
         {0x7000, 0x01, 1}, /* Output */
         {0x7010, 0x01, 1}, /* Output */
@@ -107,35 +121,27 @@ public:
     virtual void processData(size_t index, uint8_t* domain_address){
         uint8_t digital_out_;
 	    digital_out_ = 0;
-
-        bool isRequested[8] = {false};
         for(auto i=0ul;i<8;i++){
-            isRequested[i] = paramters_.find("do."+std::to_string(i+1))!= paramters_.end();
-            if(isRequested[i]){
-                int command_iface = std::stoi(paramters_["command_interface/"+paramters_["do."+std::to_string(i+1)]]);
-                int state_iface = std::stoi(paramters_["state_interface/"+paramters_["do."+std::to_string(i+1)]]);
-
-                if(command_interface_ptr_->at(command_iface) == command_interface_ptr_->at(command_iface)){
-                    if(command_interface_ptr_->at(command_iface))
-                        write_data_[i] = true;
-                    else
-                        write_data_[i] = false;
-                    state_interface_ptr_->at(state_iface) = command_interface_ptr_->at(command_iface);
+            if(cii_do_[i] >= 0){
+                if(command_interface_ptr_->at(cii_do_[i]) == command_interface_ptr_->at(cii_do_[i])){
+                    write_data_[i] = (command_interface_ptr_->at(cii_do_[i])) ? true : false;
+                    if(sii_do_[i] >= 0)
+                        state_interface_ptr_->at(sii_do_[i]) = command_interface_ptr_->at(cii_do_[i]);
                 }
             }
         }
 
-	  // bit masking to get individual input values
-          digital_out_ += ( write_data_[0] << 0 ) ; // bit 0
-          digital_out_ += ( write_data_[1] << 1 ); // bit 1
-          digital_out_ += ( write_data_[2] << 2 ); // bit 2
-          digital_out_ += ( write_data_[3] << 3 ); // bit 3
-          digital_out_ += ( write_data_[4] << 4 ); // bit 4
-          digital_out_ += ( write_data_[5] << 5 ); // bit 5
-          digital_out_ += ( write_data_[6] << 6 ); // bit 6
-          digital_out_ += ( write_data_[7] << 7 ); // bit 7
+	    // bit masking to get individual input values
+        digital_out_ += ( write_data_[0] << 0 ) ; // bit 0
+        digital_out_ += ( write_data_[1] << 1 ); // bit 1
+        digital_out_ += ( write_data_[2] << 2 ); // bit 2
+        digital_out_ += ( write_data_[3] << 3 ); // bit 3
+        digital_out_ += ( write_data_[4] << 4 ); // bit 4
+        digital_out_ += ( write_data_[5] << 5 ); // bit 5
+        digital_out_ += ( write_data_[6] << 6 ); // bit 6
+        digital_out_ += ( write_data_[7] << 7 ); // bit 7
 
-	  EC_WRITE_U8(domain_address , digital_out_);
+	    EC_WRITE_U8(domain_address , digital_out_);
     }
     virtual const ec_sync_info_t* syncs() { return &syncs_[0]; }
     virtual size_t syncSize() {
@@ -147,9 +153,31 @@ public:
     virtual void domains(DomainMap& domains) const {
         domains = domains_;
     }
+    virtual bool setupSlave(
+                std::unordered_map<std::string, std::string> slave_paramters,
+                std::vector<double> * state_interface,
+                std::vector<double> * command_interface){
+
+        state_interface_ptr_ = state_interface;
+        command_interface_ptr_ = command_interface;
+        paramters_ = slave_paramters;
+
+        for(auto index = 0ul; index < 8; index++){
+            if(paramters_.find("do."+std::to_string(index+1))!= paramters_.end()){
+                if(paramters_.find("command_interface/"+paramters_["do."+std::to_string(index+1)]) != paramters_.end())
+                    cii_do_[index] = std::stoi(paramters_["command_interface/"+paramters_["do."+std::to_string(index+1)]]);
+                if(paramters_.find("state_interface/"+paramters_["do."+std::to_string(index+1)]) != paramters_.end())
+                    sii_do_[index] = std::stoi(paramters_["state_interface/"+paramters_["do."+std::to_string(index+1)]]);
+            }
+        }
+        return true;
+    }
+    
+private:
+    int cii_do_[8] = {-1};
+    int sii_do_[8] = {-1};
     // digital write values
     bool write_data_[8] = {false};
-private:
     ec_pdo_entry_info_t channels_[8] = {
         {0x7000, 0x01, 1}, /* Output */
         {0x7010, 0x01, 1}, /* Output */
