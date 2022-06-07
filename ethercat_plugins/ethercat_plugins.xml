@@ -14,6 +14,9 @@
   <class name="ethercat_plugins/Beckhoff_EL2088" type="ethercat_plugins::Beckhoff_EL2088" base_class_type="ethercat_interface::EcSlave">
     <description>EtherCAT Terminal, 8-channel digital output, 24 V DC, 0.5 A, ground switching.</description>
   </class>
+  <class name="ethercat_plugins/Beckhoff_EL2124" type="ethercat_plugins::Beckhoff_EL2124" base_class_type="ethercat_interface::EcSlave">
+    <description>EtherCAT Terminal, 4-channel digital output, 5 V DC, 20 mA.</description>
+  </class>
   <class name="ethercat_plugins/Beckhoff_EL3102" type="ethercat_plugins::Beckhoff_EL3102" base_class_type="ethercat_interface::EcSlave">
     <description>EtherCAT Terminal, 2-channel analog input, voltage, ±10 V, 16 bit, differential.</description>
   </class>
