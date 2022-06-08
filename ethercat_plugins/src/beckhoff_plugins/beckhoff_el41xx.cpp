@@ -14,7 +14,6 @@
 
 #include "ethercat_interface/ec_slave.hpp"
 #include "ethercat_plugins/commondefs.hpp"
-#include <iostream>
 
 namespace ethercat_plugins
 {
@@ -27,11 +26,12 @@ public:
     virtual void processData(size_t index, uint8_t* domain_address){
         if(cii_ao_[index] >= 0){
             double data = command_interface_ptr_->at(cii_ao_[index]);
+            data = std::isnan(data) ? 0 : data;
             if(data>10) data = 10;
             if(data<-10) data = -10;
             if(sii_ao_[index] >= 0)
                 state_interface_ptr_->at(sii_ao_[index]) = data;
-            int16_t dac_data = (int16_t)(data*(double)65534/20);
+            int16_t dac_data = (int16_t)(data*(double)std::numeric_limits<int16_t>::max()/10);
             EC_WRITE_S16(domain_address, dac_data);
         }
     }
@@ -65,8 +65,8 @@ public:
         return true;
     }
 private:
-    int cii_ao_[4] = {-1, -1, -1, -1};
-    int sii_ao_[4] = {-1, -1, -1, -1};
+    int cii_ao_[4] = {-1};
+    int sii_ao_[4] = {-1};
 
     ec_pdo_entry_info_t channels_[4] = {
         {0x7000, 0x01, 16}, /* Analog output */
@@ -97,11 +97,12 @@ public :
     virtual void processData(size_t index, uint8_t* domain_address){
         if(cii_ao_[index] >= 0){
             double data = command_interface_ptr_->at(cii_ao_[index]);
+            data = std::isnan(data) ? 0 : data;
             if(data>10) data = 10;
             if(data<-10) data = -10;
             if(sii_ao_[index] >= 0)
                 state_interface_ptr_->at(sii_ao_[index]) = data;
-            int16_t dac_data = (int16_t)(data*(double)65534/20);
+            int16_t dac_data = (int16_t)(data*(double)std::numeric_limits<int16_t>::max()/10);
             EC_WRITE_S16(domain_address, dac_data);
         }
     }
@@ -135,8 +136,8 @@ public :
         return true;
     }
 private:
-    int cii_ao_[2] = {-1, -1};
-    int sii_ao_[2] = {-1, -1};
+    int cii_ao_[2] = {-1};
+    int sii_ao_[2] = {-1};
 
     ec_pdo_entry_info_t channels_[2] = {
         {0x3001, 0x01, 16}, /* Analog Output */
