@@ -29,7 +29,7 @@ public:
 	    digital_out_ = 0;
         for(auto i=0ul;i<8;i++){
             if(cii_do_[i] >= 0){
-                if(command_interface_ptr_->at(cii_do_[i]) == command_interface_ptr_->at(cii_do_[i])){
+                if(!std::isnan(command_interface_ptr_->at(cii_do_[i]))){
                     write_data_[i] = (command_interface_ptr_->at(cii_do_[i])) ? true : false;
                     if(sii_do_[i] >= 0)
                         state_interface_ptr_->at(sii_do_[i]) = command_interface_ptr_->at(cii_do_[i]);
@@ -123,7 +123,7 @@ public:
 	    digital_out_ = 0;
         for(auto i=0ul;i<8;i++){
             if(cii_do_[i] >= 0){
-                if(command_interface_ptr_->at(cii_do_[i]) == command_interface_ptr_->at(cii_do_[i])){
+                if(!std::isnan(command_interface_ptr_->at(cii_do_[i]))){
                     write_data_[i] = (command_interface_ptr_->at(cii_do_[i])) ? true : false;
                     if(sii_do_[i] >= 0)
                         state_interface_ptr_->at(sii_do_[i]) = command_interface_ptr_->at(cii_do_[i]);
@@ -132,7 +132,7 @@ public:
         }
 
 	    // bit masking to get individual input values
-        digital_out_ += ( write_data_[0] << 0 ) ; // bit 0
+        digital_out_ += ( write_data_[0] << 0 ); // bit 0
         digital_out_ += ( write_data_[1] << 1 ); // bit 1
         digital_out_ += ( write_data_[2] << 2 ); // bit 2
         digital_out_ += ( write_data_[3] << 3 ); // bit 3
@@ -141,7 +141,7 @@ public:
         digital_out_ += ( write_data_[6] << 6 ); // bit 6
         digital_out_ += ( write_data_[7] << 7 ); // bit 7
 
-	    EC_WRITE_U8(domain_address , digital_out_);
+	    EC_WRITE_U8(domain_address, digital_out_);
     }
     virtual const ec_sync_info_t* syncs() { return &syncs_[0]; }
     virtual size_t syncSize() {
