@@ -51,11 +51,9 @@ public :
                 status_word_ = EC_READ_U16(domain_address);
                 break;
             case 3:
-                last_position_ = position_;
                 position_ = EC_READ_S32(domain_address);
                 if(sii_position_ >= 0)
                     state_interface_ptr_->at(sii_position_) = (double)position_*convertion_factor_;
-                dposition_ = position_ - last_position_;
                 break;
             case 4:
                 latch_ = EC_READ_S32(domain_address);
@@ -65,16 +63,9 @@ public :
         }
 
 	    if (index == 4) {
-            if ((uint8_t)status_word_ != (uint8_t)last_status_word_){
+            if ((uint8_t)status_word_ != (uint8_t)last_status_word_)
                 state_ = deviceState(status_word_);
-                ack_ = process_ack (state_,last_cmd_ );
-            }
             last_status_word_ = status_word_;
-            last_state_ = state_;
-            if (last_cmd_ && b_process_ack) {
-                ack_ = process_ack (state_,last_cmd_ );
-                b_process_ack = false;
-            }
 	    }
 	}
     virtual const ec_sync_info_t* syncs() { return &syncs_[0]; }
@@ -115,8 +106,6 @@ private:
     uint8_t control_word_       = 0; // write
     uint32_t latch_			    = 0; // read
     int32_t  position_          = 0; // read
-    int32_t last_position_		= 0;
-    int32_t dposition_		    = 0;
     uint16_t status_word_       = 0; // read
     uint16_t last_status_word_ 	= -1;
     uint8_t last_control_word_  = -1;
@@ -126,11 +115,7 @@ private:
     bool write_t			    = false; // write
     bool error_				    = false; // read
     uint8_t cmd_ 			    = 0;
-    uint8_t last_cmd_ 			= 0;
-    uint8_t ack_			    = 0;
-    uint8_t reply_cmd			= 0;
     uint8_t error_type_			= 0; //read
-    bool b_process_ack			= false;
     double convertion_factor_   = 1;
     int cii_reset_              = -1;
     int sii_reset_              = -1;
@@ -224,7 +209,6 @@ private:
 
     uint16_t process_cmd (DeviceState state, uint8_t cmd, uint8_t control_word) {
       	if (cmd > CMD_NO_CMD) {
-            last_cmd_ = CMD_NO_CMD;
             switch(state) {
                 case STATE_READY_TO_WRITE:
 	                switch (cmd) {
@@ -236,7 +220,6 @@ private:
 	                        control_word = (control_word|0x04);
                             write_t = true;
                             write_ = true;
-                            last_cmd_ = CMD_WRITE_REQUEST;
                             cmd_ = CMD_NO_CMD;
                             break;
 	                    default :
@@ -260,26 +243,9 @@ private:
 	    }
         return control_word;
     }
-
-    uint8_t process_ack (DeviceState state, uint8_t last_cmd) {
-        switch(state){
-            case STATE_NOTREADY_TO_WRITE:
-	            switch (last_cmd) {
-	                case CMD_WRITE_REQUEST :
-		                last_cmd_ = CMD_NO_CMD;
-		                return last_cmd;
-                    default :
-                        last_cmd_ = CMD_NO_CMD;
-                        return 0;
-	            }
-	            break;
-	        default :
-	            return CMD_NO_CMD;
-	    }
-    }
-
-    DeviceState last_state_ = STATE_NOTREADY_TO_WRITE;
+    
     DeviceState state_ = STATE_NOTREADY_TO_WRITE;
+
 };
 }  // namespace ethercat_plugins
 
