@@ -13,6 +13,8 @@ The list of currently supported EtherCAT modules and the available parameters. A
     - parameters: `do.1..8` - requested digital output
 - **Beckhoff_EL2088**: EtherCAT Terminal, 8-channel digital output, 24 V DC, 0.5 A, ground switching.
     - parameters: `do.1..8` - requested digital output
+- **Beckhoff_EL2124**: EtherCAT Terminal, 4-channel digital output, 5 V DC, 20 mA.
+    - parameters: `do.1..4` - requested digital output
 - **Beckhoff_EL3102**: EtherCAT Terminal, 2-channel analog input, voltage, ±10 V, 16 bit, differential.
     - parameters: `ai.1..2` - requested analog input
 - **Beckhoff_EL3104**: EtherCAT Terminal, 4-channel analog input, voltage, ±10 V, 16 bit, differential.
