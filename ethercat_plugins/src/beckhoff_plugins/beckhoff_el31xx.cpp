@@ -26,7 +26,7 @@ public:
     virtual ~Beckhoff_EL3102() {}
     virtual void processData(size_t index, uint8_t* domain_address){
         if(sii_ai_[index] >= 0){
-            double data = (double)EC_READ_S16(domain_address)/32767*10;
+            double data = (double)EC_READ_S16(domain_address)/std::numeric_limits<int16_t>::max()*10;
             state_interface_ptr_->at(sii_ai_[index]) = data;
         }
     }
@@ -58,7 +58,7 @@ public:
         return true;
     }
 private:
-    int sii_ai_[2] = {-1, -1};
+    int sii_ai_[2] = {-1};
 
     ec_pdo_entry_info_t channels_[4] = {
     {0x3101, 0x01, 8}, /* Status */
@@ -91,7 +91,7 @@ public:
     virtual ~Beckhoff_EL3104() {}
     virtual void processData(size_t index, uint8_t* domain_address){
         if(sii_ai_[index] >= 0){
-            double data = (double)EC_READ_S16(domain_address)/32767*10;
+            double data = (double)EC_READ_S16(domain_address)/std::numeric_limits<int16_t>::max()*10;
             state_interface_ptr_->at(sii_ai_[index]) = data;
         }
     }
@@ -123,7 +123,7 @@ public:
         return true;
     }
 private:
-    int sii_ai_[4] = {-1, -1, -1, -1};
+    int sii_ai_[4] = {-1};
 
     ec_pdo_entry_info_t channels_[44] = {
     {0x6000, 0x01, 1}, /* Underrange */
