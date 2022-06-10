@@ -1,6 +1,8 @@
 ARG ROS_DISTRO="galactic"
 FROM ros:${ROS_DISTRO}
 
+COPY . /ros2_dev/ethercat_driver_ros2
+
 RUN apt update && \
     apt install autoconf libtool -y
 RUN mkdir ec_dev && cd ec_dev && \
@@ -10,9 +12,8 @@ RUN mkdir ec_dev && cd ec_dev && \
     ./bootstrap && \
     ./configure --prefix=/usr/local/etherlab --disable-kernel && \
     make && make install 
-RUN mkdir ros2_dev && cd ros2_dev && \
-    . /opt/ros/galactic/setup.sh && \
-    git clone https://github.com/ICube-Robotics/ethercat_driver_ros2.git src/ethercat_driver_ros2 && \
+RUN cd ros2_dev && \
+    . /opt/ros/${ROS_DISTRO}/setup.sh && \
     rosdep install --ignore-src --from-paths . -y -r && \
     colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install
 

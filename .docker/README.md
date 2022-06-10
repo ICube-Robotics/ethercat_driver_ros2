@@ -3,5 +3,5 @@ Provides a basic preconfigured docker container for development purposes. To use
 
 ```shell
 $ docker build --tag ethercat_driver:galactic --file .docker/Dockerfile .
-$ docker run -it ethercat_driver:galactic
+$ docker run -it --privileged --network=host ethercat_driver:galactic
 ```
