@@ -307,13 +307,13 @@ CallbackReturn EthercatDriver::on_deactivate(
     return CallbackReturn::SUCCESS;
 }
 
-hardware_interface::return_type EthercatDriver::read()
+hardware_interface::return_type EthercatDriver::read(const rclcpp::Time& /*time*/, const rclcpp::Duration& /*period*/)
 {
     master_.readData();
     return hardware_interface::return_type::OK;
 }
 
-hardware_interface::return_type EthercatDriver::write()
+hardware_interface::return_type EthercatDriver::write(const rclcpp::Time& /*time*/, const rclcpp::Duration& /*period*/)
 {
     master_.writeData();
     return hardware_interface::return_type::OK;

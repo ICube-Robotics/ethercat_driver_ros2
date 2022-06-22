@@ -58,10 +58,10 @@ public:
   CallbackReturn on_deactivate(const rclcpp_lifecycle::State & previous_state) override;
 
   ETHERCAT_DRIVER_PUBLIC
-  hardware_interface::return_type read() override;
+  hardware_interface::return_type read(const rclcpp::Time&, const rclcpp::Duration&) override;
 
   ETHERCAT_DRIVER_PUBLIC
-  hardware_interface::return_type write() override;
+  hardware_interface::return_type write(const rclcpp::Time&, const rclcpp::Duration&) override;
 
 private:
   std::vector<std::unordered_map<std::string, std::string>> getEcModuleParam(std::string xml);
