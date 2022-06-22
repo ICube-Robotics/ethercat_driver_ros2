@@ -48,15 +48,15 @@ repos:
       args: ["--extend-ignore=E501"]
 
   # CPP hooks
-  # - repo: local
-  #   hooks:
-  #     - id: clang-format
-  #       name: clang-format
-  #       description: Format files with ClangFormat.
-  #       entry: clang-format-10
-  #       language: system
-  #       files: \.(c|cc|cxx|cpp|frag|glsl|h|hpp|hxx|ih|ispc|ipp|java|js|m|proto|vert)$
-  #       args: ['-fallback-style=none', '-i']
+  - repo: local
+    hooks:
+      - id: clang-format
+        name: clang-format
+        description: Format files with ClangFormat.
+        entry: clang-format-10
+        language: system
+        files: \.(c|cc|cxx|cpp|frag|glsl|h|hpp|hxx|ih|ispc|ipp|java|js|m|proto|vert)$
+        args: ['-fallback-style=none', '-i']
 
   # - repo: local
   #   hooks:
@@ -118,10 +118,10 @@ repos:
   #     - id: rst-inline-touching-normal
 
   # Spellcheck in comments and docs
-  # # skipping of *.svg files is not working...
-  # - repo: https://github.com/codespell-project/codespell
-  #   rev: v2.0.0
-  #   hooks:
-  #     - id: codespell
-  #       args: ['--write-changes']
-  #       exclude: CHANGELOG\.rst|\.(svg|pyc)$
+  # skipping of *.svg files is not working...
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.0.0
+    hooks:
+      - id: codespell
+        args: ['--write-changes']
+        exclude: CHANGELOG\.rst|\.(svg|pyc)$
