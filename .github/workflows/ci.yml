@@ -19,7 +19,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           tags: ethercat_driver_ros2:galactic
-          file: Dockerfile
+          file: .docker/Dockerfile
           push: false
 
       - name: Build
@@ -30,7 +30,8 @@ jobs:
           run: |
             cd /ros
             . /opt/ros/galactic/setup.sh
-            colcon build --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCHECK_TIDY=ON
+            rosdep install --ignore-src --from-paths . -y -r && \
+            colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
       - name: Test
         uses: addnab/docker-run-action@v3
         with:
