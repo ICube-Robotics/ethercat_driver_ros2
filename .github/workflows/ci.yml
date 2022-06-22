@@ -1,0 +1,34 @@
+name: CI
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+jobs:
+  CI:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare
+        run: |
+          mkdir -p ${{github.workspace}}/src
+      - uses: actions/checkout@v2
+        with:
+          path: src/ethercat_driver_ros2
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v2
+        with:
+          tags: ethercat_driver_ros2:galactic
+          file: .docker/Dockerfile
+          push: false
+
+      - name: Build
+        uses: addnab/docker-run-action@v3
+        with:
+          image: ethercat_driver_ros2:galactic
+          options: -v ${{github.workspace}}/:/ros/
+          run: |
+            cd /ros
+            . /opt/ros/galactic/setup.sh
+            rosdep install --ignore-src --from-paths . -y -r && \
+            colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release

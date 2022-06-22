@@ -11,9 +11,4 @@ RUN mkdir ec_dev && cd ec_dev && \
     git checkout stable-1.5 && \ 
     ./bootstrap && \
     ./configure --prefix=/usr/local/etherlab --disable-kernel && \
-    make && make install 
-RUN cd ros2_dev && \
-    . /opt/ros/${ROS_DISTRO}/setup.sh && \
-    rosdep install --ignore-src --from-paths . -y -r && \
-    colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install
-
+    make && make install
