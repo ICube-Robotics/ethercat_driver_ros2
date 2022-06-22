@@ -19,31 +19,31 @@
 //     https://gcc.gnu.org/wiki/Visibility
 
 #if defined _WIN32 || defined __CYGWIN__
-  #ifdef __GNUC__
-    #define ETHERCAT_DRIVER_EXPORT __attribute__ ((dllexport))
-    #define ETHERCAT_DRIVER_IMPORT __attribute__ ((dllimport))
-  #else
-    #define ETHERCAT_DRIVER_EXPORT __declspec(dllexport)
-    #define ETHERCAT_DRIVER_IMPORT __declspec(dllimport)
-  #endif
-  #ifdef ETHERCAT_DRIVER_BUILDING_LIBRARY
-    #define ETHERCAT_DRIVER_PUBLIC ETHERCAT_DRIVER_EXPORT
-  #else
-    #define ETHERCAT_DRIVER_PUBLIC ETHERCAT_DRIVER_IMPORT
-  #endif
-  #define ETHERCAT_DRIVER_PUBLIC_TYPE ETHERCAT_DRIVER_PUBLIC
-  #define ETHERCAT_DRIVER_LOCAL
+#ifdef __GNUC__
+#define ETHERCAT_DRIVER_EXPORT __attribute__((dllexport))
+#define ETHERCAT_DRIVER_IMPORT __attribute__((dllimport))
 #else
-  #define ETHERCAT_DRIVER_EXPORT __attribute__ ((visibility("default")))
-  #define ETHERCAT_DRIVER_IMPORT
-  #if __GNUC__ >= 4
-    #define ETHERCAT_DRIVER_PUBLIC __attribute__ ((visibility("default")))
-    #define ETHERCAT_DRIVER_LOCAL  __attribute__ ((visibility("hidden")))
-  #else
-    #define ETHERCAT_DRIVER_PUBLIC
-    #define ETHERCAT_DRIVER_LOCAL
-  #endif
-  #define ETHERCAT_DRIVER_PUBLIC_TYPE
+#define ETHERCAT_DRIVER_EXPORT __declspec(dllexport)
+#define ETHERCAT_DRIVER_IMPORT __declspec(dllimport)
+#endif
+#ifdef ETHERCAT_DRIVER_BUILDING_LIBRARY
+#define ETHERCAT_DRIVER_PUBLIC ETHERCAT_DRIVER_EXPORT
+#else
+#define ETHERCAT_DRIVER_PUBLIC ETHERCAT_DRIVER_IMPORT
+#endif
+#define ETHERCAT_DRIVER_PUBLIC_TYPE ETHERCAT_DRIVER_PUBLIC
+#define ETHERCAT_DRIVER_LOCAL
+#else
+#define ETHERCAT_DRIVER_EXPORT __attribute__((visibility("default")))
+#define ETHERCAT_DRIVER_IMPORT
+#if __GNUC__ >= 4
+#define ETHERCAT_DRIVER_PUBLIC __attribute__((visibility("default")))
+#define ETHERCAT_DRIVER_LOCAL __attribute__((visibility("hidden")))
+#else
+#define ETHERCAT_DRIVER_PUBLIC
+#define ETHERCAT_DRIVER_LOCAL
+#endif
+#define ETHERCAT_DRIVER_PUBLIC_TYPE
 #endif
 
 #endif  // ETHERCAT_DRIVER__VISIBILITY_CONTROL_H_

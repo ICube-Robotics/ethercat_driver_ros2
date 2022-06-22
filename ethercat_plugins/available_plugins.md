@@ -26,7 +26,7 @@ The list of currently supported EtherCAT modules and the available parameters. A
 - **Beckhoff_EL5101**: EtherCAT Terminal, 1-channel encoder interface, incremental, 5 V DC (DIFF RS422, TTL), 1 MHz.
     - parameters:
         1. `encoder_position` - current encoder position
-        2. `convertion_factor` - encoder tic to unit convertion factor
+        2. `convertion_factor` - encoder tic to unit conversion factor
         3. `encoder_reset` - reset encoder counting (reset on 0->1 switch)
 
 ## Maxon

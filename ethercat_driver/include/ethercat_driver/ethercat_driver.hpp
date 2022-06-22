@@ -15,6 +15,14 @@
 #ifndef ETHERCAT_DRIVER__ETHERCAT_DRIVER_HPP_
 #define ETHERCAT_DRIVER__ETHERCAT_DRIVER_HPP_
 
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
+#include <pluginlib/class_loader.hpp>
+#include "ethercat_driver/visibility_control.h"
+#include "ethercat_interface/ec_master.hpp"
+#include "ethercat_interface/ec_slave.hpp"
 #include "hardware_interface/handle.hpp"
 #include "hardware_interface/hardware_info.hpp"
 #include "hardware_interface/system_interface.hpp"
@@ -22,12 +30,6 @@
 #include "rclcpp/macros.hpp"
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 #include "rclcpp_lifecycle/state.hpp"
-#include "ethercat_driver/visibility_control.h"
-#include "ethercat_interface/ec_slave.hpp"
-#include "ethercat_interface/ec_master.hpp"
-#include <pluginlib/class_loader.hpp>
-#include <unordered_map>
-
 
 using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
@@ -76,11 +78,11 @@ private:
   std::vector<std::vector<double>> hw_sensor_states_;
   std::vector<std::vector<double>> hw_gpio_states_;
 
-  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{"ethercat_interface", "ethercat_interface::EcSlave"};
+  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{"ethercat_interface",
+    "ethercat_interface::EcSlave"};
 
   int control_frequency_;
   ethercat_interface::EcMaster master_;
-
 };
 
 }  // namespace ethercat_driver
