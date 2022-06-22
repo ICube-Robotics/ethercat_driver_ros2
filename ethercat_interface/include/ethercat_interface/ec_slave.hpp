@@ -18,6 +18,8 @@
 #include <map>
 #include <vector>
 #include <unordered_map>
+#include <iostream>
+#include <cmath>
 
 namespace ethercat_interface {
     class EcSlave

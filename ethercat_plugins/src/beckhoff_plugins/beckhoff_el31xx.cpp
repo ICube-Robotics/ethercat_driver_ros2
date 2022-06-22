@@ -25,10 +25,9 @@ public:
     Beckhoff_EL3102() : EcSlave(0x00000002, 0x0c1e3052) {}
     virtual ~Beckhoff_EL3102() {}
     virtual void processData(size_t index, uint8_t* domain_address){
-        auto isRequested = paramters_.find("ai."+std::to_string((int)(index+1)))!= paramters_.end();
-        if(isRequested){
-            double data = (double)EC_READ_S16(domain_address)/32767*10;
-            state_interface_ptr_->at(std::stoi(paramters_["state_interface/"+paramters_["ai."+std::to_string((int)(index+1))]])) = data;
+        if(sii_ai_[index] >= 0){
+            double data = (double)EC_READ_S16(domain_address)/std::numeric_limits<int16_t>::max()*10;
+            state_interface_ptr_->at(sii_ai_[index]) = data;
         }
     }
     virtual const ec_sync_info_t* syncs() { return &syncs_[0]; }
@@ -41,7 +40,26 @@ public:
     virtual void domains(DomainMap& domains) const {
         domains = domains_;
     }
+    virtual bool setupSlave(
+                std::unordered_map<std::string, std::string> slave_paramters,
+                std::vector<double> * state_interface,
+                std::vector<double> * command_interface){
+
+        state_interface_ptr_ = state_interface;
+        command_interface_ptr_ = command_interface;
+        paramters_ = slave_paramters;
+
+        for(auto index = 0ul; index < 2; index++){
+            if(paramters_.find("ai."+std::to_string(index+1))!= paramters_.end()){
+                if(paramters_.find("state_interface/"+paramters_["ai."+std::to_string(index+1)]) != paramters_.end())
+                    sii_ai_[index] = std::stoi(paramters_["state_interface/"+paramters_["ai."+std::to_string(index+1)]]);
+            }
+        }
+        return true;
+    }
 private:
+    int sii_ai_[2] = {-1};
+
     ec_pdo_entry_info_t channels_[4] = {
     {0x3101, 0x01, 8}, /* Status */
     {0x3101, 0x02, 16}, /* Value */
@@ -72,10 +90,9 @@ public:
     Beckhoff_EL3104() : EcSlave(0x00000002, 0x0c203052) {}
     virtual ~Beckhoff_EL3104() {}
     virtual void processData(size_t index, uint8_t* domain_address){
-        auto isRequested = paramters_.find("ai."+std::to_string((int)(index+1)))!= paramters_.end();
-        if(isRequested){
-            double data = (double)EC_READ_S16(domain_address)/32767*10;
-            state_interface_ptr_->at(std::stoi(paramters_["state_interface/"+paramters_["ai."+std::to_string((int)(index+1))]])) = data;
+        if(sii_ai_[index] >= 0){
+            double data = (double)EC_READ_S16(domain_address)/std::numeric_limits<int16_t>::max()*10;
+            state_interface_ptr_->at(sii_ai_[index]) = data;
         }
     }
     virtual const ec_sync_info_t* syncs() { return &syncs_[0]; }
@@ -88,7 +105,26 @@ public:
     virtual void domains(DomainMap& domains) const {
         domains = domains_;
     }
+    virtual bool setupSlave(
+                std::unordered_map<std::string, std::string> slave_paramters,
+                std::vector<double> * state_interface,
+                std::vector<double> * command_interface){
+
+        state_interface_ptr_ = state_interface;
+        command_interface_ptr_ = command_interface;
+        paramters_ = slave_paramters;
+
+        for(auto index = 0ul; index < 4; index++){
+            if(paramters_.find("ai."+std::to_string(index+1))!= paramters_.end()){
+                if(paramters_.find("state_interface/"+paramters_["ai."+std::to_string(index+1)]) != paramters_.end())
+                    sii_ai_[index] = std::stoi(paramters_["state_interface/"+paramters_["ai."+std::to_string(index+1)]]);
+            }
+        }
+        return true;
+    }
 private:
+    int sii_ai_[4] = {-1};
+
     ec_pdo_entry_info_t channels_[44] = {
     {0x6000, 0x01, 1}, /* Underrange */
     {0x6000, 0x02, 1}, /* Overrange */

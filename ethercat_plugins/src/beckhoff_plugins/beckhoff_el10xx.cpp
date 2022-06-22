@@ -37,10 +37,8 @@ public:
         digital_inputs_[6] = ((data & 0b01000000) != 0); // bit 6
         digital_inputs_[7] = ((data & 0b10000000) != 0); // bit 7
         for(auto i=0ul;i<8;i++){
-            bool isRequested = paramters_.find("di."+std::to_string(i+1))!= paramters_.end();
-            if(isRequested){
-                state_interface_ptr_->at(std::stoi(paramters_["state_interface/"+paramters_["di."+std::to_string(i+1)]])) = digital_inputs_[i];
-            }
+            if(sii_di_[i] >= 0)
+                state_interface_ptr_->at(sii_di_[i]) = digital_inputs_[i];
         }
     }
     virtual const ec_sync_info_t* syncs() { return &syncs_[0]; }
@@ -53,9 +51,29 @@ public:
     virtual void domains(DomainMap& domains) const {
         domains = domains_;
     }
+    virtual bool setupSlave(
+                std::unordered_map<std::string, std::string> slave_paramters,
+                std::vector<double> * state_interface,
+                std::vector<double> * command_interface){
+
+        state_interface_ptr_ = state_interface;
+        command_interface_ptr_ = command_interface;
+        paramters_ = slave_paramters;
+
+        for(auto index = 0ul; index < 8; index++){
+            if(paramters_.find("di."+std::to_string(index+1))!= paramters_.end()){
+                if(paramters_.find("state_interface/"+paramters_["di."+std::to_string(index+1)]) != paramters_.end())
+                    sii_di_[index] = std::stoi(paramters_["state_interface/"+paramters_["di."+std::to_string(index+1)]]);
+            }
+        }
+        return true;
+    }
+    
+private:
+    int sii_di_[8] = {-1};
     // digital write values
     bool write_data_[8] = {false};
-private:
+
     ec_pdo_entry_info_t channels_[8] = {
         {0x6000, 0x01, 1}, /* Input */
         {0x6010, 0x01, 1}, /* Input */
@@ -104,10 +122,8 @@ public:
         digital_inputs_[6] = ((data & 0b01000000) != 0); // bit 6
         digital_inputs_[7] = ((data & 0b10000000) != 0); // bit 7
         for(auto i=0ul;i<8;i++){
-            bool isRequested = paramters_.find("di."+std::to_string(i+1))!= paramters_.end();
-            if(isRequested){
-                state_interface_ptr_->at(std::stoi(paramters_["state_interface/"+paramters_["di."+std::to_string(i+1)]])) = digital_inputs_[i];
-            }
+            if(sii_di_[i] >= 0)
+                state_interface_ptr_->at(sii_di_[i]) = digital_inputs_[i];
         }
     }
     virtual const ec_sync_info_t* syncs() { return &syncs_[0]; }
@@ -120,9 +136,29 @@ public:
     virtual void domains(DomainMap& domains) const {
         domains = domains_;
     }
+    virtual bool setupSlave(
+                std::unordered_map<std::string, std::string> slave_paramters,
+                std::vector<double> * state_interface,
+                std::vector<double> * command_interface){
+
+        state_interface_ptr_ = state_interface;
+        command_interface_ptr_ = command_interface;
+        paramters_ = slave_paramters;
+
+        for(auto index = 0ul; index < 8; index++){
+            if(paramters_.find("di."+std::to_string(index+1))!= paramters_.end()){
+                if(paramters_.find("state_interface/"+paramters_["di."+std::to_string(index+1)]) != paramters_.end())
+                    sii_di_[index] = std::stoi(paramters_["state_interface/"+paramters_["di."+std::to_string(index+1)]]);
+            }
+        }
+        return true;
+    }
+    
+private:
+    int sii_di_[8] = {-1};
     // digital write values
     bool write_data_[8] = {false};
-private:
+
     ec_pdo_entry_info_t channels_[8] = {
         {0x6000, 0x01, 1}, /* Input */
         {0x6010, 0x01, 1}, /* Input */

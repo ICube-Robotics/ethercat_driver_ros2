@@ -29,9 +29,10 @@ public :
             case 0:
                 control_word_ = EC_READ_U8(domain_address);
                 control_word_ = transition(state_, control_word_);
-                if(allowReset_){
-                    reset_command_ = command_interface_ptr_->at(std::stoi(paramters_["command_interface/"+paramters_["encoder_reset"]]));
-                    state_interface_ptr_->at(std::stoi(paramters_["state_interface/"+paramters_["encoder_reset"]])) = reset_command_;
+                if(cii_reset_ >= 0){
+                    reset_command_ = command_interface_ptr_->at(cii_reset_);
+                    if(sii_reset_ >= 0)
+                        state_interface_ptr_->at(sii_reset_) = reset_command_;
                     if(reset_command_ == 1.0 && last_reset_command_ != 1.0)
                         cmd_ = CMD_WRITE_REQUEST;
                     last_reset_command_ = reset_command_;
@@ -50,10 +51,9 @@ public :
                 status_word_ = EC_READ_U16(domain_address);
                 break;
             case 3:
-                last_position_ = position_;
                 position_ = EC_READ_S32(domain_address);
-                state_interface_ptr_->at(std::stoi(paramters_["state_interface/"+paramters_["encoder_position"]])) = (double)position_*convertion_factor_;
-                dposition_ = position_ - last_position_;
+                if(sii_position_ >= 0)
+                    state_interface_ptr_->at(sii_position_) = (double)position_*convertion_factor_;
                 break;
             case 4:
                 latch_ = EC_READ_S32(domain_address);
@@ -63,16 +63,9 @@ public :
         }
 
 	    if (index == 4) {
-            if ((uint8_t)status_word_ != (uint8_t)last_status_word_){
+            if ((uint8_t)status_word_ != (uint8_t)last_status_word_)
                 state_ = deviceState(status_word_);
-                ack_ = process_ack (state_,last_cmd_ );
-            }
             last_status_word_ = status_word_;
-            last_state_ = state_;
-            if (last_cmd_ && b_process_ack) {
-                ack_ = process_ack (state_,last_cmd_ );
-                b_process_ack = false;
-            }
 	    }
 	}
     virtual const ec_sync_info_t* syncs() { return &syncs_[0]; }
@@ -95,8 +88,16 @@ public :
         paramters_ = slave_paramters;
         if(paramters_.find("convertion_factor")!= paramters_.end())
             convertion_factor_ = std::stod(paramters_["convertion_factor"]);
-        if(paramters_.find("encoder_reset")!= paramters_.end())
-            allowReset_ = true;
+        if(paramters_.find("encoder_reset")!= paramters_.end()){
+            if(paramters_.find("command_interface/"+paramters_["encoder_reset"]) != paramters_.end())
+                cii_reset_ = std::stoi(paramters_["command_interface/"+paramters_["encoder_reset"]]);
+            if(paramters_.find("state_interface/"+paramters_["encoder_reset"]) != paramters_.end())
+                sii_reset_ = std::stoi(paramters_["state_interface/"+paramters_["encoder_reset"]]);
+        }
+        if(paramters_.find("encoder_position")!= paramters_.end()){
+            if(paramters_.find("state_interface/"+paramters_["encoder_position"]) != paramters_.end())
+                sii_position_ = std::stoi(paramters_["state_interface/"+paramters_["encoder_position"]]);
+        }
         return true;
     }
 
@@ -105,8 +106,6 @@ private:
     uint8_t control_word_       = 0; // write
     uint32_t latch_			    = 0; // read
     int32_t  position_          = 0; // read
-    int32_t last_position_		= 0;
-    int32_t dposition_		    = 0;
     uint16_t status_word_       = 0; // read
     uint16_t last_status_word_ 	= -1;
     uint8_t last_control_word_  = -1;
@@ -116,13 +115,11 @@ private:
     bool write_t			    = false; // write
     bool error_				    = false; // read
     uint8_t cmd_ 			    = 0;
-    uint8_t last_cmd_ 			= 0;
-    uint8_t ack_			    = 0;
-    uint8_t reply_cmd			= 0;
     uint8_t error_type_			= 0; //read
-    bool b_process_ack			= false;
     double convertion_factor_   = 1;
-    bool allowReset_            = false;
+    int cii_reset_              = -1;
+    int sii_reset_              = -1;
+    int sii_position_           = -1;
 
 
     ec_pdo_entry_info_t channels_[25] = {
@@ -212,7 +209,6 @@ private:
 
     uint16_t process_cmd (DeviceState state, uint8_t cmd, uint8_t control_word) {
       	if (cmd > CMD_NO_CMD) {
-            last_cmd_ = CMD_NO_CMD;
             switch(state) {
                 case STATE_READY_TO_WRITE:
 	                switch (cmd) {
@@ -224,7 +220,6 @@ private:
 	                        control_word = (control_word|0x04);
                             write_t = true;
                             write_ = true;
-                            last_cmd_ = CMD_WRITE_REQUEST;
                             cmd_ = CMD_NO_CMD;
                             break;
 	                    default :
@@ -248,26 +243,9 @@ private:
 	    }
         return control_word;
     }
-
-    uint8_t process_ack (DeviceState state, uint8_t last_cmd) {
-        switch(state){
-            case STATE_NOTREADY_TO_WRITE:
-	            switch (last_cmd) {
-	                case CMD_WRITE_REQUEST :
-		                last_cmd_ = CMD_NO_CMD;
-		                return last_cmd;
-                    default :
-                        last_cmd_ = CMD_NO_CMD;
-                        return 0;
-	            }
-	            break;
-	        default :
-	            return CMD_NO_CMD;
-	    }
-    }
-
-    DeviceState last_state_ = STATE_NOTREADY_TO_WRITE;
+    
     DeviceState state_ = STATE_NOTREADY_TO_WRITE;
+
 };
 }  // namespace ethercat_plugins
 
