@@ -117,7 +117,7 @@ void EcMaster::addSlave(uint16_t alias, uint16_t position, EcSlave* slave)
             return;
         }
     } else {
-        printWarning("Add slave. Sync size is zero for " + static_cast<std::ostringstream*>( &(std::ostringstream() << alias) )->str() + ":" + static_cast<std::ostringstream*>( &(std::ostringstream() << position) )->str());
+        printWarning("Add slave. Sync size is zero for " + std::to_string(alias) + ":" + std::to_string(position));
     }
 
     // check if slave registered any pdos for the domain
