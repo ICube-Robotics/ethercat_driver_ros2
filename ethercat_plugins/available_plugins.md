@@ -28,6 +28,8 @@ The list of currently supported EtherCAT modules and the available parameters. A
         1. `encoder_position` - current encoder position
         2. `convertion_factor` - encoder tic to unit conversion factor
         3. `encoder_reset` - reset encoder counting (reset on 0->1 switch)
+- **Beckhoff_EL7031**: EtherCAT Terminal, 1-channel motion interface, stepper motor, 24 V DC, 1.5 A.
+    - parameters: TBD
 
 ## Maxon
 - **EPOS3**: EPOS3 70/10 EtherCAT, digital positioning controller, 10 A, 11 - 70 VDC
