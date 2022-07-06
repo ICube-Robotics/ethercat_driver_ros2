@@ -59,104 +59,87 @@ CallbackReturn EthercatDriver::on_init(
     for(uint j = 0; j < info_.joints.size(); j++){
         RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"),"joints");
         //check all joints for EC modules and load into ec_modules_
-        if(!info_.joints[j].parameters.at("ec_component").empty()){
-            std::string param = info_.joints[j].parameters.at("ec_component");
-            //TODO(mcbed): need find better way to get parameters !
-            std::replace( param.begin(), param.end(), '[', '<');
-            std::replace( param.begin(), param.end(), ']', '>');
-            auto module_params = getEcModuleParam(param);
-            ec_module_parameters_.insert(ec_module_parameters_.end(), module_params.begin(), module_params.end());
-            for(auto i=0ul;i<module_params.size();i++){
-                for(auto k=0ul;k<info_.joints[j].state_interfaces.size();k++){
-                    module_params[i]["state_interface/" + info_.joints[j].state_interfaces[k].name] = std::to_string(k) ;
-                }
-                for(auto k=0ul;k<info_.joints[j].command_interfaces.size();k++){
-                    module_params[i]["command_interface/" + info_.joints[j].command_interfaces[k].name] = std::to_string(k);
-                }
-                try{
-                    auto module = ec_loader_.createSharedInstance(module_params[i].at("plugin"));
-                    if(!module->setupSlave(module_params[i],&hw_joint_states_[j],&hw_joint_commands_[j])){
-                        RCLCPP_FATAL(rclcpp::get_logger("EthercatDriver"),
-                            "Setup of Joint module %i FAILED.",i+1);
-                        return CallbackReturn::ERROR;
-                    }
-                    ec_modules_.push_back(module);
-                }
-                catch(pluginlib::PluginlibException& ex){
+        auto module_params = getEcModuleParam(info_.original_xml, info_.joints[j].name, "joint");
+        ec_module_parameters_.insert(ec_module_parameters_.end(), module_params.begin(), module_params.end());
+        for(auto i=0ul;i<module_params.size();i++){
+            for(auto k=0ul;k<info_.joints[j].state_interfaces.size();k++){
+                module_params[i]["state_interface/" + info_.joints[j].state_interfaces[k].name] = std::to_string(k) ;
+            }
+            for(auto k=0ul;k<info_.joints[j].command_interfaces.size();k++){
+                module_params[i]["command_interface/" + info_.joints[j].command_interfaces[k].name] = std::to_string(k);
+            }
+            try{
+                auto module = ec_loader_.createSharedInstance(module_params[i].at("plugin"));
+                if(!module->setupSlave(module_params[i],&hw_joint_states_[j],&hw_joint_commands_[j])){
                     RCLCPP_FATAL(rclcpp::get_logger("EthercatDriver"),
-                        "The plugin of %s failed to load for some reason. Error: %s\n",
-                        info_.joints[j].name.c_str(), ex.what());
+                        "Setup of Joint module %i FAILED.",i+1);
+                    return CallbackReturn::ERROR;
                 }
+                ec_modules_.push_back(module);
+            }
+            catch(pluginlib::PluginlibException& ex){
+                RCLCPP_FATAL(rclcpp::get_logger("EthercatDriver"),
+                    "The plugin of %s failed to load for some reason. Error: %s\n",
+                    info_.joints[j].name.c_str(), ex.what());
             }
         }
     }
     for(uint g = 0; g < info_.gpios.size(); g++){
         RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"),"gpios");
         // check all gpios for EC modules and load into ec_modules_
-        if(!info_.gpios[g].parameters.at("ec_component").empty()){
-            std::string param = info_.gpios[g].parameters.at("ec_component");
-            //TODO(mcbed): need find better way to get parameters !
-            std::replace( param.begin(), param.end(), '[', '<');
-            std::replace( param.begin(), param.end(), ']', '>');
-            auto module_params = getEcModuleParam(param);
-            ec_module_parameters_.insert(ec_module_parameters_.end(), module_params.begin(), module_params.end());
-            for(auto i=0ul;i<module_params.size();i++){
-                for(auto k=0ul;k<info_.gpios[g].state_interfaces.size();k++){
-                    module_params[i]["state_interface/" + info_.gpios[g].state_interfaces[k].name] = std::to_string(k) ;
-                }
-                for(auto k=0ul;k<info_.gpios[g].command_interfaces.size();k++){
-                    module_params[i]["command_interface/" + info_.gpios[g].command_interfaces[k].name] = std::to_string(k);
-                }
-                try{
-                    auto module = ec_loader_.createSharedInstance(module_params[i].at("plugin"));
-                    if(!module->setupSlave(module_params[i],&hw_gpio_states_[g],&hw_gpio_commands_[g])){
-                        RCLCPP_FATAL(rclcpp::get_logger("EthercatDriver"),
-                            "Setup of GPIO module %i FAILED.",i+1);
-                        return CallbackReturn::ERROR;
-                    }
-                    ec_modules_.push_back(module);
-                }
-                catch(pluginlib::PluginlibException& ex){
+        auto module_params = getEcModuleParam(info_.original_xml, info_.gpios[g].name, "gpio");
+        ec_module_parameters_.insert(ec_module_parameters_.end(), module_params.begin(), module_params.end());
+        for(auto i=0ul;i<module_params.size();i++){
+            for(auto k=0ul;k<info_.gpios[g].state_interfaces.size();k++){
+                module_params[i]["state_interface/" + info_.gpios[g].state_interfaces[k].name] = std::to_string(k) ;
+            }
+            for(auto k=0ul;k<info_.gpios[g].command_interfaces.size();k++){
+                module_params[i]["command_interface/" + info_.gpios[g].command_interfaces[k].name] = std::to_string(k);
+            }
+            try{
+                auto module = ec_loader_.createSharedInstance(module_params[i].at("plugin"));
+                if(!module->setupSlave(module_params[i],&hw_gpio_states_[g],&hw_gpio_commands_[g])){
                     RCLCPP_FATAL(rclcpp::get_logger("EthercatDriver"),
-                        "The plugin of %s failed to load for some reason. Error: %s\n",
-                        info_.gpios[g].name.c_str(), ex.what());
+                        "Setup of GPIO module %i FAILED.",i+1);
+                    return CallbackReturn::ERROR;
                 }
+                ec_modules_.push_back(module);
+            }
+            catch(pluginlib::PluginlibException& ex){
+                RCLCPP_FATAL(rclcpp::get_logger("EthercatDriver"),
+                    "The plugin of %s failed to load for some reason. Error: %s\n",
+                    info_.gpios[g].name.c_str(), ex.what());
             }
         }
     }
     for(uint s = 0; s < info_.sensors.size(); s++){
         RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"),"sensors");
         // check all sensors for EC modules and load into ec_modules_
-        if(!info_.sensors[s].parameters.at("ec_component").empty()){
-            std::string param = info_.sensors[s].parameters.at("ec_component");
-            //TODO(mcbed): need find better way to get parameters !
-            std::replace( param.begin(), param.end(), '[', '<');
-            std::replace( param.begin(), param.end(), ']', '>');
-            auto module_params = getEcModuleParam(param);
-            ec_module_parameters_.insert(ec_module_parameters_.end(), module_params.begin(), module_params.end());
-            for(auto i=0ul;i<module_params.size();i++){
-                for(auto k=0ul;k<info_.sensors[s].state_interfaces.size();k++){
-                    module_params[i]["state_interface/" + info_.sensors[s].state_interfaces[k].name] = std::to_string(k) ;
-                }
-                for(auto k=0ul;k<info_.sensors[s].command_interfaces.size();k++){
-                    module_params[i]["command_interface/" + info_.sensors[s].command_interfaces[k].name] = std::to_string(k);
-                }
-                try{
-                    auto module = ec_loader_.createSharedInstance(module_params[i].at("plugin"));
-                    if(!module->setupSlave(module_params[i],&hw_sensor_states_[s],&hw_sensor_commands_[s])){
-                        RCLCPP_FATAL(rclcpp::get_logger("EthercatDriver"),
-                            "Setup of Sensor module %i FAILED.",i+1);
-                        return CallbackReturn::ERROR;
-                    }
-                    ec_modules_.push_back(module);
-                }
-                catch(pluginlib::PluginlibException& ex){
+        auto module_params = getEcModuleParam(info_.original_xml, info_.sensors[s].name, "sensor");
+        ec_module_parameters_.insert(ec_module_parameters_.end(), module_params.begin(), module_params.end());
+        for(auto i=0ul;i<module_params.size();i++){
+            for(auto k=0ul;k<info_.sensors[s].state_interfaces.size();k++){
+                module_params[i]["state_interface/" + info_.sensors[s].state_interfaces[k].name] = std::to_string(k) ;
+            }
+            for(auto k=0ul;k<info_.sensors[s].command_interfaces.size();k++){
+                module_params[i]["command_interface/" + info_.sensors[s].command_interfaces[k].name] = std::to_string(k);
+            }
+            try{
+                auto module = ec_loader_.createSharedInstance(module_params[i].at("plugin"));
+                if(!module->setupSlave(module_params[i],&hw_sensor_states_[s],&hw_sensor_commands_[s])){
                     RCLCPP_FATAL(rclcpp::get_logger("EthercatDriver"),
-                    "The plugin of %s failed to load for some reason. Error: %s\n",
-                    info_.sensors[s].name.c_str(), ex.what());
+                        "Setup of Sensor module %i FAILED.",i+1);
+                    return CallbackReturn::ERROR;
                 }
+                ec_modules_.push_back(module);
+            }
+            catch(pluginlib::PluginlibException& ex){
+                RCLCPP_FATAL(rclcpp::get_logger("EthercatDriver"),
+                "The plugin of %s failed to load for some reason. Error: %s\n",
+                info_.sensors[s].name.c_str(), ex.what());
             }
         }
+        
     }
 
     RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"),"Got %i modules", ec_modules_.size());
@@ -319,30 +302,66 @@ hardware_interface::return_type EthercatDriver::write(const rclcpp::Time& /*time
     return hardware_interface::return_type::OK;
 }
 
-std::vector<std::unordered_map<std::string, std::string>> EthercatDriver::getEcModuleParam(std::string xml){
+std::vector<std::unordered_map<std::string, std::string>> EthercatDriver::getEcModuleParam(std::string & urdf, std::string component_name, std::string component_type){
+    // Check if everything OK with URDF string
+    if (urdf.empty())
+    {
+        throw std::runtime_error("empty URDF passed to robot");
+    }
     tinyxml2::XMLDocument doc;
+    if (!doc.Parse(urdf.c_str()) && doc.Error())
+    {
+        throw std::runtime_error("invalid URDF passed in to robot parser");
+    }
+    if (doc.Error())
+    {
+        throw std::runtime_error("invalid URDF passed in to robot parser");
+    }
+    
+    tinyxml2::XMLElement * robot_it = doc.RootElement();
+    if (std::string("robot").compare(robot_it->Name()))
+    {
+        throw std::runtime_error("the robot tag is not root element in URDF");
+    }
+
+    const tinyxml2::XMLElement * ros2_control_it = robot_it->FirstChildElement("ros2_control");
+    if (!ros2_control_it)
+    {
+        throw std::runtime_error("no ros2_control tag");
+    }
+
     std::vector<std::unordered_map<std::string, std::string>> module_params;
     std::unordered_map<std::string, std::string> module_param;
-    doc.Parse(xml.c_str());
-    tinyxml2::XMLElement * pRootElement = doc.RootElement();
-    if (NULL != pRootElement) {
-        tinyxml2::XMLElement * pEcModule = pRootElement->FirstChildElement("ec_module");
-        while (pEcModule) {
-            module_param.clear();
-            module_param["name"] = pEcModule->Attribute("name");
-            tinyxml2::XMLElement * pPlugin = pEcModule->FirstChildElement("plugin");
-            if (NULL != pPlugin) {
-                module_param["plugin"] = pPlugin->GetText();
-            }
-            tinyxml2::XMLElement * pParam = pEcModule->FirstChildElement("param");
-            while (pParam) {
-                module_param[pParam->Attribute("name")] = pParam->GetText();
-                pParam = pParam->NextSiblingElement("param");
-            }
-            module_params.push_back(module_param);
-            pEcModule = pEcModule->NextSiblingElement("ec_module");
+
+    while (ros2_control_it)
+    {
+        const auto * ros2_control_child_it = ros2_control_it->FirstChildElement(component_type.c_str());
+        while (ros2_control_child_it)
+        {
+            if(!component_name.compare(ros2_control_child_it->Attribute("name")))
+            {
+                const auto * ec_module_it = ros2_control_child_it->FirstChildElement("ec_module");
+                while (ec_module_it) {
+                    module_param.clear();
+                    module_param["name"] = ec_module_it->Attribute("name");
+                    const auto * plugin_it = ec_module_it->FirstChildElement("plugin");
+                    if (NULL != plugin_it) {
+                        module_param["plugin"] = plugin_it->GetText();
+                    }
+                    const auto * param_it = ec_module_it->FirstChildElement("param");
+                    while (param_it) {
+                        module_param[param_it->Attribute("name")] = param_it->GetText();
+                        param_it = param_it->NextSiblingElement("param");
+                    }
+                    module_params.push_back(module_param);
+                    ec_module_it = ec_module_it->NextSiblingElement("ec_module");
+                }
+            } 
+            ros2_control_child_it = ros2_control_child_it->NextSiblingElement(component_type.c_str());
         }
+        ros2_control_it = ros2_control_it->NextSiblingElement("ros2_control");
     }
+
     return module_params;
 }
 
