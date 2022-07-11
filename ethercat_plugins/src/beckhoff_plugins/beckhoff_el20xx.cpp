@@ -80,10 +80,10 @@ public:
     }
 
 private:
-    int cii_do_[8] = {-1};
-    int sii_do_[8] = {-1};
+    int cii_do_[8] = {-1,-1,-1,-1,-1,-1,-1,-1};
+    int sii_do_[8] = {-1,-1,-1,-1,-1,-1,-1,-1};
     // digital write values
-    bool write_data_[8] = {false};
+    bool write_data_[8] = {false,false,false,false,false,false,false,false};
     ec_pdo_entry_info_t channels_[8] = {
         {0x7000, 0x01, 1}, /* Output */
         {0x7010, 0x01, 1}, /* Output */
@@ -174,10 +174,10 @@ public:
     }
     
 private:
-    int cii_do_[8] = {-1};
-    int sii_do_[8] = {-1};
+    int cii_do_[8] = {-1,-1,-1,-1,-1,-1,-1,-1};
+    int sii_do_[8] = {-1,-1,-1,-1,-1,-1,-1,-1};
     // digital write values
-    bool write_data_[8] = {false};
+    bool write_data_[8] = {false,false,false,false,false,false,false,false};
     ec_pdo_entry_info_t channels_[8] = {
         {0x7000, 0x01, 1}, /* Output */
         {0x7010, 0x01, 1}, /* Output */

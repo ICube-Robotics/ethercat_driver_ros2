@@ -58,7 +58,7 @@ public:
         return true;
     }
 private:
-    int sii_ai_[2] = {-1};
+    int sii_ai_[2] = {-1,-1};
 
     ec_pdo_entry_info_t channels_[4] = {
     {0x3101, 0x01, 8}, /* Status */
@@ -123,7 +123,7 @@ public:
         return true;
     }
 private:
-    int sii_ai_[4] = {-1};
+    int sii_ai_[4] = {-1,-1,-1,-1};
 
     ec_pdo_entry_info_t channels_[44] = {
     {0x6000, 0x01, 1}, /* Underrange */
