@@ -64,7 +64,7 @@ public:
   hardware_interface::return_type write(const rclcpp::Time&, const rclcpp::Duration&) override;
 
 private:
-  std::vector<std::unordered_map<std::string, std::string>> getEcModuleParam(std::string xml);
+  std::vector<std::unordered_map<std::string, std::string>> getEcModuleParam(std::string & urdf, std::string component_name, std::string component_type);
 
   std::vector<std::shared_ptr<ethercat_interface::EcSlave>> ec_modules_;
   std::vector<std::unordered_map<std::string, std::string>> ec_module_parameters_;
