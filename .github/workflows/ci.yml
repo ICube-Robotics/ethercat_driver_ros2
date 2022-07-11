@@ -18,17 +18,17 @@ jobs:
       - name: Build Docker Image
         uses: docker/build-push-action@v2
         with:
-          tags: ethercat_driver_ros2:galactic
+          tags: ethercat_driver_ros2:humble
           file: .docker/Dockerfile
           push: false
 
       - name: Build
         uses: addnab/docker-run-action@v3
         with:
-          image: ethercat_driver_ros2:galactic
+          image: ethercat_driver_ros2:humble
           options: -v ${{github.workspace}}/:/ros/
           run: |
             cd /ros
-            . /opt/ros/galactic/setup.sh
+            . /opt/ros/humble/setup.sh
             rosdep install --ignore-src --from-paths . -y -r && \
             colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
