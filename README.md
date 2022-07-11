@@ -54,27 +54,22 @@ Here is an example of a `gpio` ressource built using 2 EtherCAT IO modules, wher
     <state_interface name="dig_output.2"/>
     <state_interface name="ana_input.1"/>
     <state_interface name="ana_input.2"/>
-    <param name="ec_component">
-        [ec_component]
-            [ec_module name="EL3104"]
-                [plugin]ethercat_plugins/Beckhoff_EL3104[/plugin]
-                [param name="alias"]0[/param]
-                [param name="position"]1[/param]
-                [param name="ai.1"]ana_input.1[/param]
-                [param name="ai.4"]ana_input.2[/param]
-            [/ec_module]
-            [ec_module name="EL2008"]
-                [plugin]ethercat_plugins/Beckhoff_EL2088[/plugin]
-                [param name="alias"]0[/param]
-                [param name="position"]2[/param]
-                [param name="do.4"]dig_output.2[/param]
-                [param name="do.6"]dig_output.1[/param]
-            [/ec_module]
-        [/ec_component]
-    </param>
+    <ec_module name="EL3104">
+        <plugin>ethercat_plugins/Beckhoff_EL3104</plugin>
+        <param name="alias">0</param>
+        <param name="position">1</param>
+        <param name="ai.1">ana_input.1</param>
+        <param name="ai.4">ana_input.2</param>
+    </ec_module>
+    <ec_module name="EL2008">
+        <plugin>ethercat_plugins/Beckhoff_EL2008</plugin>
+        <param name="alias">0</param>
+        <param name="position">2</param>
+        <param name="do.4">dig_output.2</param>
+        <param name="do.6">dig_output.1</param>
+    </ec_module>
 </gpio>
 ```
-**NOTE** : At the time of writing of the driver, the `xml` description of the robot was not available in the `Hardware Interface` thus the passing of a xml-like parameter string. This will replaced in the futur with standard `xml` description.
 
 **NOTE** : To send commands to `gpio` ressources, a generic controller was developed and can be found [here](https://github.com/mcbed/ros2_controllers/tree/gpio_controllers).
 
