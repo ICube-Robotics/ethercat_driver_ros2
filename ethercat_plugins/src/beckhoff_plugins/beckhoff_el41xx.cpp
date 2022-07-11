@@ -65,8 +65,8 @@ public:
         return true;
     }
 private:
-    int cii_ao_[4] = {-1};
-    int sii_ao_[4] = {-1};
+    int cii_ao_[4] = {-1,-1,-1,-1};
+    int sii_ao_[4] = {-1,-1,-1,-1};
 
     ec_pdo_entry_info_t channels_[4] = {
         {0x7000, 0x01, 16}, /* Analog output */
@@ -136,8 +136,8 @@ public :
         return true;
     }
 private:
-    int cii_ao_[2] = {-1};
-    int sii_ao_[2] = {-1};
+    int cii_ao_[2] = {-1,-1};
+    int sii_ao_[2] = {-1,-1};
 
     ec_pdo_entry_info_t channels_[2] = {
         {0x3001, 0x01, 16}, /* Analog Output */

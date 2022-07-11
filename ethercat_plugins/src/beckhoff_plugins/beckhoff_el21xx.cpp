@@ -76,10 +76,10 @@ public:
     }
 
 private:
-    int cii_do_[4] = {-1};
-    int sii_do_[4] = {-1};
+    int cii_do_[4] = {-1,-1,-1,-1};
+    int sii_do_[4] = {-1,-1,-1,-1};
     // digital write values
-    bool write_data_[4] = {false};
+    bool write_data_[4] = {false,false,false,false};
     ec_pdo_entry_info_t channels_[4] = {
         {0x7000, 0x01, 1}, /* Output */
         {0x7010, 0x01, 1}, /* Output */
