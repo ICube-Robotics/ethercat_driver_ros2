@@ -39,3 +39,9 @@ The list of currently supported EtherCAT modules and the available parameters. A
         5. `target_position`: target motor position
         6. `target_velocity`: target motor velocity
         7. `target_torque`: target motor torque
+
+## ATI
+- **Mini40**: Mini40 EtherCAT force/torque sensor
+    - parameters: 
+        1. `force.[x|y|z]`: force on [x|y|z]-axis
+        2. `torque.[x|y|z]`: torque on [x|y|z]-axis
