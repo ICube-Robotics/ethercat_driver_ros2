@@ -19,11 +19,11 @@
 namespace ethercat_plugins
 {
 
-class ATI_Mini40 : public ethercat_interface::EcSlave
+class ATI_FTSensor : public ethercat_interface::EcSlave
 {
 public:
-    ATI_Mini40() : EcSlave(0x00000732, 0x26483052) {}
-    virtual ~ATI_Mini40() {}
+    ATI_FTSensor() : EcSlave(0x00000732, 0x26483052) {}
+    virtual ~ATI_FTSensor() {}
     virtual void processData(size_t index, uint8_t* domain_address){
         if(sii_ft_[index] >= 0){
             double data = (double)EC_READ_S32(domain_address);
@@ -139,4 +139,4 @@ private:
 
 #include <pluginlib/class_list_macros.hpp>
 
-PLUGINLIB_EXPORT_CLASS(ethercat_plugins::ATI_Mini40, ethercat_interface::EcSlave)
+PLUGINLIB_EXPORT_CLASS(ethercat_plugins::ATI_FTSensor, ethercat_interface::EcSlave)
