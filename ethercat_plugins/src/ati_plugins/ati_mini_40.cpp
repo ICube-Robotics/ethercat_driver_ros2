@@ -27,7 +27,7 @@ public:
     virtual void processData(size_t index, uint8_t* domain_address){
         if(sii_ft_[index] >= 0){
             double data = (double)EC_READ_S32(domain_address);
-            state_interface_ptr_->at(sii_ft_[index]) = data;
+            state_interface_ptr_->at(sii_ft_[index]) = data/1e6 - data_offset_[index];
         }
     }
     virtual const ec_sync_info_t* syncs() { return &syncs_[0]; }
@@ -49,41 +49,61 @@ public:
         command_interface_ptr_ = command_interface;
         paramters_ = slave_paramters;
 
-        if(paramters_.find("force.x")!= paramters_.end()){
-            if(paramters_.find("state_interface/"+paramters_["force.x"]) != paramters_.end()){
-                sii_ft_[0] = std::stoi(paramters_["state_interface/"+paramters_["force.x"]]);
+        if(paramters_.find("force.x.state_interface")!= paramters_.end()){
+            if(paramters_.find("state_interface/"+paramters_["force.x.state_interface"]) != paramters_.end()){
+                sii_ft_[0] = std::stoi(paramters_["state_interface/"+paramters_["force.x.state_interface"]]);
             }
         }
-        if(paramters_.find("force.y")!= paramters_.end()){
-            if(paramters_.find("state_interface/"+paramters_["force.y"]) != paramters_.end()){
-                sii_ft_[1] = std::stoi(paramters_["state_interface/"+paramters_["force.y"]]);
+        if(paramters_.find("force.y.state_interface")!= paramters_.end()){
+            if(paramters_.find("state_interface/"+paramters_["force.y.state_interface"]) != paramters_.end()){
+                sii_ft_[1] = std::stoi(paramters_["state_interface/"+paramters_["force.y.state_interface"]]);
             }
         }
-        if(paramters_.find("force.z")!= paramters_.end()){
-            if(paramters_.find("state_interface/"+paramters_["force.z"]) != paramters_.end()){
-                sii_ft_[2] = std::stoi(paramters_["state_interface/"+paramters_["force.z"]]);
+        if(paramters_.find("force.z.state_interface")!= paramters_.end()){
+            if(paramters_.find("state_interface/"+paramters_["force.z.state_interface"]) != paramters_.end()){
+                sii_ft_[2] = std::stoi(paramters_["state_interface/"+paramters_["force.z.state_interface"]]);
             }
         }
-        if(paramters_.find("torque.x")!= paramters_.end()){
-            if(paramters_.find("state_interface/"+paramters_["torque.x"]) != paramters_.end()){
-                sii_ft_[3] = std::stoi(paramters_["state_interface/"+paramters_["torque.x"]]);
+        if(paramters_.find("torque.x.state_interface")!= paramters_.end()){
+            if(paramters_.find("state_interface/"+paramters_["torque.x.state_interface"]) != paramters_.end()){
+                sii_ft_[3] = std::stoi(paramters_["state_interface/"+paramters_["torque.x.state_interface"]]);
             }
         }
-        if(paramters_.find("torque.y")!= paramters_.end()){
-            if(paramters_.find("state_interface/"+paramters_["torque.y"]) != paramters_.end()){
-                sii_ft_[4] = std::stoi(paramters_["state_interface/"+paramters_["torque.y"]]);
+        if(paramters_.find("torque.y.state_interface")!= paramters_.end()){
+            if(paramters_.find("state_interface/"+paramters_["torque.y.state_interface"]) != paramters_.end()){
+                sii_ft_[4] = std::stoi(paramters_["state_interface/"+paramters_["torque.y.state_interface"]]);
             }
         }
-        if(paramters_.find("torque.z")!= paramters_.end()){
-            if(paramters_.find("state_interface/"+paramters_["torque.z"]) != paramters_.end()){
-                sii_ft_[5] = std::stoi(paramters_["state_interface/"+paramters_["torque.z"]]);
+        if(paramters_.find("torque.z.state_interface")!= paramters_.end()){
+            if(paramters_.find("state_interface/"+paramters_["torque.z.state_interface"]) != paramters_.end()){
+                sii_ft_[5] = std::stoi(paramters_["state_interface/"+paramters_["torque.z.state_interface"]]);
             }
+        }
+
+        if(paramters_.find("force.x.offset")!= paramters_.end()){
+            data_offset_[0] = std::stod(paramters_["force.x.offset"]);
+        }
+        if(paramters_.find("force.y.offset")!= paramters_.end()){
+            data_offset_[1] = std::stod(paramters_["force.y.offset"]);
+        }
+        if(paramters_.find("force.z.offset")!= paramters_.end()){
+            data_offset_[2] = std::stod(paramters_["force.z.offset"]);
+        }
+        if(paramters_.find("torque.x.offset")!= paramters_.end()){
+            data_offset_[3] = std::stod(paramters_["torque.x.offset"]);
+        }
+        if(paramters_.find("torque.y.offset")!= paramters_.end()){
+            data_offset_[4] = std::stod(paramters_["torque.y.offset"]);
+        }
+        if(paramters_.find("torque.z.offset")!= paramters_.end()){
+            data_offset_[5] = std::stod(paramters_["torque.z.offset"]);
         }
 
         return true;
     }
 private:
     int sii_ft_[6] = {-1,-1,-1,-1,-1,-1};
+    double data_offset_[6] = {0,0,0,0,0,0};
 
     ec_pdo_entry_info_t channels_[10] = {
         {0x7010, 0x01, 32}, /* Control 1 */

@@ -43,5 +43,7 @@ The list of currently supported EtherCAT modules and the available parameters. A
 ## ATI
 - **Mini40**: Mini40 EtherCAT force/torque sensor
     - parameters: 
-        1. `force.[x|y|z]`: force on [x|y|z]-axis
-        2. `torque.[x|y|z]`: torque on [x|y|z]-axis
+        1. `force.[x|y|z].state_interface`: `state_interface` name for force on [x|y|z]-axis
+        2. `force.[x|y|z].offset`: data offset for force on [x|y|z]-axis
+        3. `torque.[x|y|z].state_interface`: `state_interface` name for torque on [x|y|z]-axis
+        4. `torque.[x|y|z].offset`: data offset for torque on [x|y|z]-axis
