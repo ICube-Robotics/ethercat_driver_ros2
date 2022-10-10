@@ -39,3 +39,11 @@ The list of currently supported EtherCAT modules and the available parameters. A
         5. `target_position`: target motor position
         6. `target_velocity`: target motor velocity
         7. `target_torque`: target motor torque
+
+## ATI
+- **ATI_FTSensor**: ATI EtherCAT F/T Sensor
+    - parameters: 
+        1. `force.[x|y|z].state_interface`: `state_interface` name for force on [x|y|z]-axis
+        2. `force.[x|y|z].offset`: data offset for force on [x|y|z]-axis
+        3. `torque.[x|y|z].state_interface`: `state_interface` name for torque on [x|y|z]-axis
+        4. `torque.[x|y|z].offset`: data offset for torque on [x|y|z]-axis
