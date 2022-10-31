@@ -36,10 +36,10 @@ public:
         digital_inputs_[5] = ((data & 0b00100000) != 0); // bit 5
         digital_inputs_[6] = ((data & 0b01000000) != 0); // bit 6
         digital_inputs_[7] = ((data & 0b10000000) != 0); // bit 7
-        for(auto i=0ul;i<8;i++){
+        for(auto i=0ul;i<8;i++) {
             if(sii_di_[i] >= 0) {
                 state_interface_ptr_->at(sii_di_[i]) = digital_inputs_[i];
-	    }
+            }
         }
     }
     virtual const ec_sync_info_t* syncs() { return &syncs_[0]; }
@@ -61,11 +61,11 @@ public:
         command_interface_ptr_ = command_interface;
         paramters_ = slave_paramters;
 
-        for(auto index = 0ul; index < 8; index++){
-            if(paramters_.find("di."+std::to_string(index))!= paramters_.end()){
+        for(auto index = 0ul; index < 8; index++) {
+            if(paramters_.find("di."+std::to_string(index))!= paramters_.end()) {
                 if(paramters_.find("state_interface/"+paramters_["di."+std::to_string(index)]) != paramters_.end()) {
                     sii_di_[index] = std::stoi(paramters_["state_interface/"+paramters_["di."+std::to_string(index)]]);
-		}
+                }
             }
         }
         return true;

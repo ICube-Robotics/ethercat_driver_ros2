@@ -27,12 +27,13 @@ public:
     virtual void processData(size_t index, uint8_t* domain_address){
         uint8_t digital_out_;
 	    digital_out_ = 0;
-        for(auto i=0ul;i<8;i++){
-            if(cii_do_[i] >= 0){
-                if(!std::isnan(command_interface_ptr_->at(cii_do_[i]))){
+        for(auto i=0ul;i<8;i++) {
+            if(cii_do_[i] >= 0) {
+                if(!std::isnan(command_interface_ptr_->at(cii_do_[i]))) {
                     write_data_[i] = (command_interface_ptr_->at(cii_do_[i])) ? true : false;
-                    if(sii_do_[i] >= 0)
+                    if(sii_do_[i] >= 0) {
                         state_interface_ptr_->at(sii_do_[i]) = command_interface_ptr_->at(cii_do_[i]);
+                    }
                 }
             }
         }
@@ -68,12 +69,14 @@ public:
         command_interface_ptr_ = command_interface;
         paramters_ = slave_paramters;
 
-        for(auto index = 0ul; index < 8; index++){
-            if(paramters_.find("do."+std::to_string(index))!= paramters_.end()){
-                if(paramters_.find("command_interface/"+paramters_["do."+std::to_string(index)]) != paramters_.end())
+        for(auto index = 0ul; index < 8; index++) {
+            if(paramters_.find("do."+std::to_string(index))!= paramters_.end()) {
+                if(paramters_.find("command_interface/"+paramters_["do."+std::to_string(index)]) != paramters_.end()) {
                     cii_do_[index] = std::stoi(paramters_["command_interface/"+paramters_["do."+std::to_string(index)]]);
-                if(paramters_.find("state_interface/"+paramters_["do."+std::to_string(index)]) != paramters_.end())
+                }
+                if(paramters_.find("state_interface/"+paramters_["do."+std::to_string(index)]) != paramters_.end()) {
                     sii_do_[index] = std::stoi(paramters_["state_interface/"+paramters_["do."+std::to_string(index)]]);
+                }
             }
         }
         return true;
