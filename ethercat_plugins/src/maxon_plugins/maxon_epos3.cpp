@@ -43,8 +43,8 @@ public:
                   mode_of_operation_display_ == MODE_CYCLIC_SYNC_POSITION ||
                   mode_of_operation_display_ == MODE_PROFILED_POSITION ||
                   mode_of_operation_display_ == MODE_INTERPOLATED_POSITION ))
-                    target_torque_ = command_interface_ptr_->at(cii_target_position);
-                EC_WRITE_S32(domain_address, target_torque_);
+                    target_position_ = command_interface_ptr_->at(cii_target_position);
+                EC_WRITE_S32(domain_address, target_position_);
                 break;
             case 2:
                 if(isTargetVelocityRequired && (
