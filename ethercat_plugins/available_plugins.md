@@ -47,3 +47,9 @@ The list of currently supported EtherCAT modules and the available parameters. A
         2. `force.[x|y|z].offset`: data offset for force on [x|y|z]-axis
         3. `torque.[x|y|z].state_interface`: `state_interface` name for torque on [x|y|z]-axis
         4. `torque.[x|y|z].offset`: data offset for torque on [x|y|z]-axis
+### Advantech
+- **AMAX-5074**: EtherCAT Coupler with ID switch
+- **AMAX-5051**: Digital Input Module, 8-channel digital input, 24 V DC, 4 ms.
+    - parameters: `di.1..8` - requested digital input
+- **AMAX-5056**: Sink-type Digital Ouput Module, 8-channel digital output, 24 V DC, 0.3 A.
+    - parameters: `do.1..8` - requested digital output
