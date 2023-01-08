@@ -5,6 +5,7 @@
 The proposed development builds upon the [IgH EtherCAT Master](https://etherlab.org/en/ethercat/). Installation steps are summarized here:
 ```shell
 $ git clone https://gitlab.com/etherlab.org/ethercat.git
+$ cd ethercat
 $ git checkout stable-1.5
 ```
 ```shell
