@@ -9,7 +9,6 @@ $ cd ethercat
 $ git checkout stable-1.5
 ```
 ```shell
-$ cd ethercat
 $ ./bootstrap # to create the configure script, if downloaded from the repository
 
 $ ./configure --prefix=/usr/local/etherlab  --disable-8139too --enable-generic # Ethernet driver e1000e not supported for kernels 4.X
