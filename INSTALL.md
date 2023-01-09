@@ -5,10 +5,10 @@
 The proposed development builds upon the [IgH EtherCAT Master](https://etherlab.org/en/ethercat/). Installation steps are summarized here:
 ```shell
 $ git clone https://gitlab.com/etherlab.org/ethercat.git
+$ cd ethercat
 $ git checkout stable-1.5
 ```
 ```shell
-$ cd ethercat
 $ ./bootstrap # to create the configure script, if downloaded from the repository
 
 $ ./configure --prefix=/usr/local/etherlab  --disable-8139too --enable-generic # Ethernet driver e1000e not supported for kernels 4.X
@@ -17,8 +17,9 @@ $ sudo make modules_install install
 $ sudo depmod
 $ sudo ln -s /usr/local/etherlab/bin/ethercat /usr/bin/
 $ sudo ln -s /usr/local/etherlab/etc/init.d/ethercat /etc/init.d/ethercat
+$ sudo mkdir -p /etc/sysconfig
 $ sudo cp /usr/local/etherlab/etc/sysconfig/ethercat /etc/sysconfig/ethercat
-$ sudo echo KERNEL==\"EtherCAT[0-9]*\", MODE=\"0664\", GROUP=\"ecusers\" > /etc/udev/rules.d/99-EtherCAT.rules
+$ sudo bash -c "echo KERNEL==\"EtherCAT[0-9]*\", MODE=\"0664\", GROUP=\"ecusers\" > /etc/udev/rules.d/99-EtherCAT.rules"
 
 $ sudo vi /etc/sysconfig/ethercat
 ```
