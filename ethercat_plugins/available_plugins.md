@@ -53,3 +53,11 @@ The list of currently supported EtherCAT modules and the available parameters. A
     - parameters: `di.1..8` - requested digital input
 - **AMAX-5056**: Sink-type Digital Ouput Module, 8-channel digital output, 24 V DC, 0.3 A.
     - parameters: `do.1..8` - requested digital output
+    
+### Omron
+
+- **Omron_NX_ECC201_NX_ID5442**: Omron EtherCAT Coupler NX_ECC201 with Input module NX_ID5442.
+- **Omron_NX_ECC201_NX_OD5256**: Omron EtherCAT Coupler NX_ECC201 with Output module NX_OD5256.
+- **Omron_NX_ECC202_NX_ID5142_1**: Omron EtherCAT Coupler NX_ECC202 with Input module NX_ID5142_1.
+- **Omron_NX_ECC202_NX_OD5256**: Omron EtherCAT Coupler NX_ECC202 with Output module NX_OD5256.
+    

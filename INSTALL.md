@@ -1,5 +1,5 @@
 ## Installation
-***Required setup : Ubuntu 20.04 LTS***
+***Required setup : Ubuntu 22.04 LTS***
 
 ### 1. Installing EtherLab
 The proposed development builds upon the [IgH EtherCAT Master](https://etherlab.org/en/ethercat/). Installation steps are summarized here:
