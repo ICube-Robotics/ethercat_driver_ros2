@@ -52,54 +52,10 @@ public:
 private:
 
     ec_pdo_entry_info_t channels_[40] = {
-        {0x0000, 0x00, 1}, /* Gap */
-        {0x7000, 0x02, 1}, /* Enable latch extern on positive edge */
-        {0x7000, 0x03, 1}, /* Set counter */
-        {0x7000, 0x04, 1}, /* Enable latch extern on negative edge */
-        {0x0000, 0x00, 4}, /* Gap */
-        {0x0000, 0x00, 8}, /* Gap */
-        {0x7000, 0x11, 16}, /* Set counter value */
-        {0x7010, 0x01, 1}, /* Enable */
-        {0x7010, 0x02, 1}, /* Reset */
-        {0x7010, 0x03, 1}, /* Reduce torque */
-        {0x0000, 0x00, 5}, /* Gap */
-        {0x0000, 0x00, 8}, /* Gap */
-        {0x7010, 0x21, 16}, /* Velocity */
-        {0x0000, 0x00, 1}, /* Gap */
-        {0x6000, 0x02, 1}, /* Latch extern valid */
-        {0x6000, 0x03, 1}, /* Set counter done */
-        {0x6000, 0x04, 1}, /* Counter underflow */
-        {0x6000, 0x05, 1}, /* Counter overflow */
-        {0x0000, 0x00, 3}, /* Gap */
-        {0x0000, 0x00, 4}, /* Gap */
-        {0x6000, 0x0d, 1}, /* Status of extern latch */
-        {0x6000, 0x0e, 1}, /* Sync error */
-        {0x0000, 0x00, 1}, /* Gap */
-        {0x6000, 0x10, 1}, /* TxPDO Toggle */
-        {0x6000, 0x11, 16}, /* Counter value */
-        {0x6000, 0x12, 16}, /* Latch value */
-        {0x6010, 0x01, 1}, /* Ready to enable */
-        {0x6010, 0x02, 1}, /* Ready */
-        {0x6010, 0x03, 1}, /* Warning */
-        {0x6010, 0x04, 1}, /* Error */
-        {0x6010, 0x05, 1}, /* Moving positive */
-        {0x6010, 0x06, 1}, /* Moving negative */
-        {0x6010, 0x07, 1}, /* Torque reduced */
-        {0x0000, 0x00, 1}, /* Gap */
-        {0x0000, 0x00, 3}, /* Gap */
-        {0x6010, 0x0c, 1}, /* Digital input 1 */
-        {0x6010, 0x0d, 1}, /* Digital input 2 */
-        {0x6010, 0x0e, 1}, /* Sync error */
-        {0x0000, 0x00, 1}, /* Gap */
-        {0x6010, 0x10, 1}, /* TxPDO Toggle */
+        
     };
     ec_pdo_info_t pdos_[5] = {
-        {0x1600, 7, channels_ + 0}, /* ENC RxPDO-Map Control compact */
-        {0x1602, 5, channels_ + 7}, /* STM RxPDO-Map Control */
-        {0x1604, 1, channels_ + 12}, /* STM RxPDO-Map Velocity */
-        {0x1a00, 13, channels_ + 13}, /* ENC TxPDO-Map Status compact */
-        {0x1a03, 14, channels_ + 26}, /* STM TxPDO-Map Status */
-
+        
     };
     ec_sync_info_t syncs_[5] = {
         {0, EC_DIR_OUTPUT, 0, NULL, EC_WD_DISABLE},
