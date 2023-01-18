@@ -51,17 +51,41 @@ public:
     
 private:
 
-    ec_pdo_entry_info_t channels_[40] = {
-        
+    ec_pdo_entry_info_t channels_[20] = {
+        // 0x1602, stepper control (0)
+        {0x7010, 0x01, 1},    // Enable
+        {0x7010, 0x02, 1},    // Reset 
+        {0x7010, 0x03, 1},    // Reduce torque 
+        {0x0000, 0x00, 5},    //   spacer 
+        {0x0000, 0x00, 8},    //   spacer 
+        // 0x1603, stepper pos (5)
+        {0x7010, 0x11, 32},   // Target position
+        // 0x1a03, stepper status (6)
+        {0x6010, 0x01, 1},    // Ready to enable 
+        {0x6010, 0x02, 1},    // Ready 
+        {0x6010, 0x03, 1},    // Warning 
+        {0x6010, 0x04, 1},    // Error 
+        {0x6010, 0x05, 1},    // Moving positive 
+        {0x6010, 0x06, 1},    // Moving negative 
+        {0x6010, 0x07, 1},    // Torque reduced 
+        {0x0000, 0x00, 1},    //   spacer 
+        {0x0000, 0x00, 3},    //   spacer
+        {0x6010, 0x0c, 1},    // Digital input 1 
+        {0x6010, 0x0d, 1},    // Digital input 2 
+        {0x1c32, 0x20, 1},    // Sync error 
+        {0x0000, 0x00, 1},    //   spacer 
+        {0x1803, 0x09, 1},    // *** unknown ***
     };
     ec_pdo_info_t pdos_[5] = {
-        
+        {0x1602, 5, channels_ + 0},
+        {0x1603, 1, channels_ + 5},
+        {0x1a03, 14, channels_ + 6},
     };
     ec_sync_info_t syncs_[5] = {
         {0, EC_DIR_OUTPUT, 0, NULL, EC_WD_DISABLE},
         {1, EC_DIR_INPUT, 0, NULL, EC_WD_DISABLE},
-        {2, EC_DIR_OUTPUT, 3, pdos_ + 0, EC_WD_DISABLE},
-        {3, EC_DIR_INPUT, 2, pdos_ + 3, EC_WD_DISABLE},
+        {2, EC_DIR_OUTPUT, 2, pdos_ + 0, EC_WD_DISABLE},
+        {3, EC_DIR_INPUT, 1, pdos_ + 2, EC_WD_DISABLE},
         {0xff}
 
     };
