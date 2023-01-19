@@ -4,14 +4,22 @@
 ### 1. Installing EtherLab
 The proposed development builds upon the [IgH EtherCAT Master](https://etherlab.org/en/ethercat/). Installation steps are summarized here:
 ```shell
+$ sudo apt-get update
+$ sudo apt-get upgrade
+$ sudo apt install git
 $ git clone https://gitlab.com/etherlab.org/ethercat.git
 $ cd ethercat
 $ git checkout stable-1.5
-```
-```shell
-$ ./bootstrap # to create the configure script, if downloaded from the repository
-
-$ ./configure --prefix=/usr/local/etherlab  --disable-8139too --enable-generic # Ethernet driver e1000e not supported for kernels 4.X
+$ sudo apt-get install autoconf
+$ sudo apt-get install libtool
+$ sudo apt-get install pkg-config
+$ sudo apt-get install make
+$ sudo apt-get install build-essential
+$ sudo apt-get install net-tools
+$ sudo rm /usr/bin/ethercat
+$ sudo rm /etc/init.d/ethercat
+$ ./bootstrap  # to create the configure script, if downloaded from the repository
+$ ./configure --prefix=/usr/local/etherlab  --disable-8139too --enable-generic
 $ make all modules
 $ sudo make modules_install install
 $ sudo depmod
@@ -19,9 +27,16 @@ $ sudo ln -s /usr/local/etherlab/bin/ethercat /usr/bin/
 $ sudo ln -s /usr/local/etherlab/etc/init.d/ethercat /etc/init.d/ethercat
 $ sudo mkdir -p /etc/sysconfig
 $ sudo cp /usr/local/etherlab/etc/sysconfig/ethercat /etc/sysconfig/ethercat
+$ sudo groupadd ecusers
+$ sudo usermod -a -G ecusers ${USER}
 $ sudo bash -c "echo KERNEL==\"EtherCAT[0-9]*\", MODE=\"0664\", GROUP=\"ecusers\" > /etc/udev/rules.d/99-EtherCAT.rules"
-
+```
+```shell
 $ sudo vi /etc/sysconfig/ethercat
+```
+or
+```shell
+$ sudo gedit /etc/sysconfig/ethercat # If using ubuntu desktop
 ```
 In the configuration file specify the mac address of the network card to be used and its driver
 ```shell
@@ -33,9 +48,19 @@ Now you can start the EtherCAT master:
 ```shell
 $ sudo /etc/init.d/ethercat start
 ```
+it should print
+```shell
+Starting EtherCAT master 1.5.2  done
+```
+
 Make sure your current user is member of `ecusers` and check connected slaves:
 ```shell
+$ sudo chmod 777 /dev/EtherCAT0
 $ ethercat slaves
+```
+It should print information of connected slave device. Example,
+```shell
+0  2:0  PREOP  +  NX-ECC201 EtherCAT coupler V1.2
 ```
 
 ### 2. Building `ethercat_driver_ros2`
