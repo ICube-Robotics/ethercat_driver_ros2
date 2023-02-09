@@ -33,12 +33,6 @@ The list of currently supported EtherCAT modules and the available parameters. A
 - **EPOS3**: EPOS3 70/10 EtherCAT, digital positioning controller, 10 A, 11 - 70 VDC
     - parameters:
         1. `mode_of_operation`: see [EPOS3 documentation](https://maxonjapan.com/wp-content/uploads/manual/epos/EPOS3_EtherCAT_Firmware_Specification_En.pdf) -> Table 8-116
-        2. `motor_position`: current motor position
-        3. `motor_velocity`: current motor velocity
-        4. `motor_torque`: current motor torque
-        5. `target_position`: target motor position
-        6. `target_velocity`: target motor velocity
-        7. `target_torque`: target motor torque
 
 ## ATI
 - **ATI_FTSensor**: ATI EtherCAT F/T Sensor
