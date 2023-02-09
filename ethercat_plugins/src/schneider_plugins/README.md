@@ -1,4 +1,4 @@
-# URDF, exmaple
+# URDF, example
 ```xml
 <?xml version="1.0" ?>
 
@@ -70,7 +70,7 @@ def generate_launch_description():
         arguments=['forward_velocity_controller'],
         output='screen',
     )
-  
+
     # Create the launch description and populate
     ld = LaunchDescription()
 

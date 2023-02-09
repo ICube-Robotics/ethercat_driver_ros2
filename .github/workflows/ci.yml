@@ -32,3 +32,16 @@ jobs:
             . /opt/ros/humble/setup.sh
             rosdep install --ignore-src --from-paths . -y -r && \
             colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
+
+      - name: Tests
+        uses: addnab/docker-run-action@v3
+        with:
+          image: ethercat_driver_ros2:humble
+          options: -v ${{github.workspace}}/:/ros/
+          run: |
+            cd /ros
+            . /opt/ros/humble/setup.sh
+            rosdep install --ignore-src --from-paths . -y -r && \
+            colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
+            colcon test
+            colcon test-result

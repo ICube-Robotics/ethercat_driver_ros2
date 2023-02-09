@@ -15,6 +15,11 @@
 #ifndef ETHERCAT_DRIVER__ETHERCAT_DRIVER_HPP_
 #define ETHERCAT_DRIVER__ETHERCAT_DRIVER_HPP_
 
+#include <unordered_map>
+#include <memory>
+#include <string>
+#include <vector>
+#include <pluginlib/class_loader.hpp>
 #include "hardware_interface/handle.hpp"
 #include "hardware_interface/hardware_info.hpp"
 #include "hardware_interface/system_interface.hpp"
@@ -25,9 +30,6 @@
 #include "ethercat_driver/visibility_control.h"
 #include "ethercat_interface/ec_slave.hpp"
 #include "ethercat_interface/ec_master.hpp"
-#include <pluginlib/class_loader.hpp>
-#include <unordered_map>
-
 
 using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
@@ -58,13 +60,14 @@ public:
   CallbackReturn on_deactivate(const rclcpp_lifecycle::State & previous_state) override;
 
   ETHERCAT_DRIVER_PUBLIC
-  hardware_interface::return_type read(const rclcpp::Time&, const rclcpp::Duration&) override;
+  hardware_interface::return_type read(const rclcpp::Time &, const rclcpp::Duration &) override;
 
   ETHERCAT_DRIVER_PUBLIC
-  hardware_interface::return_type write(const rclcpp::Time&, const rclcpp::Duration&) override;
+  hardware_interface::return_type write(const rclcpp::Time &, const rclcpp::Duration &) override;
 
 private:
-  std::vector<std::unordered_map<std::string, std::string>> getEcModuleParam(std::string & urdf, std::string component_name, std::string component_type);
+  std::vector<std::unordered_map<std::string, std::string>> getEcModuleParam(
+    std::string & urdf, std::string component_name, std::string component_type);
 
   std::vector<std::shared_ptr<ethercat_interface::EcSlave>> ec_modules_;
   std::vector<std::unordered_map<std::string, std::string>> ec_module_parameters_;
@@ -76,13 +79,12 @@ private:
   std::vector<std::vector<double>> hw_sensor_states_;
   std::vector<std::vector<double>> hw_gpio_states_;
 
-  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{"ethercat_interface", "ethercat_interface::EcSlave"};
+  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{
+    "ethercat_interface", "ethercat_interface::EcSlave"};
 
   int control_frequency_;
   ethercat_interface::EcMaster master_;
-
 };
-
 }  // namespace ethercat_driver
 
 #endif  // ETHERCAT_DRIVER__ETHERCAT_DRIVER_HPP_

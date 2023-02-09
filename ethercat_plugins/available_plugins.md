@@ -26,7 +26,7 @@ The list of currently supported EtherCAT modules and the available parameters. A
 - **Beckhoff_EL5101**: EtherCAT Terminal, 1-channel encoder interface, incremental, 5 V DC (DIFF RS422, TTL), 1 MHz.
     - parameters:
         1. `encoder_position` - current encoder position
-        2. `convertion_factor` - encoder tic to unit convertion factor
+        2. `convertion_factor` - encoder tic to unit conversion factor
         3. `encoder_reset` - reset encoder counting (reset on 0->1 switch)
 
 ## Maxon
@@ -36,7 +36,7 @@ The list of currently supported EtherCAT modules and the available parameters. A
 
 ## ATI
 - **ATI_FTSensor**: ATI EtherCAT F/T Sensor
-    - parameters: 
+    - parameters:
         1. `force.[x|y|z].state_interface`: `state_interface` name for force on [x|y|z]-axis
         2. `force.[x|y|z].offset`: data offset for force on [x|y|z]-axis
         3. `torque.[x|y|z].state_interface`: `state_interface` name for torque on [x|y|z]-axis
@@ -45,16 +45,16 @@ The list of currently supported EtherCAT modules and the available parameters. A
 - **AMAX-5074**: EtherCAT Coupler with ID switch
 - **AMAX-5051**: Digital Input Module, 8-channel digital input, 24 V DC, 4 ms.
     - parameters: `di.1..8` - requested digital input
-- **AMAX-5056**: Sink-type Digital Ouput Module, 8-channel digital output, 24 V DC, 0.3 A.
+- **AMAX-5056**: Sink-type Digital Output Module, 8-channel digital output, 24 V DC, 0.3 A.
     - parameters: `do.1..8` - requested digital output
-    
+
 ### Omron
 
 - **Omron_NX_ECC201_NX_ID5442**: Omron EtherCAT Coupler NX_ECC201 with Input module NX_ID5442.
 - **Omron_NX_ECC201_NX_OD5256**: Omron EtherCAT Coupler NX_ECC201 with Output module NX_OD5256.
 - **Omron_NX_ECC202_NX_ID5142_1**: Omron EtherCAT Coupler NX_ECC202 with Input module NX_ID5142_1.
 - **Omron_NX_ECC202_NX_OD5256**: Omron EtherCAT Coupler NX_ECC202 with Output module NX_OD5256.
-    
+
 ### Schneider Electric
 
 - **Schneider_ATV320**: Schneider Electric Variable frequency drive. Coupled with VW3A3601 communication card.

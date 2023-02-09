@@ -1,4 +1,4 @@
-// Copyright 2022 ICUBE Laboratory, University of Strasbourg
+// Copyright 2023 ICUBE Laboratory, University of Strasbourg
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,22 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <gtest/gtest.h>
+#include <memory>
+
+#include <pluginlib/class_loader.hpp>
 #include "ethercat_interface/ec_slave.hpp"
-#include "ethercat_plugins/commondefs.hpp"
 
-namespace ethercat_plugins
+TEST(TestLoadSchneider_ATV320, load_ec_module)
 {
-
-class Beckhoff_EK1100 : public ethercat_interface::EcSlave
-{
-public:
-  Beckhoff_EK1100()
-  : EcSlave(0x00000002, 0x044c2c52) {}
-  virtual ~Beckhoff_EK1100() {}
-};
-
-}  // namespace ethercat_plugins
-
-#include <pluginlib/class_list_macros.hpp>
-
-PLUGINLIB_EXPORT_CLASS(ethercat_plugins::Beckhoff_EK1100, ethercat_interface::EcSlave)
+  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{
+    "ethercat_interface", "ethercat_interface::EcSlave"};
+  ASSERT_NO_THROW(ec_loader_.createSharedInstance("ethercat_plugins/Schneider_ATV320"));
+}

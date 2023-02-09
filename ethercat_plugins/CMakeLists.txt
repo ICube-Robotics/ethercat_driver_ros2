@@ -44,6 +44,8 @@ install(
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
+  find_package(pluginlib REQUIRED)
+  find_package(ethercat_interface REQUIRED)
   # the following line skips the linter which checks for copyrights
   # uncomment the line when a copyright and license is not present in all source files
   #set(ament_cmake_copyright_FOUND TRUE)
@@ -51,6 +53,67 @@ if(BUILD_TESTING)
   # uncomment the line when this package is not in a git repo
   #set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
+
+  # Test ADVANTECH EtherCAT modules
+  ament_add_gmock(
+    test_load_advantech_plugins
+    test/advantech_plugins/test_load_ec_modules.cpp
+  )
+  target_include_directories(test_load_advantech_plugins PRIVATE include)
+  ament_target_dependencies(test_load_advantech_plugins
+    pluginlib
+    ethercat_interface
+  )
+  # Test ATI EtherCAT modules
+  ament_add_gmock(
+    test_load_ati_plugins
+    test/ati_plugins/test_load_ec_modules.cpp
+  )
+  target_include_directories(test_load_ati_plugins PRIVATE include)
+  ament_target_dependencies(test_load_ati_plugins
+    pluginlib
+    ethercat_interface
+  )
+  # Test BECKHOFF EtherCAT modules
+  ament_add_gmock(
+    test_load_beckhoff_plugins
+    test/beckhoff_plugins/test_load_ec_modules.cpp
+  )
+  target_include_directories(test_load_beckhoff_plugins PRIVATE include)
+  ament_target_dependencies(test_load_beckhoff_plugins
+    pluginlib
+    ethercat_interface
+  )
+  # Test MAXON EtherCAT modules
+  ament_add_gmock(
+    test_load_maxon_plugins
+    test/maxon_plugins/test_load_ec_modules.cpp
+  )
+  target_include_directories(test_load_maxon_plugins PRIVATE include)
+  ament_target_dependencies(test_load_maxon_plugins
+    pluginlib
+    ethercat_interface
+  )
+  # Test OMRON EtherCAT modules
+  ament_add_gmock(
+    test_load_omron_plugins
+    test/omron_plugins/test_load_ec_modules.cpp
+  )
+  target_include_directories(test_load_omron_plugins PRIVATE include)
+  ament_target_dependencies(test_load_omron_plugins
+    pluginlib
+    ethercat_interface
+  )
+  # Test SCHNEIDER EtherCAT modules
+  ament_add_gmock(
+    test_load_schneider_plugins
+    test/schneider_plugins/test_load_ec_modules.cpp
+  )
+  target_include_directories(test_load_schneider_plugins PRIVATE include)
+  ament_target_dependencies(test_load_schneider_plugins
+    pluginlib
+    ethercat_interface
+  )
 endif()
 
 ament_export_include_directories(

@@ -5,7 +5,7 @@
 Implementation of a `Hardware Interface` for simple Ethercat module integration with [`ros2_control`](https://github.com/ros-controls/ros2_control) and building upon [IgH EtherCAT Master for Linux](https://etherlab.org/en/ethercat/).
 
 ## About
-[EtherCAT](https://www.ethercat.org/default.htm) provides applications with the capacity of reliable, real-time communication between systems and is therefore a common industrial standard. In order to simplify the development/deployment of new application using EtherCAT modules, the `ethercat_driver` allows to combine them with [`ros2_control`](https://github.com/ros-controls/ros2_control). This driver proposes a generic ways to parametrise and assemble `Hardware Interfaces` based on EtherCAT modules that can be defined using paramater files.
+[EtherCAT](https://www.ethercat.org/default.htm) provides applications with the capacity of reliable, real-time communication between systems and is therefore a common industrial standard. In order to simplify the development/deployment of new application using EtherCAT modules, the `ethercat_driver` allows to combine them with [`ros2_control`](https://github.com/ros-controls/ros2_control). This driver proposes a generic ways to parametrise and assemble `Hardware Interfaces` based on EtherCAT modules that can be defined using parameter files.
 
 ## Usage
 ### 1. Installation
@@ -37,15 +37,15 @@ In this driver, the EtherCAT Slave modules are defined as [Plugins](https://docs
 All modules have `alias` and `position` parameters that specify their address in the EtherCAT Bus topology. Additional parameters can be specified depending on the purpose of the module. A list of implemented modules and their parameters can be found [here](ethercat_plugins/available_plugins.md).
 
 #### Interfacing controllers with EtherCAT Slave modules
-In `ros2_control` the access to ressources within a system from a controller is done by means of [`Hardware Resources`](https://github.com/ros-controls/roadmap/blob/master/design_drafts/hardware_access.md). For this purpose `state_interface` and `command_interface` tags need to be defined and associated with the module functionalities.
+In `ros2_control` the access to resources within a system from a controller is done by means of [`Hardware Resources`](https://github.com/ros-controls/roadmap/blob/master/design_drafts/hardware_access.md). For this purpose `state_interface` and `command_interface` tags need to be defined and associated with the module functionalities.
 Also, for better understanding of the overall system, the pupropose of the used modules need to be clearly identified and sorted into the following types:
 - `<joint>`: logical component actuated by at least one actuator with read-write capacity.
 - `<sensor>`: logical component to read-only states from system.
 - `<gpio>`: logical component for general purpose IO systems.
 
-**NOTE**: These components have the possibility to include parameters that will be used to link paricular states and commands to the slave module input/outputs.
+**NOTE**: These components have the possibility to include parameters that will be used to link particular states and commands to the slave module input/outputs.
 
-Here is an example of a `gpio` ressource built using 2 EtherCAT IO modules, where digital commands are mapped on ports 4 and 6 of the digital output module and analog states are read from ports 1 and 4 of the analog input module:
+Here is an example of a `gpio` resource built using 2 EtherCAT IO modules, where digital commands are mapped on ports 4 and 6 of the digital output module and analog states are read from ports 1 and 4 of the analog input module:
 ```xml
 <gpio name="myGPIO">
     <command_interface name="dig_output.1"/>
@@ -71,7 +71,7 @@ Here is an example of a `gpio` ressource built using 2 EtherCAT IO modules, wher
 </gpio>
 ```
 
-**NOTE** : To send commands to `gpio` ressources, a generic controller was developed and can be found [here](https://github.com/mcbed/ros2_controllers/tree/gpio_controllers).
+**NOTE** : To send commands to `gpio` resources, a generic controller was developed and can be found [here](https://github.com/mcbed/ros2_controllers/tree/gpio_controllers).
 
 ## Acknowledgments
 Parts of the driver are based on the implementation of [`SimplECAT`](https://bitbucket.org/bsoe/simplecat/src/master/).
