@@ -159,26 +159,26 @@ public:
         if(paramters_.find("mode_of_operation")!= paramters_.end())
             mode_of_operation_ = std::stod(paramters_["mode_of_operation"]);
 
-        isPositionRequired = paramters_.find("motor_position")!= paramters_.end();
-        isVelocityRequired = paramters_.find("motor_velocity")!= paramters_.end();
-        isTorqueRequired = paramters_.find("motor_torque")!= paramters_.end();
+        isPositionRequired = paramters_.find("state_interface/position")!= paramters_.end();
+        isVelocityRequired = paramters_.find("state_interface/velocity")!= paramters_.end();
+        isTorqueRequired = paramters_.find("state_interface/effort")!= paramters_.end();
 
-        isTargetPositionRequired = paramters_.find("target_position")!= paramters_.end();
-        isTargetVelocityRequired = paramters_.find("target_velocity")!= paramters_.end();
-        isTargetTorqueRequired = paramters_.find("target_torque")!= paramters_.end();
+        isTargetPositionRequired = paramters_.find("command_interface/position")!= paramters_.end();
+        isTargetVelocityRequired = paramters_.find("command_interface/velocity")!= paramters_.end();
+        isTargetTorqueRequired = paramters_.find("command_interface/effort")!= paramters_.end();
 
         if(isPositionRequired)
-            sii_position = std::stoi(paramters_["state_interface/"+paramters_["motor_position"]]);
+            sii_position = std::stoi(paramters_["state_interface/position"]);
         if(isVelocityRequired)
-            sii_velocity = std::stoi(paramters_["state_interface/"+paramters_["motor_velocity"]]);
+            sii_velocity = std::stoi(paramters_["state_interface/velocity"]);
         if(isTorqueRequired)
-            sii_torque = std::stoi(paramters_["state_interface/"+paramters_["motor_torque"]]);
+            sii_torque = std::stoi(paramters_["state_interface/effort"]);
         if(isTargetPositionRequired)
-            cii_target_position = std::stoi(paramters_["command_interface/"+paramters_["target_position"]]);
+            cii_target_position = std::stoi(paramters_["command_interface/position"]);
         if(isTargetVelocityRequired)
-            cii_target_velocity = std::stoi(paramters_["command_interface/"+paramters_["target_velocity"]]);
+            cii_target_velocity = std::stoi(paramters_["command_interface/velocity"]);
         if(isTargetTorqueRequired)
-            cii_target_torque = std::stoi(paramters_["command_interface/"+paramters_["target_torque"]]);
+            cii_target_torque = std::stoi(paramters_["command_interface/effort"]);
 
         return true;
     }
