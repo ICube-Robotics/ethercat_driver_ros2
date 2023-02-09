@@ -61,3 +61,8 @@ The list of currently supported EtherCAT modules and the available parameters. A
 - **Omron_NX_ECC202_NX_ID5142_1**: Omron EtherCAT Coupler NX_ECC202 with Input module NX_ID5142_1.
 - **Omron_NX_ECC202_NX_OD5256**: Omron EtherCAT Coupler NX_ECC202 with Output module NX_OD5256.
     
+### Schneider Electric
+
+- **Schneider_ATV320**: Schneider Electric Variable frequency drive. Coupled with VW3A3601 communication card.
+    - state interfaces: `velocity`
+    - command interfaces: `velocity`

@@ -56,4 +56,7 @@
   <class name="ethercat_plugins/Omron_NX_ECC202_NX_OD5256" type="ethercat_plugins::Omron_NX_ECC202_NX_OD5256" base_class_type="ethercat_interface::EcSlave">
     <description>Omron NX ECC202 NX OD5256</description>
   </class>
+  <class name="ethercat_plugins/Schneider_ATV320" type="ethercat_plugins::Schneider_ATV320" base_class_type="ethercat_interface::EcSlave">
+    <description>Schneider Electric ATV320</description>
+  </class>
 </library>
