@@ -14,7 +14,6 @@
 
 #include "ethercat_interface/ec_slave.hpp"
 #include "ethercat_plugins/commondefs.hpp"
-#include <iostream>
 
 namespace ethercat_plugins
 {
@@ -22,8 +21,9 @@ namespace ethercat_plugins
 class Beckhoff_EK1100 : public ethercat_interface::EcSlave
 {
 public:
-    Beckhoff_EK1100() : EcSlave(0x00000002, 0x044c2c52) {}
-    virtual ~Beckhoff_EK1100() {}
+  Beckhoff_EK1100()
+  : EcSlave(0x00000002, 0x044c2c52) {}
+  virtual ~Beckhoff_EK1100() {}
 };
 
 }  // namespace ethercat_plugins

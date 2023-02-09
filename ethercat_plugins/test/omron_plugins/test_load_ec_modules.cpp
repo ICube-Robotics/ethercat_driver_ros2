@@ -20,24 +20,28 @@
 
 TEST(TestLoadOmron_NX_ECC201_NX_ID5442, load_ec_module)
 {
-  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{"ethercat_interface", "ethercat_interface::EcSlave"};
+  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{
+    "ethercat_interface", "ethercat_interface::EcSlave"};
   ASSERT_NO_THROW(ec_loader_.createSharedInstance("ethercat_plugins/Omron_NX_ECC201_NX_ID5442"));
 }
 
 TEST(TestLoadOmron_NX_ECC201_NX_OD5256, load_ec_module)
 {
-  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{"ethercat_interface", "ethercat_interface::EcSlave"};
+  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{
+    "ethercat_interface", "ethercat_interface::EcSlave"};
   ASSERT_NO_THROW(ec_loader_.createSharedInstance("ethercat_plugins/Omron_NX_ECC201_NX_OD5256"));
 }
 
 TEST(TestLoadOmron_NX_ECC202_NX_ID5142_1, load_ec_module)
 {
-  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{"ethercat_interface", "ethercat_interface::EcSlave"};
+  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{
+    "ethercat_interface", "ethercat_interface::EcSlave"};
   ASSERT_NO_THROW(ec_loader_.createSharedInstance("ethercat_plugins/Omron_NX_ECC202_NX_ID5142_1"));
 }
 
 TEST(TestLoadOmron_NX_ECC202_NX_OD5256, load_ec_module)
 {
-  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{"ethercat_interface", "ethercat_interface::EcSlave"};
+  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{
+    "ethercat_interface", "ethercat_interface::EcSlave"};
   ASSERT_NO_THROW(ec_loader_.createSharedInstance("ethercat_plugins/Omron_NX_ECC202_NX_OD5256"));
 }

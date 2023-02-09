@@ -20,66 +20,77 @@
 
 TEST(TestLoadBeckhoff_EK1100, load_ec_module)
 {
-  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{"ethercat_interface", "ethercat_interface::EcSlave"};
+  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{
+    "ethercat_interface", "ethercat_interface::EcSlave"};
   ASSERT_NO_THROW(ec_loader_.createSharedInstance("ethercat_plugins/Beckhoff_EK1100"));
 }
 
 TEST(TestLoadBeckhoff_EL1008, load_ec_module)
 {
-  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{"ethercat_interface", "ethercat_interface::EcSlave"};
+  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{
+    "ethercat_interface", "ethercat_interface::EcSlave"};
   ASSERT_NO_THROW(ec_loader_.createSharedInstance("ethercat_plugins/Beckhoff_EL1008"));
 }
 
 TEST(TestLoadBeckhoff_EL1018, load_ec_module)
 {
-  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{"ethercat_interface", "ethercat_interface::EcSlave"};
+  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{
+    "ethercat_interface", "ethercat_interface::EcSlave"};
   ASSERT_NO_THROW(ec_loader_.createSharedInstance("ethercat_plugins/Beckhoff_EL1018"));
 }
 
 TEST(TestLoadBeckhoff_EL2008, load_ec_module)
 {
-  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{"ethercat_interface", "ethercat_interface::EcSlave"};
+  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{
+    "ethercat_interface", "ethercat_interface::EcSlave"};
   ASSERT_NO_THROW(ec_loader_.createSharedInstance("ethercat_plugins/Beckhoff_EL2008"));
 }
 
 TEST(TestLoadBeckhoff_EL2088, load_ec_module)
 {
-  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{"ethercat_interface", "ethercat_interface::EcSlave"};
+  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{
+    "ethercat_interface", "ethercat_interface::EcSlave"};
   ASSERT_NO_THROW(ec_loader_.createSharedInstance("ethercat_plugins/Beckhoff_EL2088"));
 }
 
 TEST(TestLoadBeckhoff_EL2124, load_ec_module)
 {
-  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{"ethercat_interface", "ethercat_interface::EcSlave"};
+  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{
+    "ethercat_interface", "ethercat_interface::EcSlave"};
   ASSERT_NO_THROW(ec_loader_.createSharedInstance("ethercat_plugins/Beckhoff_EL2124"));
 }
 
 TEST(TestLoadBeckhoff_EL3102, load_ec_module)
 {
-  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{"ethercat_interface", "ethercat_interface::EcSlave"};
+  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{
+    "ethercat_interface", "ethercat_interface::EcSlave"};
   ASSERT_NO_THROW(ec_loader_.createSharedInstance("ethercat_plugins/Beckhoff_EL3102"));
 }
 
 TEST(TestLoadBeckhoff_EL3104, load_ec_module)
 {
-  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{"ethercat_interface", "ethercat_interface::EcSlave"};
+  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{
+    "ethercat_interface", "ethercat_interface::EcSlave"};
   ASSERT_NO_THROW(ec_loader_.createSharedInstance("ethercat_plugins/Beckhoff_EL3104"));
 }
 
 TEST(TestLoadBeckhoff_EL4132, load_ec_module)
 {
-  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{"ethercat_interface", "ethercat_interface::EcSlave"};
+  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{
+    "ethercat_interface", "ethercat_interface::EcSlave"};
   ASSERT_NO_THROW(ec_loader_.createSharedInstance("ethercat_plugins/Beckhoff_EL4132"));
 }
 
 TEST(TestLoadBeckhoff_EL4134, load_ec_module)
 {
-  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{"ethercat_interface", "ethercat_interface::EcSlave"};
+  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{
+    "ethercat_interface", "ethercat_interface::EcSlave"};
   ASSERT_NO_THROW(ec_loader_.createSharedInstance("ethercat_plugins/Beckhoff_EL4134"));
 }
 
 TEST(TestLoadBeckhoff_EL5101, load_ec_module)
 {
-  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{"ethercat_interface", "ethercat_interface::EcSlave"};
+  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{
+    "ethercat_interface", "ethercat_interface::EcSlave"};
   ASSERT_NO_THROW(ec_loader_.createSharedInstance("ethercat_plugins/Beckhoff_EL5101"));
 }
