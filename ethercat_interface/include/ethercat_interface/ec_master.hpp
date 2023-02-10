@@ -163,7 +163,7 @@ private:
 
   /** frequency to check for master or slave state change.
    *  state checked every frequency_ control loops */
-  uint32_t check_state_frequency_ = 100;
+  uint32_t check_state_frequency_ = 10;
 
   uint32_t interval_;
 };

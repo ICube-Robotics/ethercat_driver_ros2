@@ -27,7 +27,7 @@ public:
   /** Returns true if Epos3 has reached "operation enabled" state.
     *  The transition through the state machine is handled automatically. */
   bool initialized() const {return initialized_;}
-  virtual bool use_dc_sync() {return true;}
+  virtual int assign_activate_dc_sync() {return 0x300;}
 
   virtual void processData(size_t index, uint8_t * domain_address)
   {
