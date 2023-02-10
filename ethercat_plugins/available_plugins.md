@@ -60,3 +60,14 @@ The list of currently supported EtherCAT modules and the available parameters. A
 - **Schneider_ATV320**: Schneider Electric Variable frequency drive. Coupled with VW3A3601 communication card.
     - state interfaces: `velocity`
     - command interfaces: `velocity`
+
+## Technosoft
+- **IPOS**: Technosoft IPOS Family servo drive
+  - state interfaces: `position`, `velocity`, `effort`
+  - command interfaces: `position`, `velocity`
+  - parameters:
+      1. `mode_of_operation`:
+          - `MODE_CYCLIC_SYNC_POSITION`   = 8
+          - `MODE_CYCLIC_SYNC_VELOCITY`   = 9
+      2. `di.1..8` - requested digital input
+      3. `do.1..8` - requested digital output
