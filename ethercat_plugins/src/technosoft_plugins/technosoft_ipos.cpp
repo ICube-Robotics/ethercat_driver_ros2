@@ -44,10 +44,6 @@ public:
         EC_WRITE_U16(domain_address, control_word_);
         break;
       case 1:
-        // std::cout << "isTargetVelocityRequired: "
-        //           <<  isTargetPositionRequired
-        //           << ", mode_of_operation_display_: "
-        //           <<  (int) mode_of_operation_display_<< std::endl;
         if (isTargetPositionRequired && (
             mode_of_operation_display_ == MODE_CYCLIC_SYNC_POSITION ||
             mode_of_operation_display_ == MODE_PROFILED_POSITION ||
@@ -63,40 +59,49 @@ public:
         break;
       case 2:
         EC_WRITE_S8(domain_address, mode_of_operation_);
-        // std::cout << "mode of operation:" << (int) mode_of_operation_ << std::endl;
         break;
-
-      // case 3 and 4 : digital output
       case 3:
-        // std::cout << "isTargetVelocityRequired: "
-        //           <<  isTargetVelocityRequired
-        //           << ", mode_of_operation_display_: "
-        //           <<  (int) mode_of_operation_display_<< std::endl;
         if (isTargetVelocityRequired && (
             mode_of_operation_display_ == MODE_CYCLIC_SYNC_VELOCITY ||
             mode_of_operation_display_ == MODE_PROFILED_VELOCITY ))
         {
           if (!std::isnan(command_interface_ptr_->at(cii_target_velocity))) {
             target_velocity_ = command_interface_ptr_->at(cii_target_velocity);
-            // std::cout << "velocity: " <<  target_velocity_ << std::endl;
           }
         }
         EC_WRITE_S32(domain_address, target_velocity_);
         break;
       case 4:
+        digital_output_mask_ = 0;
+        for (auto i = 0ul; i < 8; i++) {
+          if (cii_do_[i] >= 0) {
+            digital_output_mask_ += ( 1 << i );
+          }
+        }
         EC_WRITE_U8(domain_address, digital_output_mask_);
         break;
       case 5:
-        if ((counter_ % 500) == 0) {
-          blink_ = !blink_;
+        digital_output_data_ = 0;
+        for (auto i = 0ul; i < 8; i++) {
+          if (cii_do_[i] >= 0) {
+            if (!std::isnan(command_interface_ptr_->at(cii_do_[i]))) {
+              write_data_[i] = (command_interface_ptr_->at(cii_do_[i])) ? true : false;
+              if (sii_do_[i] >= 0) {
+                state_interface_ptr_->at(sii_do_[i]) = command_interface_ptr_->at(cii_do_[i]);
+              }
+            }
+          }
         }
-        if (blink_) {
-          digital_output_ = 0b00000010;
-        } else {
-          digital_output_ = 0b00000001;
-        }
-        // std::cout << "digital_output: " << digital_output_ << std::endl;
-        EC_WRITE_U8(domain_address, digital_output_);
+        // bit masking to get individual input values
+        digital_output_data_ += ( write_data_[0] << 0 );  // bit 0
+        digital_output_data_ += ( write_data_[1] << 1 );  // bit 1
+        digital_output_data_ += ( write_data_[2] << 2 );  // bit 2
+        digital_output_data_ += ( write_data_[3] << 3 );  // bit 3
+        digital_output_data_ += ( write_data_[4] << 4 );  // bit 4
+        digital_output_data_ += ( write_data_[5] << 5 );  // bit 5
+        digital_output_data_ += ( write_data_[6] << 6 );  // bit 6
+        digital_output_data_ += ( write_data_[7] << 7 );  // bit 7
+        EC_WRITE_U8(domain_address, digital_output_data_);
         break;
       case 6:
         status_word_ = EC_READ_U16(domain_address);
@@ -125,17 +130,21 @@ public:
         }
         break;
       case 11:
-        digital_input_ = EC_READ_U8(domain_address);
-        /*std::cout << "digital inputs:" << " 0.:" << (bool)((digital_input_ & 0b00000001) != 0)
-                                       << " 1.:" << (bool)((digital_input_ & 0b00000010) != 0)
-                                       << " 2.:" << (bool)((digital_input_ & 0b00000100) != 0)
-                                       << " 3.:" << (bool)((digital_input_ & 0b00001000) != 0)
-                                       << " 4.:" << (bool)((digital_input_ & 0b00010000) != 0)
-                                       << " 5.:" << (bool)((digital_input_ & 0b00100000) != 0)
-                                       << " 6.:" << (bool)((digital_input_ & 0b01000000) != 0)
-                                       << " 7.:" << (bool)((digital_input_ & 0b10000000) != 0) << std::endl;*/
+        digital_input_data_ = EC_READ_U8(domain_address);
+        digital_inputs_[0] = ((digital_input_data_ & 0b00000001) != 0);    // bit 0
+        digital_inputs_[1] = ((digital_input_data_ & 0b00000010) != 0);    // bit 1
+        digital_inputs_[2] = ((digital_input_data_ & 0b00000100) != 0);    // bit 2
+        digital_inputs_[3] = ((digital_input_data_ & 0b00001000) != 0);    // bit 3
+        digital_inputs_[4] = ((digital_input_data_ & 0b00010000) != 0);    // bit 4
+        digital_inputs_[5] = ((digital_input_data_ & 0b00100000) != 0);    // bit 5
+        digital_inputs_[6] = ((digital_input_data_ & 0b01000000) != 0);    // bit 6
+        digital_inputs_[7] = ((digital_input_data_ & 0b10000000) != 0);    // bit 7
+        for (auto i = 0ul; i < 8; i++) {
+          if (sii_di_[i] >= 0) {
+            state_interface_ptr_->at(sii_di_[i]) = digital_inputs_[i];
+          }
+        }
         break;
-
       default:
         std::cout << "WARNING. IPOS pdo index = " << index << " out of range." << std::endl;
     }
@@ -197,7 +206,6 @@ public:
 
     isTargetPositionRequired = paramters_.find("command_interface/position") != paramters_.end();
     isTargetVelocityRequired = paramters_.find("command_interface/velocity") != paramters_.end();
-    isTargetTorqueRequired = paramters_.find("command_interface/effort") != paramters_.end();
 
     if (isPositionRequired) {
       sii_position = std::stoi(
@@ -220,9 +228,34 @@ public:
       cii_target_velocity = std::stoi(
         paramters_["command_interface/velocity"]);
     }
-    if (isTargetTorqueRequired) {
-      cii_target_torque = std::stoi(
-        paramters_["command_interface/effort"]);
+
+    for (auto index = 0ul; index < 8; index++) {
+      if (paramters_.find("di." + std::to_string(index + 1)) != paramters_.end()) {
+        if (paramters_.find(
+            "state_interface/" + paramters_["di." + std::to_string(index + 1)]) != paramters_.end())
+        {
+          sii_di_[index] = std::stoi(
+            paramters_["state_interface/" + paramters_["di." + std::to_string(index + 1)]]);
+        }
+      }
+    }
+
+    for (auto index = 0ul; index < 8; index++) {
+      if (paramters_.find("do." + std::to_string(index + 1)) != paramters_.end()) {
+        if (paramters_.find(
+            "command_interface/" + paramters_["do." + std::to_string(index + 1)]) !=
+          paramters_.end())
+        {
+          cii_do_[index] = std::stoi(
+            paramters_["command_interface/" + paramters_["do." + std::to_string(index + 1)]]);
+        }
+        if (paramters_.find(
+            "state_interface/" + paramters_["do." + std::to_string(index + 1)]) != paramters_.end())
+        {
+          sii_do_[index] = std::stoi(
+            paramters_["state_interface/" + paramters_["do." + std::to_string(index + 1)]]);
+        }
+      }
     }
 
     return true;
@@ -251,7 +284,6 @@ public:
 
   bool isTargetPositionRequired = false;
   bool isTargetVelocityRequired = false;
-  bool isTargetTorqueRequired = false;
 
   int sii_position;
   int sii_velocity;
@@ -263,10 +295,15 @@ public:
 
 private:
   uint32_t counter_ = 0;
-  uint8_t blink_ = 0;
   uint8_t digital_output_ = 0;  // write
-  uint8_t digital_output_mask_ = 3;  // 0b00000011 (use the 2 first general purpose digital out)
-  uint8_t digital_input_ = 0;  // read digital input
+  uint8_t digital_output_mask_ = 0;  // 0b00000011 (use the 2 first general purpose digital out)
+  uint8_t digital_input_data_ = 0;  // read digital input
+  uint8_t digital_output_data_ = 0; // write digital output
+  bool digital_inputs_[8];
+  int sii_di_[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
+  int cii_do_[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
+  int sii_do_[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
+  bool write_data_[8] = {false, false, false, false, false, false, false, false};
 
   ec_pdo_entry_info_t channels_[12] = {
     {0x6040, 0x00, 16},  /* 0. Control word */
@@ -284,7 +321,6 @@ private:
     {0x6061, 0x00, 8},  /* 8. Mode of operation display */
     {0x606c, 0x00, 32},  // 9. Velocity actual value  65536 = 1 encoder
                          // increment/sample (internal driver slow loop : 1khz )
-    /*{0x2045, 0x00, 16},*/  /* 9. Digital outputs state */
 
     {0x6077, 0x00, 16},  /* 10. Torque actual value */
     {0x208F, 0x02, 8}  /* 11. Digital inputs value */
