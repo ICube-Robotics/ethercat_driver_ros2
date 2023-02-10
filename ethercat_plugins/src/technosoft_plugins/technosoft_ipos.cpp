@@ -298,7 +298,7 @@ private:
   uint8_t digital_output_ = 0;  // write
   uint8_t digital_output_mask_ = 0;  // 0b00000011 (use the 2 first general purpose digital out)
   uint8_t digital_input_data_ = 0;  // read digital input
-  uint8_t digital_output_data_ = 0; // write digital output
+  uint8_t digital_output_data_ = 0;  // write digital output
   bool digital_inputs_[8];
   int sii_di_[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
   int cii_do_[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
