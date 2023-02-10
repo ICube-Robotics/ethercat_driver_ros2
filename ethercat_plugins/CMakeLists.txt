@@ -114,6 +114,16 @@ if(BUILD_TESTING)
     pluginlib
     ethercat_interface
   )
+  # Test TECHNOSOFT EtherCAT modules
+  ament_add_gmock(
+    test_load_technosoft_plugins
+    test/technosoft_plugins/test_load_ec_modules.cpp
+  )
+  target_include_directories(test_load_technosoft_plugins PRIVATE include)
+  ament_target_dependencies(test_load_technosoft_plugins
+    pluginlib
+    ethercat_interface
+  )
 endif()
 
 ament_export_include_directories(
