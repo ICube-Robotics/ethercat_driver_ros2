@@ -145,11 +145,23 @@ public:
           }
         }
         break;
+      case 12:
+        analog_inputs_[0] = EC_READ_S16(domain_address);
+        if (sii_ai_[0] >= 0) {
+          state_interface_ptr_->at(sii_ai_[0]) = analog_inputs_[0];
+        }
+        break;
+      case 13:
+        analog_inputs_[1] = EC_READ_S16(domain_address);
+        if (sii_ai_[1] >= 0) {
+          state_interface_ptr_->at(sii_ai_[1]) = analog_inputs_[1];
+        }
+        break;
       default:
         std::cout << "WARNING. IPOS pdo index = " << index << " out of range." << std::endl;
     }
     // CHECK FOR STATE CHANGE
-    if (index == 11) {  // if last entry  in domain
+    if (index == 13) {  // if last entry  in domain
       if (status_word_ != last_status_word_) {
         state_ = deviceState(status_word_);
         // status word change does not necessarily mean state change
@@ -258,6 +270,17 @@ public:
       }
     }
 
+    for (auto index = 0ul; index < 2; index++) {
+      if (paramters_.find("ai." + std::to_string(index + 1)) != paramters_.end()) {
+        if (paramters_.find(
+            "state_interface/" + paramters_["ai." + std::to_string(index + 1)]) != paramters_.end())
+        {
+          sii_ai_[index] = std::stoi(
+            paramters_["state_interface/" + paramters_["ai." + std::to_string(index + 1)]]);
+        }
+      }
+    }
+
     return true;
   }
 
@@ -300,12 +323,14 @@ private:
   uint8_t digital_input_data_ = 0;  // read digital input
   uint8_t digital_output_data_ = 0;  // write digital output
   bool digital_inputs_[8];
+  int16_t analog_inputs_[2];
   int sii_di_[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
+  int sii_ai_[2] = {-1, -1};
   int cii_do_[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
   int sii_do_[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
   bool write_data_[8] = {false, false, false, false, false, false, false, false};
 
-  ec_pdo_entry_info_t channels_[12] = {
+  ec_pdo_entry_info_t channels_[14] = {
     {0x6040, 0x00, 16},  /* 0. Control word */
     {0x607a, 0x00, 32},  /* 1. Target position */
 
@@ -323,25 +348,29 @@ private:
                          // increment/sample (internal driver slow loop : 1khz )
 
     {0x6077, 0x00, 16},  /* 10. Torque actual value */
-    {0x208F, 0x02, 8}  /* 11. Digital inputs value */
+    {0x208F, 0x02, 8},  /* 11. Digital inputs value */
+
+    {0x2046, 0x00, 16},  /* 12. analog input value */
+    {0x2047, 0x00, 16}  /* 13. analog input value */
   };
-  ec_pdo_info_t pdos_[6] = {
+  ec_pdo_info_t pdos_[7] = {
     {0x1600, 2, channels_ + 0},  /* RPDO0 Mapping */
     {0x1601, 2, channels_ + 2},  /* RPDO1 Mapping */
     {0x1602, 2, channels_ + 4},  /* RPDO1 Mapping */
     {0x1a00, 2, channels_ + 6},  /* TPDO0 Mapping */
     {0x1a01, 2, channels_ + 8},  /* TPDO1 Mapping */
     {0x1a02, 2, channels_ + 10},  /* TPDO2 Mapping */
+    {0x1a03, 2, channels_ + 12},  /* TPDO3 Mapping */
   };
   ec_sync_info_t syncs_[5] = {
     {0, EC_DIR_OUTPUT, 0, NULL, EC_WD_DISABLE},
     {1, EC_DIR_INPUT, 0, NULL, EC_WD_DISABLE},
     {2, EC_DIR_OUTPUT, 3, pdos_, EC_WD_ENABLE},
-    {3, EC_DIR_INPUT, 3, pdos_ + 3, EC_WD_DISABLE},
+    {3, EC_DIR_INPUT, 4, pdos_ + 3, EC_WD_DISABLE},
     {0xff}
   };
   DomainMap domains_ = {
-    {0, {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}}
+    {0, {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}}
   };
 //========================================================
 // Technosoft SPECIFIC
