@@ -18,9 +18,23 @@
 #include <pluginlib/class_loader.hpp>
 #include "ethercat_interface/ec_slave.hpp"
 
-TEST(TestLoadTechnosoft_IPOS, load_ec_module)
+TEST(TestLoadTechnosoft_IPOS_3604, load_ec_module)
 {
   pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{
     "ethercat_interface", "ethercat_interface::EcSlave"};
-  ASSERT_NO_THROW(ec_loader_.createSharedInstance("ethercat_plugins/Technosoft_IPOS"));
+  ASSERT_NO_THROW(ec_loader_.createSharedInstance("ethercat_plugins/Technosoft_IPOS_3604"));
+}
+
+TEST(TestLoadTechnosoft_IPOS_4808BX, load_ec_module)
+{
+  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{
+    "ethercat_interface", "ethercat_interface::EcSlave"};
+  ASSERT_NO_THROW(ec_loader_.createSharedInstance("ethercat_plugins/Technosoft_IPOS_4808BX"));
+}
+
+TEST(TestLoadTechnosoft_IPOS_4808SY, load_ec_module)
+{
+  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{
+    "ethercat_interface", "ethercat_interface::EcSlave"};
+  ASSERT_NO_THROW(ec_loader_.createSharedInstance("ethercat_plugins/Technosoft_IPOS_4808SY"));
 }

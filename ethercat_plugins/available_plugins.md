@@ -62,7 +62,7 @@ The list of currently supported EtherCAT modules and the available parameters. A
     - command interfaces: `velocity`
 
 ## Technosoft
-- **IPOS**: Technosoft IPOS Family servo drive
+- **Technosoft_IPOS_3604**: Technosoft IPOS 3604 series motor drive
   - state interfaces: `position`, `velocity`, `effort`
   - command interfaces: `position`, `velocity`
   - parameters:
@@ -71,3 +71,24 @@ The list of currently supported EtherCAT modules and the available parameters. A
           - `MODE_CYCLIC_SYNC_VELOCITY`   = 9
       2. `di.1..8` - requested digital input
       3. `do.1..8` - requested digital output
+      4. `ai.1..2` - requested analog input
+- **Technosoft_IPOS_4808BX**: Technosoft IPOS 4808BX series motor drive
+  - state interfaces: `position`, `velocity`, `effort`
+  - command interfaces: `position`, `velocity`
+  - parameters:
+      1. `mode_of_operation`:
+          - `MODE_CYCLIC_SYNC_POSITION`   = 8
+          - `MODE_CYCLIC_SYNC_VELOCITY`   = 9
+      2. `di.1..8` - requested digital input
+      3. `do.1..8` - requested digital output
+      4. `ai.1..2` - requested analog input
+- **Technosoft_IPOS_4808SY**: Technosoft IPOS 4808SY series motor drive
+  - state interfaces: `position`, `velocity`, `effort`
+  - command interfaces: `position`, `velocity`
+  - parameters:
+      1. `mode_of_operation`:
+          - `MODE_CYCLIC_SYNC_POSITION`   = 8
+          - `MODE_CYCLIC_SYNC_VELOCITY`   = 9
+      2. `di.1..8` - requested digital input
+      3. `do.1..8` - requested digital output
+      4. `ai.1..2` - requested analog input

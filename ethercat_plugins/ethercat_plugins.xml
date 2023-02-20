@@ -59,7 +59,13 @@
   <class name="ethercat_plugins/Schneider_ATV320" type="ethercat_plugins::Schneider_ATV320" base_class_type="ethercat_interface::EcSlave">
     <description>Schneider Electric ATV320</description>
   </class>
-  <class name="ethercat_plugins/Technosoft_IPOS" type="ethercat_plugins::Technosoft_IPOS" base_class_type="ethercat_interface::EcSlave">
-    <description>Technosoft IPOS series motor drive.</description>
+  <class name="ethercat_plugins/Technosoft_IPOS_3604" type="ethercat_plugins::Technosoft_IPOS_3604" base_class_type="ethercat_interface::EcSlave">
+    <description>Technosoft IPOS 3604 series motor drive.</description>
+  </class>
+  <class name="ethercat_plugins/Technosoft_IPOS_4808BX" type="ethercat_plugins::Technosoft_IPOS_4808BX" base_class_type="ethercat_interface::EcSlave">
+    <description>Technosoft IPOS 4808 BX series motor drive.</description>
+  </class>
+  <class name="ethercat_plugins/Technosoft_IPOS_4808SY" type="ethercat_plugins::Technosoft_IPOS_4808SY" base_class_type="ethercat_interface::EcSlave">
+    <description>Technosoft IPOS 4808 SY series motor drive.</description>
   </class>
 </library>

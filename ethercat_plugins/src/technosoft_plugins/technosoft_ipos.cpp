@@ -23,8 +23,8 @@ namespace ethercat_plugins
 class Technosoft_IPOS : public ethercat_interface::EcSlave
 {
 public:
-  Technosoft_IPOS()
-  : EcSlave(0x000001a3, 0x01ab46e5) {}
+  Technosoft_IPOS(uint32_t vendor_id, uint32_t product_id)
+  : EcSlave(vendor_id, product_id) {}
   virtual ~Technosoft_IPOS() {}
   /** Returns true if drive has reached "operation enabled" state.
    *  The transition through the state machine is handled automatically. */
@@ -431,8 +431,35 @@ private:
   DeviceState state_ = STATE_START;
   bool initialized_ = false;
 };
+
+class Technosoft_IPOS_3604 : public Technosoft_IPOS
+{
+public:
+  Technosoft_IPOS_3604()
+  : Technosoft_IPOS(0x000001a3, 0x01ab46e5) {}
+  virtual ~Technosoft_IPOS_3604() {}
+};
+
+class Technosoft_IPOS_4808BX : public Technosoft_IPOS
+{
+public:
+  Technosoft_IPOS_4808BX()
+  : Technosoft_IPOS(0x000001a3, 0x019f418d) {}
+  virtual ~Technosoft_IPOS_4808BX() {}
+};
+
+class Technosoft_IPOS_4808SY : public Technosoft_IPOS
+{
+public:
+  Technosoft_IPOS_4808SY()
+  : Technosoft_IPOS(0x000001a3, 0x019fd2e0) {}
+  virtual ~Technosoft_IPOS_4808SY() {}
+};
+
 }  // namespace ethercat_plugins
 
 #include <pluginlib/class_list_macros.hpp>
 
-PLUGINLIB_EXPORT_CLASS(ethercat_plugins::Technosoft_IPOS, ethercat_interface::EcSlave)
+PLUGINLIB_EXPORT_CLASS(ethercat_plugins::Technosoft_IPOS_3604, ethercat_interface::EcSlave)
+PLUGINLIB_EXPORT_CLASS(ethercat_plugins::Technosoft_IPOS_4808BX, ethercat_interface::EcSlave)
+PLUGINLIB_EXPORT_CLASS(ethercat_plugins::Technosoft_IPOS_4808SY, ethercat_interface::EcSlave)
