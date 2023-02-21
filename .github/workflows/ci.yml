@@ -11,12 +11,12 @@ jobs:
       - name: Prepare
         run: |
           mkdir -p ${{github.workspace}}/src
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
         with:
           path: src/ethercat_driver_ros2
 
       - name: Build Docker Image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v2
         with:
           tags: ethercat_driver_ros2:humble
           file: .docker/Dockerfile
@@ -45,3 +45,16 @@ jobs:
             colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
             colcon test
             colcon test-result
+
+      - name: Upload Tests to Artifacts
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: test-results
+          path: build/*/test_results/*/*.xml
+
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        if: always()
+        with:
+          files: build/*/test_results/*/*.xml
