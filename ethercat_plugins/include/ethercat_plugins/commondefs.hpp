@@ -48,6 +48,16 @@
 #define CALIBRATION_END_NOSUCESS    ((uint16_t) 0x08)
 #define WRITE_HOMING_POSITION       ((uint16_t) 0x09)
 
+#define CiA402D_TPDO_CONTROLWORD  ((uint16_t) 0x6040)
+#define CiA402D_TPDO_POSITION  ((uint16_t) 0x607a)
+#define CiA402D_TPDO_VELOCITY  ((uint16_t) 0x60ff)
+#define CiA402D_TPDO_EFFORT  ((uint16_t) 0x6071)
+#define CiA402D_TPDO_MODE_OF_OPERATION  ((uint16_t) 0x6060)
+
+#define CiA402D_RPDO_POSITION ((uint16_t) 0x6064)
+#define CiA402D_RPDO_STATUSWORD  ((uint16_t) 0x6041)
+#define CiA402D_RPDO_MODE_OF_OPERATION_DISPLAY  ((uint16_t) 0x6061)
+
 #include <map>
 #include <string>
 

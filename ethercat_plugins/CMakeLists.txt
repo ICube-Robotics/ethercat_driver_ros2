@@ -10,6 +10,7 @@ find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_ros REQUIRED)
 find_package(ethercat_interface REQUIRED)
 find_package(pluginlib REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 file(GLOB_RECURSE PLUGINS_SRC src/*/*.cpp)
 add_library(ethercat_plugins ${PLUGINS_SRC})
@@ -22,6 +23,8 @@ ament_target_dependencies(
   "ethercat_interface"
   "pluginlib"
 )
+
+target_link_libraries(ethercat_plugins yaml-cpp)
 
 # Causes the visibility macros to use dllexport rather than dllimport,
 # which is appropriate when building the dll but not consuming it.
@@ -111,6 +114,29 @@ if(BUILD_TESTING)
   )
   target_include_directories(test_load_schneider_plugins PRIVATE include)
   ament_target_dependencies(test_load_schneider_plugins
+    pluginlib
+    ethercat_interface
+  )
+
+  # Test Generic CiA402 Drive EtherCAT modules
+  ament_add_gmock(
+    test_load_generic_plugins
+    test/generic_plugins/test_load_ec_modules.cpp
+  )
+  target_include_directories(test_load_generic_plugins PRIVATE include)
+  ament_target_dependencies(test_load_generic_plugins
+    pluginlib
+    ethercat_interface
+  )
+  ament_add_gmock(
+    test_cia402_drive_plugin
+    test/generic_plugins/test_cia402_drive_plugin.cpp
+  )
+  target_include_directories(test_cia402_drive_plugin PRIVATE include)
+  target_link_libraries(test_cia402_drive_plugin
+    ethercat_plugins
+  )
+  ament_target_dependencies(test_cia402_drive_plugin
     pluginlib
     ethercat_interface
   )
