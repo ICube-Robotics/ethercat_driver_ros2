@@ -124,6 +124,18 @@ if(BUILD_TESTING)
     pluginlib
     ethercat_interface
   )
+  ament_add_gmock(
+    test_technosoft_ipos_plugin
+    test/technosoft_plugins/test_technosoft_ipos_plugin.cpp
+  )
+  target_include_directories(test_technosoft_ipos_plugin PRIVATE include)
+  target_link_libraries(test_technosoft_ipos_plugin
+    ethercat_plugins
+  )
+  ament_target_dependencies(test_technosoft_ipos_plugin
+    pluginlib
+    ethercat_interface
+  )
 endif()
 
 ament_export_include_directories(
