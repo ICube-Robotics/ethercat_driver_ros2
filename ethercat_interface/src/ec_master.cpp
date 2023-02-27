@@ -90,13 +90,14 @@ void EcMaster::addSlave(uint16_t alias, uint16_t position, EcSlave * slave)
   }
 
   // check and setup dc
-  if (slave->use_dc_sync()) {
+
+  if (slave->assign_activate_dc_sync()) {
     struct timespec t;
     clock_gettime(CLOCK_MONOTONIC, &t);
     ecrt_master_application_time(master_, EC_NEWTIMEVAL2NANO(t));
     ecrt_slave_config_dc(
       slave_info.config,
-      0x0300,
+      slave->assign_activate_dc_sync(),
       interval_,
       interval_ - (t.tv_nsec % (interval_)),
       0,
@@ -204,6 +205,11 @@ void EcMaster::activate()
       return;
     }
   }
+  // set application time
+  struct timespec t;
+  clock_gettime(CLOCK_MONOTONIC, &t);
+  ecrt_master_application_time(master_, EC_NEWTIMEVAL2NANO(t));
+
   // activate master
   bool activate_status = ecrt_master_activate(master_);
   if (activate_status) {
@@ -309,8 +315,6 @@ void EcMaster::writeData(uint32_t domain)
   // send process data
   ecrt_domain_queue(domain_info->domain);
   ecrt_master_send(master_);
-
-  ++update_counter_;
 }
 
 void EcMaster::setCtrlCHandler(SIMPLECAT_EXIT_CALLBACK user_callback)
@@ -452,6 +456,7 @@ void EcMaster::checkSlaveStates()
     }
     if (s.operational != slave.config_state.operational) {
       printf("Slave: %soperational.\n", s.operational ? "" : "Not ");
+      slave.slave->set_state_is_operational(s.operational ? true : false);
     }
     slave.config_state = s;
   }
