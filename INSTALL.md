@@ -78,10 +78,10 @@ Example:
 ```
 
 ## 2. Building `ethercat_driver_ros2`
-1.  Install `ros2` packages. The current development is based of `ros2 humble`. Installation steps are described [here](https://docs.ros.org/en/humble/Installation.html).
+1.  Install `ros2` packages. The current development is based on `ros2 rolling` and compatible with `ros2 humble`. Installation steps are described [here](https://docs.ros.org/en/rolling/Installation.html).
 2. Source your `ros2` environment:
     ```shell
-    source /opt/ros/humble/setup.bash
+    source /opt/ros/$ROS_DISTRO/setup.bash
     ```
     **NOTE**: The ros2 environment needs to be sources in every used terminal. If only one distribution of ros2 is used, it can be added to the `~/.bashrc` file.
 3. Install `colcon` and its extensions :
