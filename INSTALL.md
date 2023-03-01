@@ -21,12 +21,12 @@ The proposed development builds upon the [IgH EtherCAT Master](https://etherlab.
 - Configure, build and install libs and kernel modules:
   ```shell
   $ ./configure --prefix=/usr/local/etherlab  --disable-8139too --disable-eoe --enable-generic
-  
+
   $ make all modules
   $ sudo make modules_install install
   $ sudo depmod
   ```
-  **NOTE**: This step is needed every time the Linux kernel is updated. 
+  **NOTE**: This step is needed every time the Linux kernel is updated.
 - Configure system:
   ```shell
   $ sudo ln -s /usr/local/etherlab/bin/ethercat /usr/bin/
@@ -38,7 +38,7 @@ The proposed development builds upon the [IgH EtherCAT Master](https://etherlab.
   ```shell
   $ sudo gedit /etc/udev/rules.d/99-EtherCAT.rules
   ```
-  containing: 
+  containing:
   ```shell
   KERNEL=="EtherCAT[0-9]*", MODE="0664"
   ```
@@ -46,7 +46,7 @@ The proposed development builds upon the [IgH EtherCAT Master](https://etherlab.
 - Configure the network adapter for EtherCAT:
 
   ```shell
-  $ sudo gedit /etc/sysconfig/ethercat 
+  $ sudo gedit /etc/sysconfig/ethercat
   ```
   In the configuration file specify the mac address of the network card to be used and its driver
   ```shell
