@@ -1,4 +1,4 @@
-name: CI
+name: CI-Rolling
 on:
   push:
     branches: [ main ]
@@ -11,50 +11,51 @@ jobs:
       - name: Prepare
         run: |
           mkdir -p ${{github.workspace}}/src
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
         with:
           path: src/ethercat_driver_ros2
 
       - name: Build Docker Image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v2
         with:
-          tags: ethercat_driver_ros2:humble
+          tags: ethercat_driver_ros2:rolling
           file: .docker/Dockerfile
           push: false
+          build-args: ROS_DISTRO=rolling
 
       - name: Build
         uses: addnab/docker-run-action@v3
         with:
-          image: ethercat_driver_ros2:humble
+          image: ethercat_driver_ros2:rolling
           options: -v ${{github.workspace}}/:/ros/
           run: |
             cd /ros
-            . /opt/ros/humble/setup.sh
+            . /opt/ros/rolling/setup.sh
             rosdep install --ignore-src --from-paths . -y -r && \
             colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
 
       - name: Tests
         uses: addnab/docker-run-action@v3
         with:
-          image: ethercat_driver_ros2:humble
+          image: ethercat_driver_ros2:rolling
           options: -v ${{github.workspace}}/:/ros/
           run: |
             cd /ros
-            . /opt/ros/humble/setup.sh
+            . /opt/ros/rolling/setup.sh
             rosdep install --ignore-src --from-paths . -y -r && \
             colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
             colcon test
             colcon test-result
 
       - name: Upload Tests to Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         if: always()
         with:
           name: test-results
           path: build/*/test_results/*/*.xml
 
       - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: EnricoMi/publish-unit-test-result-action@v1
         if: always()
         with:
           files: build/*/test_results/*/*.xml
