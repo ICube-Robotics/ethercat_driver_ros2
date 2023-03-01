@@ -67,6 +67,11 @@ public:
         EC_WRITE_S32(domain_address, target_position_);
         break;
       case 2:
+        if (isChangeModeOfOperationRequired) {
+          if (!std::isnan(command_interface_ptr_->at(cii_mode_of_operation))) {
+            mode_of_operation_ = command_interface_ptr_->at(cii_mode_of_operation);
+          }
+        }
         EC_WRITE_S8(domain_address, mode_of_operation_);
         break;
       case 3:
@@ -125,6 +130,9 @@ public:
 
       case 8:
         mode_of_operation_display_ = EC_READ_S8(domain_address);
+        if (isModeOfOperationDisplayRequired) {
+          state_interface_ptr_->at(sii_mode_of_operation) = mode_of_operation_display_;
+        }
         break;
       case 9:
         velocity_ = EC_READ_S32(domain_address);
@@ -224,9 +232,13 @@ public:
     isPositionRequired = paramters_.find("state_interface/position") != paramters_.end();
     isVelocityRequired = paramters_.find("state_interface/velocity") != paramters_.end();
     isTorqueRequired = paramters_.find("state_interface/effort") != paramters_.end();
+    isModeOfOperationDisplayRequired = paramters_.find("state_interface/mode_of_operation") !=
+      paramters_.end();
 
     isTargetPositionRequired = paramters_.find("command_interface/position") != paramters_.end();
     isTargetVelocityRequired = paramters_.find("command_interface/velocity") != paramters_.end();
+    isChangeModeOfOperationRequired = paramters_.find("command_interface/mode_of_operation") !=
+      paramters_.end();
 
     if (isPositionRequired) {
       sii_position = std::stoi(
@@ -240,6 +252,10 @@ public:
       sii_torque = std::stoi(
         paramters_["state_interface/effort"]);
     }
+    if (isModeOfOperationDisplayRequired) {
+      sii_mode_of_operation = std::stoi(
+        paramters_["state_interface/mode_of_operation"]);
+    }
 
     if (isTargetPositionRequired) {
       cii_target_position = std::stoi(
@@ -248,6 +264,10 @@ public:
     if (isTargetVelocityRequired) {
       cii_target_velocity = std::stoi(
         paramters_["command_interface/velocity"]);
+    }
+    if (isChangeModeOfOperationRequired) {
+      cii_mode_of_operation = std::stoi(
+        paramters_["command_interface/mode_of_operation"]);
     }
 
     for (auto index = 0ul; index < 8; index++) {
@@ -316,14 +336,18 @@ public:
 
   bool isTargetPositionRequired = false;
   bool isTargetVelocityRequired = false;
+  bool isChangeModeOfOperationRequired = false;
+  bool isModeOfOperationDisplayRequired = false;
 
   int sii_position;
   int sii_velocity;
   int sii_torque;
+  int sii_mode_of_operation;
 
   int cii_target_position;
   int cii_target_velocity;
   int cii_target_torque;
+  int cii_mode_of_operation;
 
 private:
   uint32_t counter_ = 0;
