@@ -46,6 +46,7 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   find_package(pluginlib REQUIRED)
   find_package(ethercat_interface REQUIRED)
+  find_package(ethercat_generic_slave REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
   # Test Load EtherCAT modules
@@ -59,19 +60,20 @@ if(BUILD_TESTING)
     ethercat_interface
   )
 
-  # # Test Generic EtherCAT Slave Plugin
-  # ament_add_gmock(
-  #   test_generic_ec_slave
-  #   test/test_generic_ec_slave.cpp
-  # )
-  # target_include_directories(test_generic_ec_slave PRIVATE include)
-  # target_link_libraries(test_generic_ec_slave
-  #   ethercat_generic_cia402_drive
-  # )
-  # ament_target_dependencies(test_generic_ec_slave
-  #   pluginlib
-  #   ethercat_interface
-  # )
+  # Test Generic EtherCAT CIA402 Drive Plugin
+  ament_add_gmock(
+    test_generic_ec_cia402_drive
+    test/test_generic_ec_cia402_drive.cpp
+  )
+  target_include_directories(test_generic_ec_cia402_drive PRIVATE include)
+  target_link_libraries(test_generic_ec_cia402_drive
+    ethercat_generic_cia402_drive
+  )
+  ament_target_dependencies(test_generic_ec_cia402_drive
+    pluginlib
+    ethercat_interface
+    ethercat_generic_slave
+  )
 endif()
 
 ament_export_include_directories(
