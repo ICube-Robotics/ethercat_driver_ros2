@@ -1,0 +1,5 @@
+<library path="ethercat_generic_cia402_drive">
+  <class name="ethercat_generic_plugins/EcCiA402Drive" type="ethercat_generic_plugins::EcCiA402Drive" base_class_type="ethercat_interface::EcSlave">
+    <description>Generic EtherCAT CiA402 Drive.</description>
+  </class>
+</library>
