@@ -61,7 +61,6 @@ protected:
   bool fault_reset_ = false;
   int fault_reset_command_interface_index_ = -1;
   bool last_fault_reset_command_ = false;
-  uint32_t assign_activate_ = 0;
   double last_position_ = 0;
 
   /** returns device state based upon the status_word */
