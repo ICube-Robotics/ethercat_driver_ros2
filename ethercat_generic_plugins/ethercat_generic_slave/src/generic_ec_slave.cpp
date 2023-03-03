@@ -129,14 +129,7 @@ bool GenericEcSlave::setup_from_config(YAML::Node slave_config)
         for (auto c = 0ul; c < rpdo_channels_size; c++) {
           ethercat_interface::EcPdoChannelManager channel_info;
           channel_info.pdo_type = ethercat_interface::RPDO;
-          channel_info.index = slave_config["rpdo"][i]["channels"][c]["index"].as<uint16_t>();
-          channel_info.sub_index =
-            slave_config["rpdo"][i]["channels"][c]["sub_index"].as<uint8_t>();
-          channel_info.data_type = slave_config["rpdo"][i]["channels"][c]["type"].as<std::string>();
-          channel_info.interface_name =
-            slave_config["rpdo"][i]["channels"][c]["command_interface"].as<std::string>();
-          channel_info.default_value =
-            slave_config["rpdo"][i]["channels"][c]["default"].as<double>();
+          channel_info.load_from_config(slave_config["rpdo"][i]["channels"][c]);
           pdo_channels_info_.push_back(channel_info);
           all_channels_.push_back(channel_info.get_pdo_entry_info());
         }
@@ -158,13 +151,7 @@ bool GenericEcSlave::setup_from_config(YAML::Node slave_config)
         for (auto c = 0ul; c < tpdo_channels_size; c++) {
           ethercat_interface::EcPdoChannelManager channel_info;
           channel_info.pdo_type = ethercat_interface::TPDO;
-          channel_info.index = slave_config["tpdo"][i]["channels"][c]["index"].as<uint16_t>();
-          channel_info.sub_index =
-            slave_config["tpdo"][i]["channels"][c]["sub_index"].as<uint8_t>();
-          channel_info.data_type = slave_config["tpdo"][i]["channels"][c]["type"].as<std::string>();
-          channel_info.interface_name =
-            slave_config["tpdo"][i]["channels"][c]["state_interface"].as<std::string>();
-          channel_info.default_value = std::numeric_limits<double>::quiet_NaN();
+          channel_info.load_from_config(slave_config["tpdo"][i]["channels"][c]);
           pdo_channels_info_.push_back(channel_info);
           all_channels_.push_back(channel_info.get_pdo_entry_info());
         }
