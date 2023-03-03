@@ -233,13 +233,13 @@ TEST_F(EcCiA402DriveTest, FaultReset)
   ASSERT_FALSE(plugin_->fault_reset_);
   ASSERT_EQ(plugin_->command_interface_ptr_->at(plugin_->fault_reset_command_interface_index_), 1);
   plugin_->processData(4, &domain_address);
-  ASSERT_EQ(plugin_->control_word_, 0b10000000);
+  ASSERT_EQ(plugin_->pdo_channels_info_[4].default_value, 0b10000000);
   plugin_->pdo_channels_info_[4].last_value = 0;
   plugin_->processData(4, &domain_address);
-  ASSERT_EQ(plugin_->control_word_, 0b00000000);
+  ASSERT_EQ(plugin_->pdo_channels_info_[4].default_value, 0b00000000);
   command_interface[1] = 0;
   plugin_->processData(4, &domain_address);
-  ASSERT_EQ(plugin_->control_word_, 0b00000000);
+  ASSERT_EQ(plugin_->pdo_channels_info_[4].default_value, 0b00000000);
   command_interface[1] = 2;  plugin_->processData(4, &domain_address);
-  ASSERT_EQ(plugin_->control_word_, 0b10000000);
+  ASSERT_EQ(plugin_->pdo_channels_info_[4].default_value, 0b10000000);
 }
