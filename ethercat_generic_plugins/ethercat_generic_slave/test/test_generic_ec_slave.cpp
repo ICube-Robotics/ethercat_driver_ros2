@@ -31,7 +31,7 @@ rpdo:  # Receive PDO Mapping
     channels:
       - {index: 0x607a, sub_index: 0, type: int32, command_interface: position, default: .nan}
       - {index: 0x60ff, sub_index: 0, type: int32, command_interface: velocity, default: 0}
-      - {index: 0x6071, sub_index: 0, type: test, command_interface: effort, default: -5}
+      - {index: 0x6071, sub_index: 0, type: test, command_interface: effort, default: -5, factor: 2, offset: 10}
       - {index: 0x6072, sub_index: 0, type: int16, command_interface: ~, default: 1000}
       - {index: 0x6040, sub_index: 0, type: uint16, command_interface: ~, default: 0}
       - {index: 0x6060, sub_index: 0, type: int8, command_interface: ~, default: 8}
@@ -40,7 +40,7 @@ tpdo:  # Transmit PDO Mapping
     channels:
       - {index: 0x6064, sub_index: 0, type: int32, state_interface: position}
       - {index: 0x606c, sub_index: 0, type: int32, state_interface: velocity}
-      - {index: 0x6077, sub_index: 0, type: test, state_interface: effort}
+      - {index: 0x6077, sub_index: 0, type: test, state_interface: effort, factor: 5, offset: 15}
       - {index: 0x6041, sub_index: 0, type: uint16, state_interface: ~}
       - {index: 0x6061, sub_index: 0, type: int8, state_interface: ~}
   - index: 0x1a45
@@ -113,6 +113,8 @@ TEST_F(GenericEcSlaveTest, SlaveSetupSlaveFromConfig)
   ASSERT_EQ(plugin_->tpdos_[1].index, 0x1a45);
 
   ASSERT_EQ(plugin_->pdo_channels_info_[1].interface_name, "velocity");
+  ASSERT_EQ(plugin_->pdo_channels_info_[2].factor, 2);
+  ASSERT_EQ(plugin_->pdo_channels_info_[2].offset, 10);
   ASSERT_EQ(plugin_->pdo_channels_info_[3].default_value, 1000);
   ASSERT_TRUE(std::isnan(plugin_->pdo_channels_info_[0].default_value));
   ASSERT_EQ(plugin_->pdo_channels_info_[4].interface_name, "null");
@@ -183,7 +185,7 @@ TEST_F(GenericEcSlaveTest, EcReadRPDOToStateInterface)
   ASSERT_EQ(plugin_->pdo_channels_info_[8].interface_index, 1);
   uint8_t domain_address = 0;
   plugin_->processData(8, &domain_address);
-  ASSERT_EQ(plugin_->state_interface_ptr_->at(1), 42);
+  ASSERT_EQ(plugin_->state_interface_ptr_->at(1), 5 * 42 + 15);
 }
 
 TEST_F(GenericEcSlaveTest, EcWriteTPDOFromCommandInterface)
@@ -199,7 +201,7 @@ TEST_F(GenericEcSlaveTest, EcWriteTPDOFromCommandInterface)
   ASSERT_EQ(plugin_->pdo_channels_info_[2].interface_index, 1);
   uint8_t domain_address = 0;
   plugin_->processData(2, &domain_address);
-  ASSERT_EQ(plugin_->pdo_channels_info_[2].last_value, 42);
+  ASSERT_EQ(plugin_->pdo_channels_info_[2].last_value, 2 * 42 + 10);
 }
 
 TEST_F(GenericEcSlaveTest, EcWriteTPDODefaultValue)
