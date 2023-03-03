@@ -83,7 +83,7 @@ void EcCiA402Drive::processData(size_t index, uint8_t * domain_address)
     mode_of_operation_display_ = pdo_channels_info_[index].last_value;
   }
 
-  if (pdo_channels_info_[index].index == CiA402D_RPDO_POSITION) {
+  if (pdo_channels_info_[index].index == CiA402D_TPDO_POSITION) {
     last_position_ = pdo_channels_info_[index].last_value;
   }
 
