@@ -47,7 +47,7 @@ public:
     std::vector<double> * command_interface);
 
   int8_t mode_of_operation_display_ = 0;
-  int8_t mode_of_operation_ = 0;
+  int8_t mode_of_operation_ = -1;
 
 protected:
   uint32_t counter_ = 0;
@@ -58,6 +58,7 @@ protected:
   DeviceState state_ = STATE_START;
   bool initialized_ = false;
   bool auto_fault_reset_ = false;
+  bool auto_state_transitions_ = false;
   bool fault_reset_ = false;
   int fault_reset_command_interface_index_ = -1;
   bool last_fault_reset_command_ = false;

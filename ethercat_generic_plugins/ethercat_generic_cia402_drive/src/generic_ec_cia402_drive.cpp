@@ -37,19 +37,20 @@ void EcCiA402Drive::processData(size_t index, uint8_t * domain_address)
           last_fault_reset_command_ = false;
         }
         if (last_fault_reset_command_ == false &&
-          command_interface_ptr_->at(fault_reset_command_interface_index_))
+          command_interface_ptr_->at(fault_reset_command_interface_index_) != 0 &&
+          !std::isnan(command_interface_ptr_->at(fault_reset_command_interface_index_)))
         {
           last_fault_reset_command_ = true;
           fault_reset_ = true;
         }
       }
 
-      pdo_channels_info_[index].ec_read(domain_address);
-      control_word_ = pdo_channels_info_[index].last_value;
-      control_word_ = transition(state_, control_word_);
-      pdo_channels_info_[index].ec_write(domain_address, control_word_);
+      if (auto_state_transitions_) {
+        pdo_channels_info_[index].default_value = transition(
+          state_,
+          pdo_channels_info_[index].ec_read(domain_address));
+      }
     }
-    return;
   }
 
   pdo_channels_info_[index].allow_ec_write = true;
@@ -61,7 +62,9 @@ void EcCiA402Drive::processData(size_t index, uint8_t * domain_address)
     {  // check if allowed to write position
       pdo_channels_info_[index].allow_ec_write = false;
     }
-    pdo_channels_info_[index].default_value = last_position_;
+    if (mode_of_operation_display_ == mode_of_operation_) {
+      pdo_channels_info_[index].default_value = last_position_;
+    }
   } else if (pdo_channels_info_[index].index == CiA402D_RPDO_VELOCITY) {
     if (mode_of_operation_display_ != MODE_CYCLIC_SYNC_VELOCITY &&
       mode_of_operation_display_ != MODE_PROFILED_VELOCITY)
@@ -73,6 +76,13 @@ void EcCiA402Drive::processData(size_t index, uint8_t * domain_address)
       mode_of_operation_display_ != MODE_PROFILED_TORQUE)
     {  // check if allowed to write effort
       pdo_channels_info_[index].allow_ec_write = false;
+    }
+  }
+
+  // setup mode of operation
+  if (pdo_channels_info_[index].index == CiA402D_RPDO_MODE_OF_OPERATION) {
+    if (mode_of_operation_ >= 0 && mode_of_operation_ <= 10) {
+      pdo_channels_info_[index].default_value = mode_of_operation_;
     }
   }
 
@@ -158,6 +168,9 @@ bool EcCiA402Drive::setup_from_config(YAML::Node drive_config)
   // additional configuration parameters for CiA402 Drives
   if (drive_config["auto_fault_reset"]) {
     auto_fault_reset_ = drive_config["auto_fault_reset"].as<bool>();
+  }
+  if (drive_config["auto_state_transitions"]) {
+    auto_state_transitions_ = drive_config["auto_state_transitions"].as<bool>();
   }
   return true;
 }
