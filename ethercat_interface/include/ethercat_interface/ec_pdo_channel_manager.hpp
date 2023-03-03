@@ -20,6 +20,9 @@
 #include <ecrt.h>
 #include <string>
 #include <vector>
+#include <limits>
+
+#include "yaml-cpp/yaml.h"
 
 namespace ethercat_interface
 {
@@ -65,6 +68,7 @@ public:
     } else if (data_type == "test") {
       last_value = 42;
     }
+    last_value = factor * last_value + offset;
     return last_value;
   }
 
@@ -100,12 +104,60 @@ public:
       }
     } else if (pdo_type == RPDO && allow_ec_write) {
       if (interface_index >= 0 && !std::isnan(command_interface_ptr_->at(interface_index))) {
-        ec_write(domain_address, command_interface_ptr_->at(interface_index));
+        ec_write(domain_address, factor * command_interface_ptr_->at(interface_index) + offset);
       } else {
         if (!std::isnan(default_value)) {
           ec_write(domain_address, default_value);
         }
       }
+    }
+  }
+
+  bool load_from_config(YAML::Node channel_config)
+  {
+    // index
+    if (channel_config["index"]) {
+      index = channel_config["index"].as<uint16_t>();
+    } else {
+      std::cerr << "missing channel index info" << std::endl;
+    }
+    // sub_index
+    if (channel_config["sub_index"]) {
+      sub_index = channel_config["sub_index"].as<uint8_t>();
+    } else {
+      std::cerr << "channel " << index << ": missing channel info" << std::endl;
+    }
+    // data type
+    if (channel_config["type"]) {
+      data_type = channel_config["type"].as<std::string>();
+    } else {
+      std::cerr << "channel " << index << ": missing channel data type info" << std::endl;
+    }
+
+    if (pdo_type == RPDO) {
+      // interface name
+      if (channel_config["command_interface"]) {
+        interface_name = channel_config["command_interface"].as<std::string>();
+      }
+      // default value
+      if (channel_config["default"]) {
+        default_value = channel_config["default"].as<double>();
+      }
+
+    } else if (pdo_type == TPDO) {
+      // interface name
+      if (channel_config["state_interface"]) {
+        interface_name = channel_config["state_interface"].as<std::string>();
+      }
+    }
+
+    // factor
+    if (channel_config["factor"]) {
+      factor = channel_config["factor"].as<double>();
+    }
+    // offset
+    if (channel_config["offset"]) {
+      offset = channel_config["offset"].as<double>();
     }
   }
 
@@ -115,10 +167,12 @@ public:
   std::string data_type;
   std::string interface_name;
   uint32_t data_mask;
-  double default_value;
+  double default_value = std::numeric_limits<double>::quiet_NaN();
   int interface_index = -1;
   double last_value;
   bool allow_ec_write = true;
+  double factor = 1;
+  double offset = 0;
 
 private:
   std::vector<double> * command_interface_ptr_;
