@@ -102,7 +102,9 @@ public:
       if (interface_index >= 0 && !std::isnan(command_interface_ptr_->at(interface_index))) {
         ec_write(domain_address, command_interface_ptr_->at(interface_index));
       } else {
-        ec_write(domain_address, default_value);
+        if (!std::isnan(default_value)) {
+          ec_write(domain_address, default_value);
+        }
       }
     }
   }
