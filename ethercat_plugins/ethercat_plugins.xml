@@ -68,4 +68,7 @@
   <class name="ethercat_plugins/Technosoft_IPOS_4808SY" type="ethercat_plugins::Technosoft_IPOS_4808SY" base_class_type="ethercat_interface::EcSlave">
     <description>Technosoft IPOS 4808 SY series motor drive.</description>
   </class>
+  <class name="ethercat_plugins/Technosoft_IPOS_4808SY_CAT" type="ethercat_plugins::Technosoft_IPOS_4808SY_CAT" base_class_type="ethercat_interface::EcSlave">
+    <description>Technosoft IPOS 4808 SY-CAT series motor drive.</description>
+  </class>
 </library>

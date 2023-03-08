@@ -43,6 +43,14 @@ public:
   virtual ~Technosoft_IPOS_4808SY() {}
 };
 
+class Technosoft_IPOS_4808SY_CAT : public Technosoft_IPOS
+{
+public:
+  Technosoft_IPOS_4808SY_CAT()
+  : Technosoft_IPOS(0x000001a3, 0x019cc5a0) {}
+  virtual ~Technosoft_IPOS_4808SY_CAT() {}
+};
+
 }  // namespace ethercat_plugins
 
 #include <pluginlib/class_list_macros.hpp>
@@ -50,3 +58,4 @@ public:
 PLUGINLIB_EXPORT_CLASS(ethercat_plugins::Technosoft_IPOS_3604, ethercat_interface::EcSlave)
 PLUGINLIB_EXPORT_CLASS(ethercat_plugins::Technosoft_IPOS_4808BX, ethercat_interface::EcSlave)
 PLUGINLIB_EXPORT_CLASS(ethercat_plugins::Technosoft_IPOS_4808SY, ethercat_interface::EcSlave)
+PLUGINLIB_EXPORT_CLASS(ethercat_plugins::Technosoft_IPOS_4808SY_CAT, ethercat_interface::EcSlave)
