@@ -159,6 +159,8 @@ public:
     if (channel_config["offset"]) {
       offset = channel_config["offset"].as<double>();
     }
+
+    return true;
   }
 
   PdoType pdo_type;
