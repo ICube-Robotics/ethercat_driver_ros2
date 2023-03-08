@@ -54,6 +54,7 @@ public:
         break;
       case 1:
         if (isTargetPositionRequired && (
+            mode_of_operation_display_ == MODE_NO_MODE ||
             mode_of_operation_display_ == MODE_CYCLIC_SYNC_POSITION ||
             mode_of_operation_display_ == MODE_PROFILED_POSITION ||
             mode_of_operation_display_ == MODE_INTERPOLATED_POSITION ))
