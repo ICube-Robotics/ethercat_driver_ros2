@@ -73,7 +73,9 @@ public:
             mode_of_operation_ = command_interface_ptr_->at(cii_mode_of_operation);
           }
         }
-        EC_WRITE_S8(domain_address, mode_of_operation_);
+        if (mode_of_operation_ >= 0 && mode_of_operation_ <= 10) {
+          EC_WRITE_S8(domain_address, mode_of_operation_);
+        }
         break;
       case 3:
         if (isTargetVelocityRequired && (
@@ -318,7 +320,7 @@ public:
   int32_t target_velocity_ = 0;              // write
   int16_t target_torque_ = 0;                // write (max torque (max current) = 1000)
   uint16_t control_word_ = 0;                // write
-  int8_t mode_of_operation_ = 0;             // write (use enum ModeOfOperation for convenience)
+  int8_t mode_of_operation_ = -1;             // write (use enum ModeOfOperation for convenience)
   int16_t torque_offset_ = 0;                // write
   int32_t position_offset_ = 0;              // write
   int32_t velocity_offset_ = 0;              // write
