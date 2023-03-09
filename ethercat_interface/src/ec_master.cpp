@@ -145,12 +145,14 @@ int EcMaster::configSlaveSdo(
   uint16_t slave_position, SdoConfigEntry sdo_config,
   uint32_t * abort_code)
 {
+  uint8_t value[1];
+  EC_WRITE_S8((uint8_t *)value, sdo_config.data);
   int ret = ecrt_master_sdo_download(
     master_,
     slave_position,
     sdo_config.index,
     sdo_config.subindex,
-    reinterpret_cast<uint8_t *>(&sdo_config.data),
+    reinterpret_cast<uint8_t *>(value),
     sdo_config.data_size,
     abort_code
   );
