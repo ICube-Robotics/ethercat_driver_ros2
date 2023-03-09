@@ -315,6 +315,22 @@ CallbackReturn EthercatDriver::on_activate(
     }
   }
 
+  // configure SDO
+  for (auto i = 0ul; i < ec_modules_.size(); i++) {
+    for (auto & sdo : ec_modules_[i]->sdo_config) {
+      int ret = master_.configSlaveSdo(
+        std::stod(ec_module_parameters_[i]["position"]),
+        sdo);
+      if (!ret) {
+        RCLCPP_INFO(
+          rclcpp::get_logger("EthercatDriver"),
+          "Failed to download config SDO for module at position %s",
+          ec_module_parameters_[i]["position"].c_str()
+        );
+      }
+    }
+  }
+
   RCLCPP_INFO(
     rclcpp::get_logger("EthercatDriver"), "System Successfully started!");
 
