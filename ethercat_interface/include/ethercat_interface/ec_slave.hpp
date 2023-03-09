@@ -25,6 +25,15 @@
 
 namespace ethercat_interface
 {
+
+typedef struct
+{
+  uint16_t index;
+  uint8_t subindex;
+  int data;
+  size_t data_size = 0;
+} SdoConfigEntry;
+
 class EcSlave
 {
 public:
@@ -60,6 +69,8 @@ public:
   }
   const uint32_t vendor_id_;
   const uint32_t product_id_;
+
+  std::vector<SdoConfigEntry> sdo_config;
 
 protected:
   std::vector<double> * state_interface_ptr_;
