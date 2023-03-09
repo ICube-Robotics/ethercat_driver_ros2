@@ -141,6 +141,21 @@ void EcMaster::addSlave(uint16_t alias, uint16_t position, EcSlave * slave)
   }
 }
 
+int EcMaster::configSlaveSdo(uint16_t slave_position, SdoConfigEntry sdo_config)
+{
+  uint32_t abort_code;
+  int ret = ecrt_master_sdo_download(
+    master_,
+    slave_position,
+    sdo_config.index,
+    sdo_config.subindex,
+    (uint8_t *)&sdo_config.data,
+    sdo_config.data_size,
+    &abort_code
+  );
+  return ret;
+}
+
 void EcMaster::registerPDOInDomain(
   uint16_t alias, uint16_t position,
   std::vector<uint32_t> & channel_indices,
