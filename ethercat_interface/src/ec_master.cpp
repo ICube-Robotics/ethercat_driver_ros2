@@ -149,7 +149,7 @@ int EcMaster::configSlaveSdo(uint16_t slave_position, SdoConfigEntry sdo_config)
     slave_position,
     sdo_config.index,
     sdo_config.subindex,
-    (uint8_t *)&sdo_config.data,
+    reinterpret_cast<uint8_t *>(&sdo_config.data),
     sdo_config.data_size,
     &abort_code
   );
