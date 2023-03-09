@@ -24,8 +24,9 @@ vendor_id: 0x00000011
 product_id: 0x07030924
 assign_activate: 0x0321  # DC Synch register
 sdo:  # sdo data to be transferred at slave startup
-  - {index: 0x60C2, sub_index: 1, value: 10}
-  - {index: 0x60C2, sub_index: 2, value: -3}
+  - {index: 0x60C2, sub_index: 1, type: int8, value: 10}
+  - {index: 0x60C2, sub_index: 2, type: int8, value: -3}
+  - {index: 0x6098, sub_index: 0, type: int8, value: 35}
 rpdo:  # Receive PDO Mapping
   - index: 0x1607
     channels:
@@ -212,4 +213,16 @@ TEST_F(GenericEcSlaveTest, EcWriteTPDODefaultValue)
   uint8_t domain_address = 0;
   plugin_->processData(2, &domain_address);
   ASSERT_EQ(plugin_->pdo_channels_info_[2].last_value, -5);
+}
+
+TEST_F(GenericEcSlaveTest, SlaveSetupSDOConfig)
+{
+  SetUp();
+  plugin_->setup_from_config(YAML::Load(test_slave_config));
+  ASSERT_EQ(plugin_->sdo_config[0].index, 0x60C2);
+  ASSERT_EQ(plugin_->sdo_config[0].subindex, 1);
+  ASSERT_EQ(plugin_->sdo_config[1].subindex, 2);
+  ASSERT_EQ(plugin_->sdo_config[0].data_size, 1);
+  ASSERT_EQ(plugin_->sdo_config[0].data, 10);
+  ASSERT_EQ(plugin_->sdo_config[2].index, 0x6098);
 }
