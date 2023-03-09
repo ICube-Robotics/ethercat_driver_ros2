@@ -18,6 +18,20 @@
 
 #include "ethercat_generic_plugins/generic_ec_slave.hpp"
 
+
+size_t type2bytes(std::string type)
+{
+  if (type == "int8" || type == "uint8") {
+    return 1;
+  } else if (type == "int16" || type == "uint16") {
+    return 2;
+  } else if (type == "int32" || type == "uint32") {
+    return 4;
+  } else if (type == "int64" || type == "uint64") {
+    return 8;
+  }
+}
+
 namespace ethercat_generic_plugins
 {
 
@@ -103,7 +117,31 @@ bool GenericEcSlave::setup_from_config(YAML::Node slave_config)
     }
     if (slave_config["sdo"]) {
       for (const auto & sdo : slave_config["sdo"]) {
-        // todo read sdo
+        ethercat_interface::SdoConfigEntry config;
+        bool config_failed = false;
+        if (sdo["index"]) {
+          config.index = sdo["index"].as<uint16_t>();
+        } else {
+          config_failed = true;
+        }
+        if (sdo["sub_index"]) {
+          config.subindex = sdo["sub_index"].as<uint8_t>();
+        } else {
+          config_failed = true;
+        }
+        if (sdo["type"]) {
+          config.data_size = type2bytes(sdo["type"].as<std::string>());
+        } else {
+          config_failed = true;
+        }
+        if (sdo["value"]) {
+          config.data = sdo["value"].as<int>();
+        } else {
+          config_failed = true;
+        }
+        if (!config_failed) {
+          sdo_config.push_back(config);
+        }
       }
     }
 
