@@ -24,6 +24,7 @@
 #include "yaml-cpp/yaml.h"
 #include "ethercat_interface/ec_slave.hpp"
 #include "ethercat_interface/ec_pdo_channel_manager.hpp"
+#include "ethercat_interface/ec_sync_manager.hpp"
 
 namespace ethercat_generic_plugins
 {
@@ -53,6 +54,7 @@ protected:
   std::vector<ec_pdo_info_t> tpdos_;
   std::vector<ec_pdo_entry_info_t> all_channels_;
   std::vector<ethercat_interface::EcPdoChannelManager> pdo_channels_info_;
+  std::vector<ethercat_interface::SMConfig> sm_configs_;
   std::vector<ec_sync_info_t> syncs_;
   YAML::Node slave_config_;
   uint32_t assign_activate_ = 0;

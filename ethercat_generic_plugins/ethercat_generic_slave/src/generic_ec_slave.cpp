@@ -66,10 +66,22 @@ void GenericEcSlave::domains(DomainMap & domains) const
 
 void GenericEcSlave::setup_syncs()
 {
-  syncs_.push_back({0, EC_DIR_OUTPUT, 0, NULL, EC_WD_DISABLE});
-  syncs_.push_back({1, EC_DIR_INPUT, 0, NULL, EC_WD_DISABLE});
-  syncs_.push_back({2, EC_DIR_OUTPUT, rpdos_.size(), rpdos_.data(), EC_WD_ENABLE});
-  syncs_.push_back({3, EC_DIR_INPUT, tpdos_.size(), tpdos_.data(), EC_WD_DISABLE});
+  if (sm_configs_.size() == 0) {
+    syncs_.push_back({0, EC_DIR_OUTPUT, 0, NULL, EC_WD_DISABLE});
+    syncs_.push_back({1, EC_DIR_INPUT, 0, NULL, EC_WD_DISABLE});
+    syncs_.push_back({2, EC_DIR_OUTPUT, rpdos_.size(), rpdos_.data(), EC_WD_ENABLE});
+    syncs_.push_back({3, EC_DIR_INPUT, tpdos_.size(), tpdos_.data(), EC_WD_DISABLE});
+  } else {
+    for (auto & sm : sm_configs_) {
+      if (sm.pdo_name == "null") {
+        syncs_.push_back({sm.index, sm.type, 0, NULL, sm.watchdog});
+      } else if (sm.pdo_name == "rpdo") {
+        syncs_.push_back({sm.index, sm.type, rpdos_.size(), rpdos_.data(), sm.watchdog});
+      } else if (sm.pdo_name == "tpdo") {
+        syncs_.push_back({sm.index, sm.type, tpdos_.size(), tpdos_.data(), sm.watchdog});
+      }
+    }
+  }
   syncs_.push_back({0xff});
 }
 
@@ -115,6 +127,16 @@ bool GenericEcSlave::setup_from_config(YAML::Node slave_config)
     if (slave_config["assign_activate"]) {
       assign_activate_ = slave_config["assign_activate"].as<uint32_t>();
     }
+
+    if (slave_config["sm"]) {
+      for (const auto & sm : slave_config["sm"]) {
+        ethercat_interface::SMConfig config;
+        if (config.load_from_config(sm)) {
+          sm_configs_.push_back(config);
+        }
+      }
+    }
+
     if (slave_config["sdo"]) {
       for (const auto & sdo : slave_config["sdo"]) {
         ethercat_interface::SdoConfigEntry config;
