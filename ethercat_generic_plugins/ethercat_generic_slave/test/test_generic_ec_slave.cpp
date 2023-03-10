@@ -27,6 +27,7 @@ sdo:  # sdo data to be transferred at slave startup
   - {index: 0x60C2, sub_index: 1, type: int8, value: 10}
   - {index: 0x60C2, sub_index: 2, type: int8, value: -3}
   - {index: 0x6098, sub_index: 0, type: int8, value: 35}
+  - {index: 0x6099, sub_index: 0, type: int32, value: 0}
 rpdo:  # Receive PDO Mapping
   - index: 0x1607
     channels:
@@ -220,9 +221,11 @@ TEST_F(GenericEcSlaveTest, SlaveSetupSDOConfig)
   SetUp();
   plugin_->setup_from_config(YAML::Load(test_slave_config));
   ASSERT_EQ(plugin_->sdo_config[0].index, 0x60C2);
-  ASSERT_EQ(plugin_->sdo_config[0].subindex, 1);
-  ASSERT_EQ(plugin_->sdo_config[1].subindex, 2);
-  ASSERT_EQ(plugin_->sdo_config[0].data_size, 1);
+  ASSERT_EQ(plugin_->sdo_config[0].sub_index, 1);
+  ASSERT_EQ(plugin_->sdo_config[1].sub_index, 2);
+  ASSERT_EQ(plugin_->sdo_config[0].data_size(), 1);
   ASSERT_EQ(plugin_->sdo_config[0].data, 10);
   ASSERT_EQ(plugin_->sdo_config[2].index, 0x6098);
+  ASSERT_EQ(plugin_->sdo_config[3].data_type, "int32");
+  ASSERT_EQ(plugin_->sdo_config[3].data_size(), 4);
 }
