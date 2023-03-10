@@ -49,6 +49,11 @@ tpdo:  # Transmit PDO Mapping
     channels:
       - {index: 0x2205, sub_index: 1, type: int16, state_interface: analog_input1}
       - {index: 0x2205, sub_index: 2, type: int16, state_interface: analog_input2}
+sm:  # Sync Manager
+  - {index: 0, type: output, pdo: ~, watchdog: disable}
+  - {index: 1, type: input, pdo: ~, watchdog: disable}
+  - {index: 2, type: output, pdo: rpdo, watchdog: enable}
+  - {index: 3, type: input, pdo: tpdo, watchdog: disable}
 )";
 
 void GenericEcSlaveTest::SetUp()
@@ -228,4 +233,17 @@ TEST_F(GenericEcSlaveTest, SlaveSetupSDOConfig)
   ASSERT_EQ(plugin_->sdo_config[2].index, 0x6098);
   ASSERT_EQ(plugin_->sdo_config[3].data_type, "int32");
   ASSERT_EQ(plugin_->sdo_config[3].data_size(), 4);
+}
+
+TEST_F(GenericEcSlaveTest, SlaveSetupSyncManagerConfig)
+{
+  SetUp();
+  plugin_->setup_from_config(YAML::Load(test_slave_config));
+  ASSERT_EQ(plugin_->sm_configs_.size(), 4);
+  ASSERT_EQ(plugin_->sm_configs_[0].index, 0);
+  ASSERT_EQ(plugin_->sm_configs_[0].type, EC_DIR_OUTPUT);
+  ASSERT_EQ(plugin_->sm_configs_[0].watchdog, EC_WD_DISABLE);
+  ASSERT_EQ(plugin_->sm_configs_[0].pdo_name, "null");
+  ASSERT_EQ(plugin_->sm_configs_[2].pdo_name, "rpdo");
+  ASSERT_EQ(plugin_->sm_configs_[2].watchdog, EC_WD_ENABLE);
 }
