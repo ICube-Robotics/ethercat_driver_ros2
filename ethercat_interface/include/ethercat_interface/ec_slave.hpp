@@ -23,16 +23,10 @@
 #include <cmath>
 #include <string>
 
+#include "ethercat_interface/ec_sdo_manager.hpp"
+
 namespace ethercat_interface
 {
-
-typedef struct
-{
-  uint16_t index;
-  uint8_t subindex;
-  int data;
-  size_t data_size = 0;
-} SdoConfigEntry;
 
 class EcSlave
 {
