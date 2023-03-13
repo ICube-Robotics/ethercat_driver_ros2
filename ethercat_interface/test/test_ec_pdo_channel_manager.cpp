@@ -36,4 +36,5 @@ TEST(TestEcPdoChannelManager, load_from_config)
   ASSERT_EQ(pdo_manager.default_value, -5);
   ASSERT_EQ(pdo_manager.factor, 2);
   ASSERT_EQ(pdo_manager.offset, 10);
+  ASSERT_EQ(pdo_manager.type2bits("bit2"), 2);
 }

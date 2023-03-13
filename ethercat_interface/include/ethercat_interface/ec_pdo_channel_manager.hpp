@@ -18,6 +18,7 @@
 #define ETHERCAT_INTERFACE__EC_PDO_CHANNEL_MANAGER_HPP_
 
 #include <ecrt.h>
+#include <math.h>
 #include <string>
 #include <vector>
 #include <limits>
@@ -49,7 +50,10 @@ public:
 
   double ec_read(uint8_t * domain_address)
   {
-    if (data_type == "uint8") {
+    if (data_type == "bool") {
+      return static_cast<double>((
+               EC_READ_U8(domain_address) & 0b00000001) != 0);
+    } else if (data_type == "uint8") {
       return static_cast<double>(EC_READ_U8(domain_address));
     } else if (data_type == "int8") {
       last_value = static_cast<double>(EC_READ_S8(domain_address));
@@ -159,8 +163,33 @@ public:
     if (channel_config["offset"]) {
       offset = channel_config["offset"].as<double>();
     }
+    // mask
+    if (channel_config["mask"]) {
+      data_mask = channel_config["mask"].as<uint8_t>();
+    }
 
     return true;
+  }
+
+  uint8_t type2bits(std::string type)
+  {
+    if (type == "bool") {
+      return 1;
+    } else if (type == "int16" || type == "uint16") {
+      return 16;
+    } else if (type == "int8" || type == "uint8") {
+      return 8;
+    } else if (type == "int16" || type == "uint16") {
+      return 16;
+    } else if (type == "int32" || type == "uint32") {
+      return 32;
+    } else if (type == "int64" || type == "uint64") {
+      return 64;
+    } else if (type.find("bit") != std::string::npos) {
+      std::string n_bits = type.substr(type.find("bit") + 3);
+      return static_cast<uint8_t>(std::stoi(n_bits));
+    }
+    return -1;
   }
 
   PdoType pdo_type;
@@ -168,7 +197,7 @@ public:
   uint8_t sub_index;
   std::string data_type;
   std::string interface_name;
-  uint32_t data_mask;
+  uint8_t data_mask = 0;
   double default_value = std::numeric_limits<double>::quiet_NaN();
   int interface_index = -1;
   double last_value;
@@ -179,19 +208,6 @@ public:
 private:
   std::vector<double> * command_interface_ptr_;
   std::vector<double> * state_interface_ptr_;
-
-  uint8_t type2bits(std::string type)
-  {
-    if (type == "int8" || type == "uint8") {
-      return 8;
-    } else if (type == "int16" || type == "uint16") {
-      return 16;
-    } else if (type == "int32" || type == "uint32") {
-      return 32;
-    } else if (type == "int64" || type == "uint64") {
-      return 64;
-    }
-  }
 };
 
 }  // namespace ethercat_interface
