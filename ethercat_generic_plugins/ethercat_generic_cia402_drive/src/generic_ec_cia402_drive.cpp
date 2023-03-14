@@ -121,15 +121,6 @@ void EcCiA402Drive::processData(size_t index, uint8_t * domain_address)
   }
 }
 
-void EcCiA402Drive::setup_syncs()
-{
-  syncs_.push_back({0, EC_DIR_OUTPUT, 0, NULL, EC_WD_DISABLE});
-  syncs_.push_back({1, EC_DIR_INPUT, 0, NULL, EC_WD_DISABLE});
-  syncs_.push_back({2, EC_DIR_OUTPUT, rpdos_.size(), rpdos_.data(), EC_WD_ENABLE});
-  syncs_.push_back({3, EC_DIR_INPUT, tpdos_.size(), tpdos_.data(), EC_WD_DISABLE});
-  syncs_.push_back({0xff});
-}
-
 bool EcCiA402Drive::setupSlave(
   std::unordered_map<std::string, std::string> slave_paramters,
   std::vector<double> * state_interface,

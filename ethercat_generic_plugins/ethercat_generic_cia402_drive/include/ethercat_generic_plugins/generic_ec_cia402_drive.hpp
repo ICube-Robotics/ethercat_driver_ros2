@@ -72,7 +72,6 @@ protected:
   bool setup_from_config(YAML::Node drive_config);
   /** set up of the drive configuration from yaml file*/
   bool setup_from_config_file(std::string config_file);
-  void setup_syncs();
 };
 }  // namespace ethercat_generic_plugins
 
