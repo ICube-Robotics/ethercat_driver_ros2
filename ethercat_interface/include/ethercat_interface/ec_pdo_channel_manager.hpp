@@ -18,7 +18,6 @@
 #define ETHERCAT_INTERFACE__EC_PDO_CHANNEL_MANAGER_HPP_
 
 #include <ecrt.h>
-#include <math.h>
 #include <string>
 #include <vector>
 #include <limits>
@@ -50,11 +49,8 @@ public:
 
   double ec_read(uint8_t * domain_address)
   {
-    if (data_type == "bool") {
-      return static_cast<double>((
-               EC_READ_U8(domain_address) & 0b00000001) != 0);
-    } else if (data_type == "uint8") {
-      return static_cast<double>(EC_READ_U8(domain_address));
+    if (data_type == "uint8") {
+      last_value = static_cast<double>(EC_READ_U8(domain_address));
     } else if (data_type == "int8") {
       last_value = static_cast<double>(EC_READ_S8(domain_address));
     } else if (data_type == "uint16") {
@@ -71,6 +67,8 @@ public:
       last_value = static_cast<double>(EC_READ_S64(domain_address));
     } else if (data_type == "test") {
       last_value = 42;
+    } else {
+      last_value = static_cast<double>(EC_READ_U8(domain_address) & data_mask);
     }
     last_value = factor * last_value + offset;
     return last_value;
@@ -94,6 +92,16 @@ public:
       EC_WRITE_U64(domain_address, static_cast<uint64_t>(value));
     } else if (data_type == "int64") {
       EC_WRITE_S64(domain_address, static_cast<int64_t>(value));
+    } else {
+      buffer_ = EC_READ_U8(domain_address);
+      if (popcount(data_mask) == 1) {
+        buffer_ &= (data_mask - 1);
+        if (value) {buffer_ += data_mask;}
+      } else if (data_mask != 0) {
+        buffer_ = 0;
+        buffer_ |= (static_cast<uint8_t>(value) & data_mask);
+      }
+      EC_WRITE_U8(domain_address, buffer_);
     }
     last_value = value;
   }
@@ -200,7 +208,7 @@ public:
   uint8_t data_mask = 0;
   double default_value = std::numeric_limits<double>::quiet_NaN();
   int interface_index = -1;
-  double last_value;
+  double last_value = std::numeric_limits<double>::quiet_NaN();
   bool allow_ec_write = true;
   double factor = 1;
   double offset = 0;
@@ -208,6 +216,14 @@ public:
 private:
   std::vector<double> * command_interface_ptr_;
   std::vector<double> * state_interface_ptr_;
+  uint8_t buffer_ = 0;
+
+  int popcount(uint8_t x)
+  {
+    int count = 0;
+    for (; x != 0; x >>= 1) {if (x & 1) {count++;}}
+    return count;
+  }
 };
 
 }  // namespace ethercat_interface
