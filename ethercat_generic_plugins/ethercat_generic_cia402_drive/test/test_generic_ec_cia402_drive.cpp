@@ -26,14 +26,14 @@ assign_activate: 0x0321  # DC Synch register
 period: 100  # Hz
 auto_fault_reset: false  # true = automatic fault reset, false = fault reset on rising edge command interface "reset_fault"
 sdo:  # sdo data to be transferred at drive startup
-  - {index: 0x60C2, sub_index: 1, value: 10} # Set interpolation time for cyclic modes to 10 ms
-  - {index: 0x60C2, sub_index: 2, value: -3} # Set base 10-3s
+  - {index: 0x60C2, sub_index: 1, type: int8, value: 10} # Set interpolation time for cyclic modes to 10 ms
+  - {index: 0x60C2, sub_index: 2, type: int8, value: -3} # Set base 10-3s
 rpdo:  # RxPDO
   - index: 0x1607
     channels:
       - {index: 0x607a, sub_index: 0, type: int32, command_interface: position, default: .nan}  # Target position
       - {index: 0x60ff, sub_index: 0, type: int32, command_interface: velocity, default: 0}  # Target velocity
-      - {index: 0x6071, sub_index: 0, type: test, command_interface: effort, default: -5}  # Target torque
+      - {index: 0x6071, sub_index: 0, type: int16, command_interface: effort, default: -5}  # Target torque
       - {index: 0x6072, sub_index: 0, type: int16, command_interface: ~, default: 1000}  # Max torque
       - {index: 0x6040, sub_index: 0, type: uint16, command_interface: ~, default: 0}  # Control word
       - {index: 0x6060, sub_index: 0, type: int8, command_interface: ~, default: 8}  # Mode of operation
@@ -42,7 +42,7 @@ tpdo:  # TxPDO
     channels:
       - {index: 0x6064, sub_index: 0, type: int32, state_interface: position}  # Position actual value
       - {index: 0x606c, sub_index: 0, type: int32, state_interface: velocity}  # Velocity actual value
-      - {index: 0x6077, sub_index: 0, type: test, state_interface: effort}  # Torque actual value
+      - {index: 0x6077, sub_index: 0, type: int16, state_interface: effort}  # Torque actual value
       - {index: 0x6041, sub_index: 0, type: uint16, state_interface: ~}  # Status word
       - {index: 0x6061, sub_index: 0, type: int8, state_interface: ~}  # Mode of operation display
   - index: 0x1a45
@@ -173,7 +173,7 @@ TEST_F(EcCiA402DriveTest, SlaveSetupDomains)
   ASSERT_EQ(domains[0][12], 12);
 }
 
-TEST_F(EcCiA402DriveTest, EcReadRPDOToStateInterface)
+TEST_F(EcCiA402DriveTest, EcReadTPDOToStateInterface)
 {
   SetUp();
   std::unordered_map<std::string, std::string> slave_paramters;
@@ -184,12 +184,13 @@ TEST_F(EcCiA402DriveTest, EcReadRPDOToStateInterface)
   plugin_->setup_from_config(YAML::Load(test_drive_config));
   plugin_->setup_interface_mapping();
   ASSERT_EQ(plugin_->pdo_channels_info_[8].interface_index, 1);
-  uint8_t domain_address = 0;
-  plugin_->processData(8, &domain_address);
+  uint8_t domain_address[2];
+  EC_WRITE_S16(domain_address, 42);
+  plugin_->processData(8, domain_address);
   ASSERT_EQ(plugin_->state_interface_ptr_->at(1), 42);
 }
 
-TEST_F(EcCiA402DriveTest, EcWriteTPDOFromCommandInterface)
+TEST_F(EcCiA402DriveTest, EcWriteRPDOFromCommandInterface)
 {
   SetUp();
   std::unordered_map<std::string, std::string> slave_paramters;
@@ -201,20 +202,22 @@ TEST_F(EcCiA402DriveTest, EcWriteTPDOFromCommandInterface)
   plugin_->setup_interface_mapping();
   ASSERT_EQ(plugin_->pdo_channels_info_[2].interface_index, 1);
   plugin_->mode_of_operation_display_ = 10;
-  uint8_t domain_address = 0;
-  plugin_->processData(2, &domain_address);
+  uint8_t domain_address[2];
+  plugin_->processData(2, domain_address);
   ASSERT_EQ(plugin_->pdo_channels_info_[2].last_value, 42);
+  ASSERT_EQ(EC_READ_S16(domain_address), 42);
 }
 
-TEST_F(EcCiA402DriveTest, EcWriteTPDODefaultValue)
+TEST_F(EcCiA402DriveTest, EcWriteRPDODefaultValue)
 {
   SetUp();
   plugin_->setup_from_config(YAML::Load(test_drive_config));
   plugin_->setup_interface_mapping();
   plugin_->mode_of_operation_display_ = 10;
-  uint8_t domain_address = 0;
-  plugin_->processData(2, &domain_address);
+  uint8_t domain_address[2];
+  plugin_->processData(2, domain_address);
   ASSERT_EQ(plugin_->pdo_channels_info_[2].last_value, -5);
+  ASSERT_EQ(EC_READ_S16(domain_address), -5);
 }
 
 TEST_F(EcCiA402DriveTest, FaultReset)
