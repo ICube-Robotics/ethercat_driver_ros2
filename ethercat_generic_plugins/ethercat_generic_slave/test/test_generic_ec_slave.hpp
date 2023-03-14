@@ -31,9 +31,9 @@ class FriendGenericEcSlave : public ethercat_generic_plugins::GenericEcSlave
   FRIEND_TEST(GenericEcSlaveTest, SlaveSetupPdoChannels);
   FRIEND_TEST(GenericEcSlaveTest, SlaveSetupSyncs);
   FRIEND_TEST(GenericEcSlaveTest, SlaveSetupDomains);
-  FRIEND_TEST(GenericEcSlaveTest, EcReadRPDOToStateInterface);
-  FRIEND_TEST(GenericEcSlaveTest, EcWriteTPDOFromCommandInterface);
-  FRIEND_TEST(GenericEcSlaveTest, EcWriteTPDODefaultValue);
+  FRIEND_TEST(GenericEcSlaveTest, EcReadTPDOToStateInterface);
+  FRIEND_TEST(GenericEcSlaveTest, EcWriteRPDOFromCommandInterface);
+  FRIEND_TEST(GenericEcSlaveTest, EcWriteRPDODefaultValue);
   FRIEND_TEST(GenericEcSlaveTest, SlaveSetupSDOConfig);
   FRIEND_TEST(GenericEcSlaveTest, SlaveSetupSyncManagerConfig);
 };

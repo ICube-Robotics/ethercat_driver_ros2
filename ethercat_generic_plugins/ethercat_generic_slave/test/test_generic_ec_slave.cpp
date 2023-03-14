@@ -33,7 +33,7 @@ rpdo:  # Receive PDO Mapping
     channels:
       - {index: 0x607a, sub_index: 0, type: int32, command_interface: position, default: .nan}
       - {index: 0x60ff, sub_index: 0, type: int32, command_interface: velocity, default: 0}
-      - {index: 0x6071, sub_index: 0, type: test, command_interface: effort, default: -5, factor: 2, offset: 10}
+      - {index: 0x6071, sub_index: 0, type: int16, command_interface: effort, default: -5, factor: 2, offset: 10}
       - {index: 0x6072, sub_index: 0, type: int16, command_interface: ~, default: 1000}
       - {index: 0x6040, sub_index: 0, type: uint16, command_interface: ~, default: 0}
       - {index: 0x6060, sub_index: 0, type: int8, command_interface: ~, default: 8}
@@ -42,7 +42,7 @@ tpdo:  # Transmit PDO Mapping
     channels:
       - {index: 0x6064, sub_index: 0, type: int32, state_interface: position}
       - {index: 0x606c, sub_index: 0, type: int32, state_interface: velocity}
-      - {index: 0x6077, sub_index: 0, type: test, state_interface: effort, factor: 5, offset: 15}
+      - {index: 0x6077, sub_index: 0, type: int16, state_interface: effort, factor: 5, offset: 15}
       - {index: 0x6041, sub_index: 0, type: uint16, state_interface: ~}
       - {index: 0x6061, sub_index: 0, type: int8, state_interface: ~}
   - index: 0x1a45
@@ -179,7 +179,7 @@ TEST_F(GenericEcSlaveTest, SlaveSetupDomains)
   ASSERT_EQ(domains[0][12], 12);
 }
 
-TEST_F(GenericEcSlaveTest, EcReadRPDOToStateInterface)
+TEST_F(GenericEcSlaveTest, EcReadTPDOToStateInterface)
 {
   SetUp();
   std::unordered_map<std::string, std::string> slave_paramters;
@@ -190,12 +190,13 @@ TEST_F(GenericEcSlaveTest, EcReadRPDOToStateInterface)
   plugin_->setup_from_config(YAML::Load(test_slave_config));
   plugin_->setup_interface_mapping();
   ASSERT_EQ(plugin_->pdo_channels_info_[8].interface_index, 1);
-  uint8_t domain_address = 0;
-  plugin_->processData(8, &domain_address);
+  uint8_t domain_address[2];
+  EC_WRITE_S16(domain_address, 42);
+  plugin_->processData(8, domain_address);
   ASSERT_EQ(plugin_->state_interface_ptr_->at(1), 5 * 42 + 15);
 }
 
-TEST_F(GenericEcSlaveTest, EcWriteTPDOFromCommandInterface)
+TEST_F(GenericEcSlaveTest, EcWriteRPDOFromCommandInterface)
 {
   SetUp();
   std::unordered_map<std::string, std::string> slave_paramters;
@@ -206,19 +207,21 @@ TEST_F(GenericEcSlaveTest, EcWriteTPDOFromCommandInterface)
   plugin_->setup_from_config(YAML::Load(test_slave_config));
   plugin_->setup_interface_mapping();
   ASSERT_EQ(plugin_->pdo_channels_info_[2].interface_index, 1);
-  uint8_t domain_address = 0;
-  plugin_->processData(2, &domain_address);
+  uint8_t domain_address[2];
+  plugin_->processData(2, domain_address);
   ASSERT_EQ(plugin_->pdo_channels_info_[2].last_value, 2 * 42 + 10);
+  ASSERT_EQ(EC_READ_S16(domain_address), 2 * 42 + 10);
 }
 
-TEST_F(GenericEcSlaveTest, EcWriteTPDODefaultValue)
+TEST_F(GenericEcSlaveTest, EcWriteRPDODefaultValue)
 {
   SetUp();
   plugin_->setup_from_config(YAML::Load(test_slave_config));
   plugin_->setup_interface_mapping();
-  uint8_t domain_address = 0;
-  plugin_->processData(2, &domain_address);
+  uint8_t domain_address[2];
+  plugin_->processData(2, domain_address);
   ASSERT_EQ(plugin_->pdo_channels_info_[2].last_value, -5);
+  ASSERT_EQ(EC_READ_S16(domain_address), -5);
 }
 
 TEST_F(GenericEcSlaveTest, SlaveSetupSDOConfig)
