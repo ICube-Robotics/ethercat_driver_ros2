@@ -64,7 +64,8 @@ const std::map<DeviceState, std::string> DEVICE_STATE_STR = {
   {STATE_OPERATION_ENABLED, "Operation Enabled"},
   {STATE_QUICK_STOP_ACTIVE, "Quick Stop Active"},
   {STATE_FAULT_REACTION_ACTIVE, "Fault Reaction Active"},
-  {STATE_FAULT, "Fault"}
+  {STATE_FAULT, "Fault"},
+  {STATE_UNDEFINED, "Undefined State"}
 };
 
 #endif  // ETHERCAT_GENERIC_PLUGINS__CIA402_COMMON_DEFS_HPP_
