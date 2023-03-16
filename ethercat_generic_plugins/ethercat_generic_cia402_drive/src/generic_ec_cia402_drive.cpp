@@ -53,31 +53,12 @@ void EcCiA402Drive::processData(size_t index, uint8_t * domain_address)
     }
   }
 
-  pdo_channels_info_[index].allow_ec_write = true;
-
+  // setup current position as default position
   if (pdo_channels_info_[index].index == CiA402D_RPDO_POSITION) {
-    if (mode_of_operation_display_ != MODE_CYCLIC_SYNC_POSITION &&
-      mode_of_operation_display_ != MODE_PROFILED_POSITION &&
-      mode_of_operation_display_ != MODE_INTERPOLATED_POSITION)
-    {  // check if allowed to write position
-      pdo_channels_info_[index].allow_ec_write = false;
-    }
     if (mode_of_operation_display_ != ModeOfOperation::MODE_NO_MODE) {
       pdo_channels_info_[index].default_value =
         pdo_channels_info_[index].factor * last_position_ +
         pdo_channels_info_[index].offset;
-    }
-  } else if (pdo_channels_info_[index].index == CiA402D_RPDO_VELOCITY) {
-    if (mode_of_operation_display_ != MODE_CYCLIC_SYNC_VELOCITY &&
-      mode_of_operation_display_ != MODE_PROFILED_VELOCITY)
-    {  // check if allowed to write velocity
-      pdo_channels_info_[index].allow_ec_write = false;
-    }
-  } else if (pdo_channels_info_[index].index == CiA402D_RPDO_EFFORT) {
-    if (mode_of_operation_display_ != MODE_CYCLIC_SYNC_TORQUE &&
-      mode_of_operation_display_ != MODE_PROFILED_TORQUE)
-    {  // check if allowed to write effort
-      pdo_channels_info_[index].allow_ec_write = false;
     }
   }
 
