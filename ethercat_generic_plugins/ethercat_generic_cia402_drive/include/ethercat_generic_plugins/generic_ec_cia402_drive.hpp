@@ -20,6 +20,7 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <limits>
 
 #include "yaml-cpp/yaml.h"
 #include "ethercat_interface/ec_slave.hpp"
@@ -62,7 +63,7 @@ protected:
   bool fault_reset_ = false;
   int fault_reset_command_interface_index_ = -1;
   bool last_fault_reset_command_ = false;
-  double last_position_ = 0;
+  double last_position_ = std::numeric_limits<double>::quiet_NaN();
 
   /** returns device state based upon the status_word */
   DeviceState deviceState(uint16_t status_word);
