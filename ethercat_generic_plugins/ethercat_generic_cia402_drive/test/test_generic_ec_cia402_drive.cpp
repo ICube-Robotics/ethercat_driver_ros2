@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <map>
+#include <limits>
 #include <pluginlib/class_loader.hpp>
 #include "ethercat_interface/ec_slave.hpp"
 #include "test_generic_ec_cia402_drive.hpp"
@@ -36,7 +37,7 @@ rpdo:  # RxPDO
       - {index: 0x6071, sub_index: 0, type: int16, command_interface: effort, default: -5}  # Target torque
       - {index: 0x6072, sub_index: 0, type: int16, command_interface: ~, default: 1000}  # Max torque
       - {index: 0x6040, sub_index: 0, type: uint16, command_interface: ~, default: 0}  # Control word
-      - {index: 0x6060, sub_index: 0, type: int8, command_interface: ~, default: 8}  # Mode of operation
+      - {index: 0x6060, sub_index: 0, type: int8, command_interface: mode_of_operation, default: 8}  # Mode of operation
 tpdo:  # TxPDO
   - index: 0x1a07
     channels:
@@ -44,7 +45,7 @@ tpdo:  # TxPDO
       - {index: 0x606c, sub_index: 0, type: int32, state_interface: velocity}  # Velocity actual value
       - {index: 0x6077, sub_index: 0, type: int16, state_interface: effort}  # Torque actual value
       - {index: 0x6041, sub_index: 0, type: uint16, state_interface: ~}  # Status word
-      - {index: 0x6061, sub_index: 0, type: int8, state_interface: ~}  # Mode of operation display
+      - {index: 0x6061, sub_index: 0, type: int8, state_interface: mode_of_operation}  # Mode of operation display
   - index: 0x1a45
     channels:
       - {index: 0x2205, sub_index: 1, type: int16, state_interface: analog_input1}  # Analog input
@@ -245,4 +246,72 @@ TEST_F(EcCiA402DriveTest, FaultReset)
   ASSERT_EQ(plugin_->pdo_channels_info_[4].default_value, 0b00000000);
   command_interface[1] = 2;  plugin_->processData(4, &domain_address);
   ASSERT_EQ(plugin_->pdo_channels_info_[4].default_value, 0b10000000);
+}
+
+TEST_F(EcCiA402DriveTest, SwitchModeOfOperation)
+{
+  std::unordered_map<std::string, std::string> slave_paramters;
+  std::vector<double> command_interface = {
+    std::numeric_limits<double>::quiet_NaN(),
+    std::numeric_limits<double>::quiet_NaN()};
+  slave_paramters["command_interface/mode_of_operation"] = "1";
+  plugin_->paramters_ = slave_paramters;
+  plugin_->command_interface_ptr_ = &command_interface;
+  plugin_->setup_from_config(YAML::Load(test_drive_config));
+  plugin_->setup_interface_mapping();
+  plugin_->is_operational_ = true;
+  uint8_t domain_address[2];
+  plugin_->processData(5, domain_address);
+  ASSERT_EQ(EC_READ_S8(domain_address), 8);
+  command_interface[1] = 9;
+  plugin_->processData(5, domain_address);
+  plugin_->processData(10, domain_address);
+  ASSERT_EQ(EC_READ_S8(domain_address), 9);
+  ASSERT_EQ(plugin_->mode_of_operation_display_, 9);
+}
+
+TEST_F(EcCiA402DriveTest, EcWriteDefaultTargetPosition)
+{
+  std::unordered_map<std::string, std::string> slave_paramters;
+  std::vector<double> command_interface = {
+    std::numeric_limits<double>::quiet_NaN(),
+    std::numeric_limits<double>::quiet_NaN()};
+  slave_paramters["command_interface/mode_of_operation"] = "1";
+  plugin_->paramters_ = slave_paramters;
+  plugin_->command_interface_ptr_ = &command_interface;
+  plugin_->setup_from_config(YAML::Load(test_drive_config));
+  plugin_->setup_interface_mapping();
+  plugin_->is_operational_ = true;
+  plugin_->mode_of_operation_display_ = 8;
+  uint8_t domain_address[4];
+  uint8_t domain_address_moo[2];
+
+  plugin_->processData(5, domain_address_moo);
+  plugin_->processData(10, domain_address_moo);
+  ASSERT_EQ(plugin_->mode_of_operation_display_, 8);
+
+  EC_WRITE_S32(domain_address, 123456);
+  plugin_->processData(6, domain_address);
+  ASSERT_EQ(plugin_->last_position_, 123456);
+
+  EC_WRITE_S32(domain_address, 0);
+  plugin_->processData(0, domain_address);
+  ASSERT_EQ(EC_READ_S32(domain_address), 123456);
+
+  command_interface[1] = 9;
+  plugin_->processData(5, domain_address_moo);
+  plugin_->processData(10, domain_address_moo);
+  ASSERT_EQ(plugin_->mode_of_operation_display_, 9);
+
+  EC_WRITE_S32(domain_address, 0);
+  plugin_->processData(0, domain_address);
+  ASSERT_EQ(EC_READ_S32(domain_address), 123456);
+
+  EC_WRITE_S32(domain_address, 654321);
+  plugin_->processData(6, domain_address);
+  ASSERT_EQ(plugin_->last_position_, 654321);
+
+  EC_WRITE_S32(domain_address, 0);
+  plugin_->processData(0, domain_address);
+  ASSERT_EQ(EC_READ_S32(domain_address), 654321);
 }
