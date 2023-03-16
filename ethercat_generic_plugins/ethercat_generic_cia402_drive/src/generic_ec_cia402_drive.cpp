@@ -62,7 +62,7 @@ void EcCiA402Drive::processData(size_t index, uint8_t * domain_address)
     {  // check if allowed to write position
       pdo_channels_info_[index].allow_ec_write = false;
     }
-    if (mode_of_operation_display_ == mode_of_operation_) {
+    if (mode_of_operation_display_ != ModeOfOperation::MODE_NO_MODE) {
       pdo_channels_info_[index].default_value =
         pdo_channels_info_[index].factor * last_position_ +
         pdo_channels_info_[index].offset;
