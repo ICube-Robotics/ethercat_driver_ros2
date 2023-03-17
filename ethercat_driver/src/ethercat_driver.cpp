@@ -292,7 +292,7 @@ CallbackReturn EthercatDriver::on_activate(
         sdo,
         &abort_code
       );
-      if (!ret) {
+      if (ret) {
         RCLCPP_INFO(
           rclcpp::get_logger("EthercatDriver"),
           "Failed to download config SDO for module at position %s with Error: %d",
