@@ -53,16 +53,10 @@ public:
         EC_WRITE_U16(domain_address, control_word_);
         break;
       case 1:
-        if (isTargetPositionRequired && (
-            mode_of_operation_display_ == MODE_NO_MODE ||
-            mode_of_operation_display_ == MODE_CYCLIC_SYNC_POSITION ||
-            mode_of_operation_display_ == MODE_PROFILED_POSITION ||
-            mode_of_operation_display_ == MODE_INTERPOLATED_POSITION ))
-        {
+        target_position_ = position_;
+        if (isTargetPositionRequired) {
           if (!std::isnan(command_interface_ptr_->at(cii_target_position))) {
             target_position_ = command_interface_ptr_->at(cii_target_position);
-          } else {
-            target_position_ = position_;
           }
         }
         EC_WRITE_S32(domain_address, target_position_);
