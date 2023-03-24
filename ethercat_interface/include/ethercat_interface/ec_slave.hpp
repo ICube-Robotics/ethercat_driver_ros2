@@ -61,8 +61,10 @@ public:
     paramters_ = slave_paramters;
     return true;
   }
-  const uint32_t vendor_id_;
-  const uint32_t product_id_;
+  uint32_t vendor_id_;
+  uint32_t product_id_;
+
+  std::vector<SdoConfigEntry> sdo_config;
 
   std::vector<SdoConfigEntry> sdo_config;
 

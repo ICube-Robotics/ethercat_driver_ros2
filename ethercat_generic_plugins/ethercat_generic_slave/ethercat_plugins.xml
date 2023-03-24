@@ -1,0 +1,5 @@
+<library path="ethercat_generic_slave">
+  <class name="ethercat_generic_plugins/GenericEcSlave" type="ethercat_generic_plugins::GenericEcSlave" base_class_type="ethercat_interface::EcSlave">
+    <description>Generic EtherCAT Slave.</description>
+  </class>
+</library>
