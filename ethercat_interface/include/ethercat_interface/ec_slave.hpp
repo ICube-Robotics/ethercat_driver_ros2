@@ -66,8 +66,6 @@ public:
 
   std::vector<SdoConfigEntry> sdo_config;
 
-  std::vector<SdoConfigEntry> sdo_config;
-
 protected:
   std::vector<double> * state_interface_ptr_;
   std::vector<double> * command_interface_ptr_;
