@@ -282,6 +282,27 @@ CallbackReturn EthercatDriver::on_activate(
       std::stod(ec_module_parameters_[i]["position"]),
       ec_modules_[i].get());
   }
+
+  // configure SDO
+  for (auto i = 0ul; i < ec_modules_.size(); i++) {
+    for (auto & sdo : ec_modules_[i]->sdo_config) {
+      uint32_t abort_code;
+      int ret = master_.configSlaveSdo(
+        std::stod(ec_module_parameters_[i]["position"]),
+        sdo,
+        &abort_code
+      );
+      if (ret) {
+        RCLCPP_INFO(
+          rclcpp::get_logger("EthercatDriver"),
+          "Failed to download config SDO for module at position %s with Error: %d",
+          ec_module_parameters_[i]["position"].c_str(),
+          abort_code
+        );
+      }
+    }
+  }
+
   master_.activate();
   RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"), "Activated EcMaster!");
 

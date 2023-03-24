@@ -23,8 +23,11 @@
 #include <cmath>
 #include <string>
 
+#include "ethercat_interface/ec_sdo_manager.hpp"
+
 namespace ethercat_interface
 {
+
 class EcSlave
 {
 public:
@@ -60,6 +63,8 @@ public:
   }
   const uint32_t vendor_id_;
   const uint32_t product_id_;
+
+  std::vector<SdoConfigEntry> sdo_config;
 
 protected:
   std::vector<double> * state_interface_ptr_;
