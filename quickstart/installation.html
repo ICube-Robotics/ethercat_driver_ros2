@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Installation &mdash; ethercat_driver_ros2 1.0.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Configuration" href="configuration.html" />
+    <link rel="prev" title="EtherCAT Driver ROS2 Stack" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ethercat_driver_ros2
+              <img src="../_static/logo-icube.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quickstart</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installing-etherlab">Installing EtherLab</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#building-ethercat-driver-ros2">Building <code class="code docutils literal notranslate"><span class="pre">ethercat_driver_ros2</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/config_generic_slave.html">Generic EtherCAT Slave configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/config_cia402_drive.html">CiA402 EtherCAT Motor Drive configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developer_guide/coe.html">CANopen over EtherCAT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_guide/cia402_drive.html">CANopen over EtherCAT for electrical drives</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_guide/new_plugin.html">Creating a new device driver</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://ICube-Robotics.github.io/ethercat_driver_ros2/api/">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ethercat_driver_ros2</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Installation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/quickstart/installation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline"></a></h1>
+<p><strong>Required setup : Ubuntu 22.04 LTS</strong></p>
+<section id="installing-etherlab">
+<h2>Installing EtherLab<a class="headerlink" href="#installing-etherlab" title="Permalink to this headline"></a></h2>
+<p>The proposed development builds upon the <a class="reference external" href="https://etherlab.org/en/ethercat/">IgH EtherCAT Master</a>.
+Installation steps are summarized here:</p>
+<ul>
+<li><p>Install required tools:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>sudo<span class="w"> </span>apt-get<span class="w"> </span>update
+<span class="gp">$ </span>sudo<span class="w"> </span>apt-get<span class="w"> </span>upgrade
+<span class="gp">$ </span>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>git<span class="w"> </span>autoconf<span class="w"> </span>libtool<span class="w"> </span>pkg-config<span class="w"> </span>make<span class="w"> </span>build-essential<span class="w"> </span>net-tools
+</pre></div>
+</div>
+</li>
+<li><p>Setup sources for the EtherCAT Master:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>git<span class="w"> </span>clone<span class="w"> </span>https://gitlab.com/etherlab.org/ethercat.git
+<span class="gp">$ </span><span class="nb">cd</span><span class="w"> </span>ethercat
+<span class="gp">$ </span>git<span class="w"> </span>checkout<span class="w"> </span>stable-1.5
+<span class="gp">$ </span>sudo<span class="w"> </span>rm<span class="w"> </span>/usr/bin/ethercat
+<span class="gp">$ </span>sudo<span class="w"> </span>rm<span class="w"> </span>/etc/init.d/ethercat
+<span class="gp">$ </span>./bootstrap<span class="w">  </span><span class="c1"># to create the configure script</span>
+</pre></div>
+</div>
+</li>
+<li><p>Configure, build and install libs and kernel modules:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>./configure<span class="w"> </span>--prefix<span class="o">=</span>/usr/local/etherlab<span class="w">  </span>--disable-8139too<span class="w"> </span>--disable-eoe<span class="w"> </span>--enable-generic
+
+<span class="gp">$ </span>make<span class="w"> </span>all<span class="w"> </span>modules
+<span class="gp">$ </span>sudo<span class="w"> </span>make<span class="w"> </span>modules_install<span class="w"> </span>install
+<span class="gp">$ </span>sudo<span class="w"> </span>depmod
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This step is needed every time the Linux kernel is updated.</p>
+</div>
+</li>
+<li><p>Configure system:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>sudo<span class="w"> </span>ln<span class="w"> </span>-s<span class="w"> </span>/usr/local/etherlab/bin/ethercat<span class="w"> </span>/usr/bin/
+<span class="gp">$ </span>sudo<span class="w"> </span>ln<span class="w"> </span>-s<span class="w"> </span>/usr/local/etherlab/etc/init.d/ethercat<span class="w"> </span>/etc/init.d/ethercat
+<span class="gp">$ </span>sudo<span class="w"> </span>mkdir<span class="w"> </span>-p<span class="w"> </span>/etc/sysconfig
+<span class="gp">$ </span>sudo<span class="w"> </span>cp<span class="w"> </span>/usr/local/etherlab/etc/sysconfig/ethercat<span class="w"> </span>/etc/sysconfig/ethercat
+</pre></div>
+</div>
+</li>
+<li><p>Create a new <code class="code docutils literal notranslate"><span class="pre">udev</span></code> rule:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>sudo<span class="w"> </span>gedit<span class="w"> </span>/etc/udev/rules.d/99-EtherCAT.rules
+</pre></div>
+</div>
+<p>containing:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">KERNEL==&quot;EtherCAT[0-9]*&quot;, MODE=&quot;0666&quot;</span>
+</pre></div>
+</div>
+</li>
+<li><p>Configure the network adapter for EtherCAT:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>sudo<span class="w"> </span>gedit<span class="w"> </span>/etc/sysconfig/ethercat_driver_ros2
+</pre></div>
+</div>
+<p>In the configuration file specify the mac address of the network card to be used and its driver</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">MASTER0_DEVICE=&quot;ff:ff:ff:ff:ff:ff&quot;  # </span>mac<span class="w"> </span>address
+<span class="go">DEVICE_MODULES=&quot;generic&quot;</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<p>Now you can start the EtherCAT master:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>sudo<span class="w"> </span>/etc/init.d/ethercat<span class="w"> </span>start
+</pre></div>
+</div>
+<p>it should print</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">Starting EtherCAT master 1.5.2  done</span>
+</pre></div>
+</div>
+<p>You can check connected slaves:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>ethercat<span class="w"> </span>slaves
+</pre></div>
+</div>
+<p>It should print information of connected slave device:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">&lt;id&gt;  &lt;alias&gt;:&lt;position&gt;  &lt;device_state&gt;  +  &lt;device_name&gt;</span>
+</pre></div>
+</div>
+<p>Example:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">0  0:0  PREOP  +  &lt;device_0_name&gt;</span>
+<span class="go">0  0:1  PREOP  +  &lt;device_1_name&gt;</span>
+</pre></div>
+</div>
+</section>
+<section id="building-ethercat-driver-ros2">
+<h2>Building <code class="code docutils literal notranslate"><span class="pre">ethercat_driver_ros2</span></code><a class="headerlink" href="#building-ethercat-driver-ros2" title="Permalink to this headline"></a></h2>
+<ol class="arabic simple">
+<li><p>Install ROS2 packages. The current development is based of <code class="code docutils literal notranslate"><span class="pre">ros2</span> <span class="pre">humble</span></code>. Installation steps are described in the <a class="reference external" href="https://docs.ros.org/en/humble/Installation.html">ROS2 Humble Documentation</a>.</p></li>
+<li><p>Source your ROS2` environment:</p></li>
+</ol>
+<blockquote>
+<div><div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">source /opt/ros/humble/setup.bash</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The ROS2 environment needs to be sources in every used terminal. If only one distribution of ROS2 is used, it can be added to the <code class="code docutils literal notranslate"><span class="pre">~/.bashrc</span></code> file.</p>
+</div>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li><p>Install <code class="code docutils literal notranslate"><span class="pre">colcon</span></code> and its extensions :</p></li>
+</ol>
+<blockquote>
+<div><div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">sudo apt install python3-colcon-common-extensions</span>
+</pre></div>
+</div>
+</div></blockquote>
+<ol class="arabic simple" start="4">
+<li><p>Create a new ROS2 workspace:</p></li>
+</ol>
+<blockquote>
+<div><div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">mkdir ~/ros2_ws/src</span>
+</pre></div>
+</div>
+</div></blockquote>
+<ol class="arabic simple" start="5">
+<li><p>Pull relevant packages, install dependencies, compile, and source the workspace by using:</p></li>
+</ol>
+<blockquote>
+<div><div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">cd ~/ros2_ws</span>
+<span class="go">git clone https://github.com/ICube-Robotics/ethercat_driver_ros2.git src/ethercat_driver_ros2</span>
+<span class="go">rosdep install --ignore-src --from-paths . -y -r</span>
+<span class="go">colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install</span>
+<span class="go">source install/setup.bash</span>
+</pre></div>
+</div>
+</div></blockquote>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="EtherCAT Driver ROS2 Stack" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="configuration.html" class="btn btn-neutral float-right" title="Configuration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, ICUBE Laboratory, University of Strasbourg.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

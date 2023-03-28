@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Creating a new device driver &mdash; ethercat_driver_ros2 1.0.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="CANopen over EtherCAT for electrical drives" href="cia402_drive.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ethercat_driver_ros2
+              <img src="../_static/logo-icube.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quickstart</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart/configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart/usage.html">Usage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/config_generic_slave.html">Generic EtherCAT Slave configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/config_cia402_drive.html">CiA402 EtherCAT Motor Drive configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="coe.html">CANopen over EtherCAT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cia402_drive.html">CANopen over EtherCAT for electrical drives</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Creating a new device driver</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#what-you-need-to-do">What you need to do</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-do-it">How to do it</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#create-a-package">Create a package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create-your-plugin-class">Create your plugin class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#export-your-plugin">Export your plugin</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://ICube-Robotics.github.io/ethercat_driver_ros2/api/">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ethercat_driver_ros2</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Creating a new device driver</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/developer_guide/new_plugin.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="creating-a-new-device-driver">
+<h1>Creating a new device driver<a class="headerlink" href="#creating-a-new-device-driver" title="Permalink to this headline"></a></h1>
+<p>Creating a new device driver to work with the <code class="code docutils literal notranslate"><span class="pre">ethercat_driver_ros2</span></code> is fairly easy. You should do this if you need to create a driver for a specific device or a specific device profile that is not yet supported. If you create a driver for a device profile we are happy to integrate the package into this repository - simply create a PR.</p>
+<section id="what-you-need-to-do">
+<h2>What you need to do<a class="headerlink" href="#what-you-need-to-do" title="Permalink to this headline"></a></h2>
+<p>To create a dedicated driver for an EtherCAT module, you need to create a new package containing the module driver plugin and register it so that it can be called by the <code class="code docutils literal notranslate"><span class="pre">ethercat_driver_ros2</span></code>.</p>
+</section>
+<section id="how-to-do-it">
+<h2>How to do it<a class="headerlink" href="#how-to-do-it" title="Permalink to this headline"></a></h2>
+<section id="create-a-package">
+<h3>Create a package<a class="headerlink" href="#create-a-package" title="Permalink to this headline"></a></h3>
+<p>Create a new package using the standard ros2 pkg commands. Make sure you add the following dependencies:</p>
+<ul class="simple">
+<li><p><code class="code docutils literal notranslate"><span class="pre">ethercat_interface</span></code></p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">pluginlib</span></code></p></li>
+</ul>
+</section>
+<section id="create-your-plugin-class">
+<h3>Create your plugin class<a class="headerlink" href="#create-your-plugin-class" title="Permalink to this headline"></a></h3>
+<p>To be loaded by the <code class="code docutils literal notranslate"><span class="pre">ethercat_driver_ros2</span></code>, the new module plugin needs to inherit from the <code class="code docutils literal notranslate"><span class="pre">EcSlave</span></code> class and implement some of its virtual functions. To do so create in your package <code class="code docutils literal notranslate"><span class="pre">src</span></code> folder a new file <code class="code docutils literal notranslate"><span class="pre">my_ec_device_driver.cpp</span></code>:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;ethercat_interface/ec_slave.hpp&quot;</span>
+
+<span class="k">namespace</span><span class="w"> </span><span class="nn">ethercat_plugins</span>
+<span class="p">{</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyEcDeviceDriver</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">ethercat_interface</span><span class="o">::</span><span class="n">EcSlave</span>
+<span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">  </span><span class="n">MyEcDeviceDriver</span><span class="p">()</span>
+<span class="w">  </span><span class="o">:</span><span class="w"> </span><span class="n">EcSlave</span><span class="p">(</span><span class="o">&lt;</span><span class="n">vendor_id</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="o">&lt;</span><span class="n">product_id</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">  </span><span class="k">virtual</span><span class="w"> </span><span class="o">~</span><span class="n">MyEcDeviceDriver</span><span class="p">()</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">  </span><span class="c1">// data processing method that will be called cyclically for every channel</span>
+<span class="w">  </span><span class="c1">// the index corresponds to the values registered in domains_</span>
+<span class="w">  </span><span class="k">virtual</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">processData</span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">index</span><span class="p">,</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">domain_address</span><span class="p">)</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Your process data logic goes here</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="k">virtual</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">ec_sync_info_t</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">syncs</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="k">return</span><span class="w"> </span><span class="o">&amp;</span><span class="n">syncs_</span><span class="p">[</span><span class="mi">0</span><span class="p">];}</span>
+<span class="w">  </span><span class="k">virtual</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">syncSize</span><span class="p">()</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">syncs_</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">ec_sync_info_t</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="k">virtual</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">ec_pdo_entry_info_t</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">channels</span><span class="p">()</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">channels_</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="k">virtual</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">domains</span><span class="p">(</span><span class="n">DomainMap</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">domains</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="n">domains</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">domains_</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="c1">// configure the slave module with urdf parameters</span>
+<span class="w">  </span><span class="c1">// and link ros2_control command and stat interface</span>
+<span class="w">  </span><span class="k">virtual</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">setupSlave</span><span class="p">(</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">unordered_map</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span><span class="w"> </span><span class="n">slave_paramters</span><span class="p">,</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">state_interface</span><span class="p">,</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">command_interface</span><span class="p">)</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="n">state_interface_ptr_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state_interface</span><span class="p">;</span>
+<span class="w">    </span><span class="n">command_interface_ptr_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">command_interface</span><span class="p">;</span>
+<span class="w">    </span><span class="n">paramters_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">slave_paramters</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// Your module setup logic goes here</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="k">private</span><span class="o">:</span>
+<span class="w">  </span><span class="c1">// configure module channels</span>
+<span class="w">  </span><span class="n">ec_pdo_entry_info_t</span><span class="w"> </span><span class="n">channels_</span><span class="p">[</span><span class="n">X</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="p">{</span><span class="o">&lt;</span><span class="n">index</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="o">&lt;</span><span class="n">sub_index</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="o">&lt;</span><span class="n">type</span><span class="o">&gt;</span><span class="p">},</span>
+<span class="w">  </span><span class="p">};</span>
+<span class="w">  </span><span class="c1">// configure module pdos</span>
+<span class="w">  </span><span class="n">ec_pdo_info_t</span><span class="w"> </span><span class="n">pdos_</span><span class="p">[</span><span class="n">X</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="p">{</span><span class="o">&lt;</span><span class="n">index</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="o">&lt;</span><span class="n">nbr_channels</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="o">&lt;</span><span class="n">channel_ptr</span><span class="o">&gt;</span><span class="p">},</span>
+<span class="w">  </span><span class="p">};</span>
+<span class="w">  </span><span class="c1">// configure module syncs</span>
+<span class="w">  </span><span class="n">ec_sync_info_t</span><span class="w"> </span><span class="n">syncs_</span><span class="p">[</span><span class="n">X</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="p">{</span><span class="o">&lt;</span><span class="n">index</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="o">&lt;</span><span class="n">type</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="o">&lt;</span><span class="n">nbr_pdos</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="o">&lt;</span><span class="n">pdos_ptr</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="o">&lt;</span><span class="n">watchdog</span><span class="o">&gt;</span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="mh">0xff</span><span class="p">}</span>
+<span class="w">  </span><span class="p">};</span>
+<span class="w">  </span><span class="c1">// configure module domain</span>
+<span class="w">  </span><span class="n">DomainMap</span><span class="w"> </span><span class="n">domains_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="p">{</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">}}</span><span class="w"> </span><span class="c1">// index of channels that should call processData()</span>
+<span class="w">  </span><span class="p">};</span>
+<span class="p">};</span>
+
+<span class="p">}</span><span class="w">  </span><span class="c1">// namespace ethercat_plugins</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;pluginlib/class_list_macros.hpp&gt;</span>
+
+<span class="n">PLUGINLIB_EXPORT_CLASS</span><span class="p">(</span><span class="n">ethercat_plugins</span><span class="o">::</span><span class="n">MyEcDeviceDriver</span><span class="p">,</span><span class="w"> </span><span class="n">ethercat_interface</span><span class="o">::</span><span class="n">EcSlave</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="export-your-plugin">
+<h3>Export your plugin<a class="headerlink" href="#export-your-plugin" title="Permalink to this headline"></a></h3>
+<p>In the package root directory create a plugin description file <code class="code docutils literal notranslate"><span class="pre">ethercat_plugins.xml</span></code> :</p>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;library</span><span class="w"> </span><span class="na">path=</span><span class="s">&quot;ethercat_plugins&quot;</span><span class="nt">&gt;</span>
+<span class="w">  </span><span class="nt">&lt;class</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;ethercat_plugins/MyEcDeviceDriver&quot;</span>
+<span class="w">         </span><span class="na">type=</span><span class="s">&quot;ethercat_plugins::MyEcDeviceDriver&quot;</span>
+<span class="w">         </span><span class="na">base_class_type=</span><span class="s">&quot;ethercat_interface::EcSlave&quot;</span><span class="nt">&gt;</span>
+<span class="w">    </span><span class="nt">&lt;description&gt;</span>Description<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span>device<span class="w"> </span>driver.<span class="nt">&lt;/description&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/class&gt;</span>
+<span class="nt">&lt;/library&gt;</span>
+</pre></div>
+</div>
+<p>Modify your <code class="code docutils literal notranslate"><span class="pre">CMakeLists.txt</span></code> file so that it looks like this:</p>
+<div class="highlight-cmake notranslate"><div class="highlight"><pre><span></span><span class="nb">cmake_minimum_required</span><span class="p">(</span><span class="s">VERSION</span><span class="w"> </span><span class="s">3.8</span><span class="p">)</span>
+<span class="nb">project</span><span class="p">(</span><span class="s">&lt;your_package&gt;</span><span class="p">)</span>
+
+<span class="nb">if</span><span class="p">(</span><span class="s">CMAKE_COMPILER_IS_GNUCXX</span><span class="w"> </span><span class="s">OR</span><span class="w"> </span><span class="s">CMAKE_CXX_COMPILER_ID</span><span class="w"> </span><span class="s">MATCHES</span><span class="w"> </span><span class="s2">&quot;Clang&quot;</span><span class="p">)</span>
+<span class="w">  </span><span class="nb">add_compile_options</span><span class="p">(</span><span class="s">-Wall</span><span class="w"> </span><span class="s">-Wextra</span><span class="w"> </span><span class="s">-Wpedantic</span><span class="p">)</span>
+<span class="nb">endif</span><span class="p">()</span>
+
+<span class="c"># find dependencies</span>
+<span class="nb">find_package</span><span class="p">(</span><span class="s">ament_cmake</span><span class="w"> </span><span class="s">REQUIRED</span><span class="p">)</span>
+<span class="nb">find_package</span><span class="p">(</span><span class="s">ament_cmake_ros</span><span class="w"> </span><span class="s">REQUIRED</span><span class="p">)</span>
+<span class="nb">find_package</span><span class="p">(</span><span class="s">ethercat_interface</span><span class="w"> </span><span class="s">REQUIRED</span><span class="p">)</span>
+<span class="nb">find_package</span><span class="p">(</span><span class="s">pluginlib</span><span class="w"> </span><span class="s">REQUIRED</span><span class="p">)</span>
+
+<span class="nb">file</span><span class="p">(</span><span class="s">GLOB_RECURSE</span><span class="w"> </span><span class="s">PLUGINS_SRC</span><span class="w"> </span><span class="s">src/*.cpp</span><span class="p">)</span>
+<span class="nb">add_library</span><span class="p">(</span><span class="o">${</span><span class="nv">PROJECT_NAME</span><span class="o">}</span><span class="w"> </span><span class="o">${</span><span class="nv">PLUGINS_SRC</span><span class="o">}</span><span class="p">)</span>
+<span class="nb">target_compile_features</span><span class="p">(</span><span class="o">${</span><span class="nv">PROJECT_NAME</span><span class="o">}</span><span class="w"> </span><span class="s">PUBLIC</span><span class="w"> </span><span class="s">c_std_99</span><span class="w"> </span><span class="s">cxx_std_17</span><span class="p">)</span><span class="w">  </span><span class="c"># Require C99 and C++17</span>
+<span class="nb">target_include_directories</span><span class="p">(</span><span class="o">${</span><span class="nv">PROJECT_NAME</span><span class="o">}</span><span class="w"> </span><span class="s">PUBLIC</span>
+<span class="w">  </span><span class="o">$&lt;</span><span class="nv">BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include</span><span class="o">&gt;</span>
+<span class="w">  </span><span class="o">$&lt;</span><span class="nv">INSTALL_INTERFACE:include</span><span class="o">&gt;</span>
+<span class="p">)</span>
+<span class="nb">ament_target_dependencies</span><span class="p">(</span>
+<span class="w">  </span><span class="o">${</span><span class="nv">PROJECT_NAME</span><span class="o">}</span>
+<span class="w">  </span><span class="s2">&quot;ethercat_interface&quot;</span>
+<span class="w">  </span><span class="s2">&quot;pluginlib&quot;</span>
+<span class="p">)</span>
+<span class="nb">pluginlib_export_plugin_description_file</span><span class="p">(</span><span class="s">ethercat_interface</span><span class="w"> </span><span class="s">ethercat_plugins.xml</span><span class="p">)</span>
+<span class="nb">install</span><span class="p">(</span>
+<span class="w">  </span><span class="s">DIRECTORY</span><span class="w"> </span><span class="s">include/</span>
+<span class="w">  </span><span class="s">DESTINATION</span><span class="w"> </span><span class="s">include</span>
+<span class="p">)</span>
+<span class="nb">install</span><span class="p">(</span>
+<span class="w">  </span><span class="s">TARGETS</span><span class="w"> </span><span class="o">${</span><span class="nv">PROJECT_NAME</span><span class="o">}</span>
+<span class="w">  </span><span class="s">EXPORT</span><span class="w"> </span><span class="s">export_</span><span class="o">${</span><span class="nv">PROJECT_NAME</span><span class="o">}</span>
+<span class="w">  </span><span class="s">ARCHIVE</span><span class="w"> </span><span class="s">DESTINATION</span><span class="w"> </span><span class="s">lib</span>
+<span class="w">  </span><span class="s">LIBRARY</span><span class="w"> </span><span class="s">DESTINATION</span><span class="w"> </span><span class="s">lib</span>
+<span class="w">  </span><span class="s">RUNTIME</span><span class="w"> </span><span class="s">DESTINATION</span><span class="w"> </span><span class="s">bin</span>
+<span class="p">)</span>
+<span class="nb">ament_export_include_directories</span><span class="p">(</span>
+<span class="w">  </span><span class="s">include</span>
+<span class="p">)</span>
+<span class="nb">ament_export_libraries</span><span class="p">(</span>
+<span class="w">  </span><span class="s">ethercat_plugins</span>
+<span class="p">)</span>
+<span class="nb">ament_export_targets</span><span class="p">(</span>
+<span class="w">  </span><span class="s">export_</span><span class="o">${</span><span class="nv">PROJECT_NAME</span><span class="o">}</span>
+<span class="p">)</span>
+<span class="nb">ament_package</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="cia402_drive.html" class="btn btn-neutral float-left" title="CANopen over EtherCAT for electrical drives" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, ICUBE Laboratory, University of Strasbourg.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

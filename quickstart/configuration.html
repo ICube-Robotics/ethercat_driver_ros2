@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Configuration &mdash; ethercat_driver_ros2 1.0.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Usage" href="usage.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ethercat_driver_ros2
+              <img src="../_static/logo-icube.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quickstart</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#hardware-interfaces-and-ethercat-master">Hardware Interfaces and EtherCAT Master</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ethercat-slave-modules-as-plugins">EtherCAT Slave modules as Plugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#creating-components-with-ethercat-slave-modules">Creating components with EtherCAT Slave modules</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/config_generic_slave.html">Generic EtherCAT Slave configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/config_cia402_drive.html">CiA402 EtherCAT Motor Drive configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developer_guide/coe.html">CANopen over EtherCAT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_guide/cia402_drive.html">CANopen over EtherCAT for electrical drives</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_guide/new_plugin.html">Creating a new device driver</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://ICube-Robotics.github.io/ethercat_driver_ros2/api/">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ethercat_driver_ros2</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Configuration</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/quickstart/configuration.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="configuration">
+<h1>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline"></a></h1>
+<section id="hardware-interfaces-and-ethercat-master">
+<h2>Hardware Interfaces and EtherCAT Master<a class="headerlink" href="#hardware-interfaces-and-ethercat-master" title="Permalink to this headline"></a></h2>
+<p>The EtherCAT Driver is designed in such a way that each EtherCAT Master is defined in <code class="code docutils literal notranslate"><span class="pre">ros2_control</span></code> as a specific Hardware Interface. This is done in the <code class="code docutils literal notranslate"><span class="pre">ros2_control</span></code> description file, where the EtherCAT driver is loaded as Hardware Interface and linked to an EtherCAT Master by its ID:</p>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;ros2_control</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;mySystem&quot;</span><span class="w"> </span><span class="na">type=</span><span class="s">&quot;system&quot;</span><span class="nt">&gt;</span>
+<span class="w">  </span><span class="nt">&lt;hardware&gt;</span>
+<span class="w">    </span><span class="nt">&lt;plugin&gt;</span>ethercat_driver/EthercatDriver<span class="nt">&lt;/plugin&gt;</span>
+<span class="w">    </span><span class="nt">&lt;param</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;master_id&quot;</span><span class="nt">&gt;</span>0<span class="nt">&lt;/param&gt;</span>
+<span class="w">    </span><span class="nt">&lt;param</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;control_frequency&quot;</span><span class="nt">&gt;</span>100<span class="nt">&lt;/param&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/hardware&gt;</span>
+<span class="nt">&lt;/ros2_control&gt;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As in the current implementation of <code class="code docutils literal notranslate"><span class="pre">ros2_control</span></code> there is no information about the system update frequency, it needs to be passed here as parameter. This is only needed by systems that include EtherCAT modules that use the Distributed Clock.</p>
+</div>
+</section>
+<section id="ethercat-slave-modules-as-plugins">
+<h2>EtherCAT Slave modules as Plugins<a class="headerlink" href="#ethercat-slave-modules-as-plugins" title="Permalink to this headline"></a></h2>
+<p>In this driver, the EtherCAT Slave modules are defined as <a class="reference external" href="https://docs.ros.org/en/foxy/Tutorials/Pluginlib.html">Plugins</a> and can be parametrized in the <code class="code docutils literal notranslate"><span class="pre">ros2_control</span></code> description file :</p>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;ec_module</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;ECModule&quot;</span><span class="nt">&gt;</span>
+<span class="w">  </span><span class="nt">&lt;plugin&gt;</span>ethercat_plugins/ECModule<span class="nt">&lt;/plugin&gt;</span>
+<span class="w">  </span><span class="nt">&lt;param</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;alias&quot;</span><span class="nt">&gt;</span>0<span class="nt">&lt;/param&gt;</span>
+<span class="w">  </span><span class="nt">&lt;param</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;position&quot;</span><span class="nt">&gt;</span>1<span class="nt">&lt;/param&gt;</span>
+<span class="nt">&lt;/ec_module&gt;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>All modules have <code class="code docutils literal notranslate"><span class="pre">alias</span></code> and <code class="code docutils literal notranslate"><span class="pre">position</span></code> parameters that specify their address in the EtherCAT Bus topology. Additional parameters can be specified depending on the purpose of the module.</p>
+</div>
+<p>EtherCAT Slave module plugins come in two version:</p>
+<ul class="simple">
+<li><p><strong>Generic plugins</strong> : generic module implementation configured using a configuration file which purpose is to facilitate the use of generally available devices. For most applications, the use of these plugins is encouraged.</p></li>
+<li><p><strong>Specific plugins</strong> : specific implementations for dedicated devices or dedicated functionalities.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A list of implemented specific plugins for EtherCAT modules and their parameters can be found in this list of <a class="reference external" href="ethercat_plugins/available_plugins.md">available plugins</a>.</p>
+</div>
+</section>
+<section id="creating-components-with-ethercat-slave-modules">
+<h2>Creating components with EtherCAT Slave modules<a class="headerlink" href="#creating-components-with-ethercat-slave-modules" title="Permalink to this headline"></a></h2>
+<p>In <code class="code docutils literal notranslate"><span class="pre">ros2_control</span></code> the access to resources within a system from a controller is done by means of <a class="reference external" href="https://github.com/ros-controls/roadmap/blob/master/design_drafts/hardware_access.md">Hardware Resources</a>. For this purpose <code class="code docutils literal notranslate"><span class="pre">state_interface</span></code> and <code class="code docutils literal notranslate"><span class="pre">command_interface</span></code> tags need to be defined and associated with the module functionalities.
+Also, for better understanding of the overall system, the purpose of the used modules need to be clearly identified and sorted into the following types:</p>
+<ul class="simple">
+<li><p><code class="code docutils literal notranslate"><span class="pre">&lt;joint&gt;</span></code>: logical component actuated by at least one actuator with read-write capacity.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">&lt;sensor&gt;</span></code>: logical component to read-only states from system.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">&lt;gpio&gt;</span></code>: logical component for general purpose IO systems.</p></li>
+</ul>
+<p>Here is an example of a <code class="code docutils literal notranslate"><span class="pre">gpio</span></code> resource built using 2 EtherCAT IO modules:</p>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;gpio</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;myGPIO&quot;</span><span class="nt">&gt;</span>
+<span class="w">  </span><span class="nt">&lt;command_interface</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;dig_output.1&quot;</span><span class="nt">/&gt;</span>
+<span class="w">  </span><span class="nt">&lt;command_interface</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;dig_output.2&quot;</span><span class="nt">/&gt;</span>
+<span class="w">  </span><span class="nt">&lt;state_interface</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;ana_input.1&quot;</span><span class="nt">/&gt;</span>
+<span class="w">  </span><span class="nt">&lt;state_interface</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;ana_input.2&quot;</span><span class="nt">/&gt;</span>
+<span class="w">  </span><span class="nt">&lt;ec_module</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;EL3104&quot;</span><span class="nt">&gt;</span>
+<span class="w">    </span><span class="nt">&lt;plugin&gt;</span>ethercat_generic_plugins/GenericEcSlave<span class="nt">&lt;/plugin&gt;</span>
+<span class="w">    </span><span class="nt">&lt;param</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;alias&quot;</span><span class="nt">&gt;</span>0<span class="nt">&lt;/param&gt;</span>
+<span class="w">    </span><span class="nt">&lt;param</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;position&quot;</span><span class="nt">&gt;</span>0<span class="nt">&lt;/param&gt;</span>
+<span class="w">    </span><span class="nt">&lt;param</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;slave_config&quot;</span><span class="nt">&gt;</span>/path/to/EL3104_slave_config.yaml<span class="nt">&lt;/param&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/ec_module&gt;</span>
+<span class="w">  </span><span class="nt">&lt;ec_module</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;EL2008&quot;</span><span class="nt">&gt;</span>
+<span class="w">    </span><span class="nt">&lt;plugin&gt;</span>ethercat_generic_plugins/GenericEcSlave<span class="nt">&lt;/plugin&gt;</span>
+<span class="w">    </span><span class="nt">&lt;param</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;alias&quot;</span><span class="nt">&gt;</span>0<span class="nt">&lt;/param&gt;</span>
+<span class="w">    </span><span class="nt">&lt;param</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;position&quot;</span><span class="nt">&gt;</span>1<span class="nt">&lt;/param&gt;</span>
+<span class="w">    </span><span class="nt">&lt;param</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;slave_config&quot;</span><span class="nt">&gt;</span>/path/to/EL2008_slave_config.yaml<span class="nt">&lt;/param&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/ec_module&gt;</span>
+<span class="nt">&lt;/gpio&gt;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To send commands to <code class="code docutils literal notranslate"><span class="pre">gpio</span></code> resources, a generic controller was developed and can be found on this <a class="reference external" href="https://github.com/mcbed/ros2_controllers/tree/gpio_controllers_only">branch</a>.</p>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="usage.html" class="btn btn-neutral float-right" title="Usage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, ICUBE Laboratory, University of Strasbourg.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
