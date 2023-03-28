@@ -1,0 +1,23 @@
+# All settings not listed here will use the Doxygen default values.
+
+PROJECT_NAME           = "ethercat_driver_ros2"
+PROJECT_NUMBER         = main
+PROJECT_BRIEF          = "C++ ROS test"
+
+# Use these lines to include the generated logging.hpp (update install path if needed)
+INPUT                  = ../../ethercat_driver/include ../../ethercat_interface/include
+
+RECURSIVE              = YES
+OUTPUT_DIRECTORY       = _build
+
+EXTRACT_ALL            = YES
+SORT_MEMBER_DOCS       = NO
+
+GENERATE_LATEX         = NO
+GENERATE_XML           = YES
+
+ENABLE_PREPROCESSING   = YES
+
+DOT_GRAPH_MAX_NODES    = 101
+
+FILE_PATTERNS = *.cpp *.h *.hpp *.md
