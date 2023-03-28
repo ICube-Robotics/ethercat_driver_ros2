@@ -11,3 +11,21 @@ EtherCAT Driver ROS2 Stack
   quickstart/installation
   quickstart/configuration
   quickstart/usage
+
+.. toctree::
+  :maxdepth: 1
+  :caption: User Guide
+  :glob:
+
+  user_guide/config_generic_slave
+  user_guide/config_cia402_drive
+
+.. toctree::
+  :maxdepth: 1
+  :caption: Developer Guide
+  :glob:
+
+  developer_guide/coe
+  developer_guide/cia402_drive
+  developer_guide/new_plugin
+  API Reference <https://ICube-Robotics.github.io/ethercat_driver_ros2/api/>

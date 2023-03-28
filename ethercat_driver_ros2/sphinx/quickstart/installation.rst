@@ -3,8 +3,8 @@ Installation
 
 **Required setup : Ubuntu 22.04 LTS**
 
-1. Installing EtherLab
-----------------------
+Installing EtherLab
+-------------------
 The proposed development builds upon the `IgH EtherCAT Master <https://etherlab.org/en/ethercat/>`_.
 Installation steps are summarized here:
 
@@ -105,10 +105,10 @@ Example:
   0  0:0  PREOP  +  <device_0_name>
   0  0:1  PREOP  +  <device_1_name>
 
-2. Building :code:`ethercat_driver_ros2`
-----------------------------------------
+Building :code:`ethercat_driver_ros2`
+-------------------------------------
 
-1.  Install ROS2 packages. The current development is based of :code:`ros2 humble`. Installation steps are described `here <https://docs.ros.org/en/humble/Installation.html>`_.
+1.  Install ROS2 packages. The current development is based of :code:`ros2 humble`. Installation steps are described in the `ROS2 Humble Documentation <https://docs.ros.org/en/humble/Installation.html>`_.
 2. Source your ROS2` environment:
 
   .. code-block:: console
