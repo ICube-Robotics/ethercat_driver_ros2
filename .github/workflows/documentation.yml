@@ -32,12 +32,12 @@ jobs:
             pip install exhale
       - name: Build doxygen
         run: |
-            cd ./documentation/doxygen/
+            cd ./ethercat_driver_ros2/doxygen/
             doxygen
             cd ../..
       - name: Build documentation
         run: |
-            cd ./documentation/sphinx/
+            cd ./ethercat_driver_ros2/sphinx/
             make html
             cd ../..
       - name: Create commit
@@ -45,8 +45,8 @@ jobs:
             git clone https://github.com/ICube-Robotics/ethercat_driver_ros2.git --branch gh-pages --single-branch gh-pages
             mkdir -p gh-pages/docs/
             mkdir -p gh-pages/api/
-            cp -r ./documentation/sphinx/_build/html/* gh-pages/
-            cp -r ./documentation/doxygen/_build/html/* gh-pages/api/
+            cp -r ./ethercat_driver_ros2/sphinx/_build/html/* gh-pages/
+            cp -r ./ethercat_driver_ros2/doxygen/_build/html/* gh-pages/api/
             cd gh-pages
             git config --local user.email "action@github.com"
             git config --local user.name "GitHub Action"
