@@ -113,7 +113,10 @@ public:
         state_interface_ptr_->at(interface_index) = last_value;
       }
     } else if (pdo_type == RPDO && allow_ec_write) {
-      if (interface_index >= 0 && !std::isnan(command_interface_ptr_->at(interface_index))) {
+      if (interface_index >= 0 &&
+        !std::isnan(command_interface_ptr_->at(interface_index)) &&
+        !override_command)
+      {
         ec_write(domain_address, factor * command_interface_ptr_->at(interface_index) + offset);
       } else {
         if (!std::isnan(default_value)) {
@@ -208,6 +211,7 @@ public:
   int interface_index = -1;
   double last_value = std::numeric_limits<double>::quiet_NaN();
   bool allow_ec_write = true;
+  bool override_command = false;
   double factor = 1;
   double offset = 0;
 
