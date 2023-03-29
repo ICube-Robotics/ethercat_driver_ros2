@@ -60,6 +60,8 @@ void EcCiA402Drive::processData(size_t index, uint8_t * domain_address)
         pdo_channels_info_[index].factor * last_position_ +
         pdo_channels_info_[index].offset;
     }
+    pdo_channels_info_[index].override_command =
+      (mode_of_operation_display_ != ModeOfOperation::MODE_CYCLIC_SYNC_POSITION) ? true : false;
   }
 
   // setup mode of operation
