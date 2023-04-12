@@ -29,6 +29,8 @@ jobs:
           image: ethercat_driver_ros2:rolling
           options: -v ${{github.workspace}}/:/ros/
           run: |
+            apt update
+            apt upgrade -y
             cd /ros
             . /opt/ros/rolling/setup.sh
             rosdep install --ignore-src --from-paths . -y -r && \
@@ -40,6 +42,8 @@ jobs:
           image: ethercat_driver_ros2:rolling
           options: -v ${{github.workspace}}/:/ros/
           run: |
+            apt update
+            apt upgrade -y
             cd /ros
             . /opt/ros/rolling/setup.sh
             rosdep install --ignore-src --from-paths . -y -r && \
