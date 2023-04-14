@@ -64,7 +64,7 @@ Installation steps are summarized here:
 
   .. code-block:: console
 
-    $ sudo gedit /etc/sysconfig/ethercat_driver_ros2
+    $ sudo gedit /etc/sysconfig/ethercat
 
   In the configuration file specify the mac address of the network card to be used and its driver
 
