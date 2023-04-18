@@ -5,4 +5,5 @@ int16 sdo_subindex
 string sdo_data_type
 string sdo_value
 ---
-string sdo_return_string
+bool success
+string sdo_return_message
