@@ -14,25 +14,26 @@
 //
 // Author: Maciej Bednarczyk (mcbed.robotics@gmail.com)
 
-#ifndef __EC_MASTER_ASYNC_HPP__
-#define __EC_MASTER_ASYNC_HPP__
+#ifndef ETHERCAT_MANAGER__EC_MASTER_ASYNC_HPP_
+#define ETHERCAT_MANAGER__EC_MASTER_ASYNC_HPP_
 
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <stdio.h>
-#include "ecrt.h"
-#include "ioctl.h"
+#include <ecrt.h>
 #include <errno.h>
 #include <sstream>
 #include "rclcpp/rclcpp.hpp"
+#include "ethercat_manager/ec_master_async_io.hpp"
+
 
 namespace ethercat_manager
 {
 class EcMasterAsync
 {
 public:
-  EcMasterAsync(uint16_t master_index = 0)
+  explicit EcMasterAsync(uint16_t master_index = 0)
   {
     index_ = master_index;
     mcount_ = 0;
@@ -54,7 +55,7 @@ public:
   {
     std::stringstream deviceName;
 
-    if (fd_ == -1) { // not already open
+    if (fd_ == -1) {  // not already open
       ec_ioctl_module_t module_data;
       deviceName << "/dev/EtherCAT" << index_;
 
@@ -132,5 +133,5 @@ private:
   unsigned int mcount_;
   int fd_;
 };
-}
-#endif  // __EC_MASTER_ASYNC_HPP__
+}  // namespace ethercat_manager
+#endif  // ETHERCAT_MANAGER__EC_MASTER_ASYNC_HPP_

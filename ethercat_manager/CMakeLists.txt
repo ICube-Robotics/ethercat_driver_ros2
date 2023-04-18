@@ -18,8 +18,7 @@ ament_export_include_directories(
 
 add_executable(
   ethercat_sdo_srv_server
-  src/ethercat_sdo_srv_server.cpp
-  src/data_type_handler.cpp)
+  src/ethercat_sdo_srv_server.cpp)
 target_include_directories(
   ethercat_sdo_srv_server
   PRIVATE

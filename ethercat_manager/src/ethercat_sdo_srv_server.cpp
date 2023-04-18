@@ -22,7 +22,7 @@
 #include "ethercat_msgs/srv/get_sdo.hpp"
 #include "ethercat_msgs/srv/set_sdo.hpp"
 #include "ethercat_manager/ec_master_async.hpp"
-#include "ethercat_manager/data_type_handler.h"
+#include "ethercat_manager/data_convertion_tools.hpp"
 
 
 namespace ethercat_manager
@@ -33,16 +33,17 @@ void upload(
 {
   ec_ioctl_slave_sdo_upload_t data;
   std::stringstream return_stream, data_stream;
-  const DataTypeHandler::DataType * dataType = NULL;
-  DataTypeHandler data_handler;
+  const DataType * dataType = NULL;
 
   data.sdo_index = request->sdo_index;
   data.sdo_entry_subindex = request->sdo_subindex;
-
   data.slave_position = request->slave_position;
-  if (!(dataType = data_handler.findDataType(request->sdo_data_type))) {
+
+  if (!(dataType = get_data_type(request->sdo_data_type))) {
     return_stream << "Invalid data type '" << request->sdo_data_type << "'!";
-    response->sdo_return_string = return_stream.str();
+    response->sdo_return_message = return_stream.str();
+    response->success = false;
+    RCLCPP_ERROR(rclcpp::get_logger("ethercat_manager"), return_stream.str().c_str());
     return;
   }
 
@@ -56,16 +57,19 @@ void upload(
   master.close();
 
   try {
-    data_handler.outputData(data_stream, dataType, data.target, data.data_size);
-  } catch (DataTypeHandler::SizeException & e) {
+    buffer2data(data_stream, dataType, data.target, data.data_size);
+  } catch (SizeException & e) {
     delete[] data.target;
     return_stream << e.what();
+    response->success = false;
+    RCLCPP_ERROR(rclcpp::get_logger("ethercat_manager"), return_stream.str().c_str());
+    response->sdo_return_message = return_stream.str();
+    return;
   }
-
   return_stream << "SDO upload done successfully";
-
+  response->success = true;
   response->sdo_return_value = data_stream.str();
-  response->sdo_return_string = return_stream.str();
+  response->sdo_return_message = return_stream.str();
 
   delete[] data.target;
   RCLCPP_INFO(rclcpp::get_logger("ethercat_sdo_srv_server"), return_stream.str().c_str());
@@ -77,19 +81,17 @@ void download(
 {
   ec_ioctl_slave_sdo_download_t data;
   std::stringstream return_stream, data_stream;
-  const DataTypeHandler::DataType * dataType = NULL;
-  DataTypeHandler data_handler;
-
-  data.sdo_index = request->sdo_index;
-  data.sdo_entry_subindex = request->sdo_subindex;
+  const DataType * dataType = NULL;
 
   data.sdo_index = request->sdo_index;
   data.sdo_entry_subindex = request->sdo_subindex;
 
   data.slave_position = request->slave_position;
-  if (!(dataType = data_handler.findDataType(request->sdo_data_type))) {
+  if (!(dataType = get_data_type(request->sdo_data_type))) {
     return_stream << "Invalid data type '" << request->sdo_data_type << "'!";
-    response->sdo_return_string = return_stream.str();
+    response->success = false;
+    response->sdo_return_message = return_stream.str();
+    RCLCPP_ERROR(rclcpp::get_logger("ethercat_manager"), return_stream.str().c_str());
     return;
   }
 
@@ -97,15 +99,21 @@ void download(
   data.data = new uint8_t[data.data_size + 1];
 
   try {
-    data.data_size = data_handler.interpretAsType(
+    data.data_size = data2buffer(
       dataType, request->sdo_value, data.data, data.data_size);
-  } catch (DataTypeHandler::SizeException & e) {
+  } catch (SizeException & e) {
     delete[] data.data;
     return_stream << e.what();
+    response->success = false;
+    response->sdo_return_message = return_stream.str();
+    RCLCPP_ERROR(rclcpp::get_logger("ethercat_manager"), return_stream.str().c_str());
     return;
   } catch (std::ios::failure & e) {
     delete[] data.data;
     return_stream << "Invalid value for type '" << dataType->name << "'!";
+    response->success = false;
+    response->sdo_return_message = return_stream.str();
+    RCLCPP_ERROR(rclcpp::get_logger("ethercat_manager"), return_stream.str().c_str());
     return;
   }
 
@@ -116,8 +124,8 @@ void download(
   master.close();
 
   return_stream << "SDO download done successfully";
-
-  response->sdo_return_string = return_stream.str();
+  response->success = true;
+  response->sdo_return_message = return_stream.str();
 
   delete[] data.data;
   RCLCPP_INFO(rclcpp::get_logger("ethercat_sdo_srv_server"), return_stream.str().c_str());
