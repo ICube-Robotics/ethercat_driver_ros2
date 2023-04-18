@@ -110,7 +110,7 @@ void download(
   }
 
   EcMasterAsync master(request->master_id);
-  master.open(EcMasterAsync::Read);
+  master.open(EcMasterAsync::ReadWrite);
   master.sdo_download(&data);
 
   master.close();
@@ -121,7 +121,6 @@ void download(
 
   delete[] data.data;
   RCLCPP_INFO(rclcpp::get_logger("ethercat_sdo_srv_server"), return_stream.str().c_str());
-
 }
 }  // namespace ethercat_manager
 
