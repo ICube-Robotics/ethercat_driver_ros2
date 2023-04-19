@@ -177,10 +177,14 @@ int main(int argc, char ** argv)
   std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("ethercat_sdo_srv_server");
 
   rclcpp::Service<ethercat_msgs::srv::GetSdo>::SharedPtr service_get_sdo =
-    node->create_service<ethercat_msgs::srv::GetSdo>("get_sdo", &ethercat_manager::upload);
+    node->create_service<ethercat_msgs::srv::GetSdo>(
+    "ethercat_manager/get_sdo",
+    &ethercat_manager::upload);
 
   rclcpp::Service<ethercat_msgs::srv::SetSdo>::SharedPtr service_set_sdo =
-    node->create_service<ethercat_msgs::srv::SetSdo>("set_sdo", &ethercat_manager::download);
+    node->create_service<ethercat_msgs::srv::SetSdo>(
+    "ethercat_manager/set_sdo",
+    &ethercat_manager::download);
 
   rclcpp::spin(node);
   rclcpp::shutdown();
