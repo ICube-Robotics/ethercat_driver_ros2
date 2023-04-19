@@ -101,13 +101,13 @@ void download(
 {
   ec_ioctl_slave_sdo_download_t data;
   std::stringstream return_stream, data_stream;
-  const DataType * dataType = NULL;
-
+  const DataType * data_type = NULL;
+  data.complete_access = 0;
   data.sdo_index = request->sdo_index;
   data.sdo_entry_subindex = request->sdo_subindex;
 
   data.slave_position = request->slave_position;
-  if (!(dataType = get_data_type(request->sdo_data_type))) {
+  if (!(data_type = get_data_type(request->sdo_data_type))) {
     return_stream << "Invalid data type '" << request->sdo_data_type << "'!";
     response->success = false;
     response->sdo_return_message = return_stream.str();
@@ -120,7 +120,7 @@ void download(
 
   try {
     data.data_size = data2buffer(
-      dataType, request->sdo_value, data.data, data.data_size);
+      data_type, request->sdo_value, data.data, data.data_size);
   } catch (SizeException & e) {
     delete[] data.data;
     return_stream << e.what();
@@ -130,7 +130,7 @@ void download(
     return;
   } catch (std::ios::failure & e) {
     delete[] data.data;
-    return_stream << "Invalid value for type '" << dataType->name << "'!";
+    return_stream << "Invalid value for type '" << data_type->name << "'!";
     response->success = false;
     response->sdo_return_message = return_stream.str();
     RCLCPP_ERROR(rclcpp::get_logger("ethercat_manager"), return_stream.str().c_str());
