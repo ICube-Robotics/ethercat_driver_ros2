@@ -6,4 +6,5 @@ string sdo_data_type
 ---
 bool success
 string sdo_return_message
-string sdo_return_value
+string sdo_return_value_string
+float64 sdo_return_value

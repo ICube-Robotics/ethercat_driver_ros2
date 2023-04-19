@@ -104,7 +104,6 @@ static void buffer2raw(std::ostream & o, const uint8_t * data, size_t size)
   while (size--) {
     o << " 0x" << std::setw(2) << (unsigned int) *data++;
   }
-  o << std::endl;
 }
 
 static size_t data2buffer(
@@ -262,7 +261,9 @@ static size_t data2buffer(
   return dataSize;
 }
 
-static void buffer2data(std::ostream & o, const DataType * type, void * data, size_t dataSize)
+static void buffer2data(
+  std::ostream & o, double & value,
+  const DataType * type, void * data, size_t dataSize)
 {
   uint16_t typeCode;
 
@@ -272,7 +273,7 @@ static void buffer2data(std::ostream & o, const DataType * type, void * data, si
       err << "Data type mismatch. Expected " << type->name
           << " with " << type->byteSize << " byte, but got "
           << dataSize << " byte.";
-      RCLCPP_ERROR(rclcpp::get_logger("ethercat_manager"), err.str().c_str());
+      throw SizeException(err.str());
     }
     typeCode = type->code;
   } else {
@@ -285,88 +286,90 @@ static void buffer2data(std::ostream & o, const DataType * type, void * data, si
     case 0x0001:     // bool
       {
         int val = static_cast<int>(*reinterpret_cast<int8_t *>(data));
-        o << "0x" << std::hex << std::setw(2) << val
-          << " " << std::dec << val << std::endl;
+        o << "0x" << std::hex << std::setw(2) << val;
+        value = static_cast<double>(val);
       }
       break;
     case 0x0002:     // int8
       {
         int val = static_cast<int>(*reinterpret_cast<int8_t *>(data));
-        o << "0x" << std::hex << std::setw(2) << val
-          << " " << std::dec << val << std::endl;
+        o << "0x" << std::hex << std::setw(2) << val;
+        value = static_cast<double>(val);
       }
       break;
     case 0x0003:     // int16
       {
         int16_t val = le16_to_cpup(data);
-        o << "0x" << std::hex << std::setw(4) << val
-          << " " << std::dec << val << std::endl;
+        o << "0x" << std::hex << std::setw(4) << val;
+        value = static_cast<double>(val);
       }
       break;
     case 0x0004:     // int32
       {
         int32_t val = le32_to_cpup(data);
-        o << "0x" << std::hex << std::setw(8) << val
-          << " " << std::dec << val << std::endl;
+        o << "0x" << std::hex << std::setw(8) << val;
+        value = static_cast<double>(val);
       }
       break;
     case 0x0005:     // uint8
       {
         unsigned int val = static_cast<unsigned int>(*reinterpret_cast<uint8_t *>(data));
-        o << "0x" << std::hex << std::setw(2) << val
-          << " " << std::dec << val << std::endl;
+        o << "0x" << std::hex << std::setw(2) << val;
+        value = static_cast<double>(val);
       }
       break;
     case 0x0006:     // uint16
       {
         uint16_t val = le16_to_cpup(data);
-        o << "0x" << std::hex << std::setw(4) << val
-          << " " << std::dec << val << std::endl;
+        o << "0x" << std::hex << std::setw(4) << val;
+        value = static_cast<double>(val);
       }
       break;
     case 0x0007:     // uint32
       {
         uint32_t val = le32_to_cpup(data);
-        o << "0x" << std::hex << std::setw(8) << val
-          << " " << std::dec << val << std::endl;
+        o << "0x" << std::hex << std::setw(8) << val;
+        value = static_cast<double>(val);
       }
       break;
     case 0x0008:     // float
       {
         uint32_t val = le32_to_cpup(data);
         float fval = *reinterpret_cast<float *>(reinterpret_cast<void *>(&val));
-        o << fval << std::endl;
+        o << fval;
+        value = static_cast<double>(val);
       }
       break;
     case 0x0009:     // string
-      o << std::string(reinterpret_cast<const char *>(data), dataSize) << std::endl;
+      o << std::string(reinterpret_cast<const char *>(data), dataSize);
       break;
     case 0x000a:     // octet_string
       o << std::string(reinterpret_cast<const char *>(data), dataSize) << std::flush;
       break;
     case 0x000b:     // unicode_string
                      // FIXME encoding
-      o << std::string(reinterpret_cast<const char *>(data), dataSize) << std::endl;
+      o << std::string(reinterpret_cast<const char *>(data), dataSize);
       break;
     case 0x0011:     // double
       {
         uint64_t val = le64_to_cpup(data);
         double fval = *reinterpret_cast<double *>(reinterpret_cast<void *>(&val));
-        o << fval << std::endl;
+        o << fval;
+        value = static_cast<double>(val);
       }
       break;
     case 0x0015:     // int64
       {
         int64_t val = le64_to_cpup(data);
-        o << "0x" << std::hex << std::setw(16) << val
-          << " " << std::dec << val << std::endl;
+        o << "0x" << std::hex << std::setw(16) << val;
+        value = static_cast<double>(val);
       }
       break;
     case 0x001b:     // uint64
       {
         uint64_t val = le64_to_cpup(data);
-        o << "0x" << std::hex << std::setw(16) << val
-          << " " << std::dec << val << std::endl;
+        o << "0x" << std::hex << std::setw(16) << val;
+        value = static_cast<double>(val);
       }
       break;
     case 0xfffb:     // sm8
@@ -374,8 +377,8 @@ static void buffer2data(std::ostream & o, const DataType * type, void * data, si
         int8_t val = *reinterpret_cast<uint8_t *>(data);
         int8_t smval = val < 0 ? (val & 0x7f) * -1 : val;
 
-        o << "0x" << std::hex << std::setw(2) << static_cast<int>(val)
-          << " " << std::dec << static_cast<int>(smval) << std::endl;
+        o << "0x" << std::hex << std::setw(2) << static_cast<int>(val);
+        value = static_cast<double>(static_cast<int>(smval));
       }
       break;
     case 0xfffc:     // sm16
@@ -383,8 +386,8 @@ static void buffer2data(std::ostream & o, const DataType * type, void * data, si
         int16_t val = le16_to_cpup(data);
         int16_t smval = val < 0 ? (val & 0x7fff) * -1 : val;
 
-        o << "0x" << std::hex << std::setw(4) << val
-          << " " << std::dec << smval << std::endl;
+        o << "0x" << std::hex << std::setw(4) << val;
+        value = static_cast<double>(smval);
       }
       break;
     case 0xfffd:     // sm32
@@ -392,8 +395,8 @@ static void buffer2data(std::ostream & o, const DataType * type, void * data, si
         int32_t val = le32_to_cpup(data);
         int32_t smval = val < 0 ? (val & 0x7fffffffUL) * -1 : val;
 
-        o << "0x" << std::hex << std::setw(8) << val
-          << " " << std::dec << smval << std::endl;
+        o << "0x" << std::hex << std::setw(8) << val;
+        value = static_cast<double>(smval);
       }
       break;
     case 0xfffe:     // sm64
@@ -402,8 +405,8 @@ static void buffer2data(std::ostream & o, const DataType * type, void * data, si
         int64_t smval =
           val < 0 ? (val & 0x7fffffffffffffffULL) * -1 : val;
 
-        o << "0x" << std::hex << std::setw(16) << val
-          << " " << std::dec << smval << std::endl;
+        o << "0x" << std::hex << std::setw(16) << val;
+        value = static_cast<double>(smval);
       }
       break;
 

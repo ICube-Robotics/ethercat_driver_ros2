@@ -24,12 +24,23 @@
 #include <ecrt.h>
 #include <errno.h>
 #include <sstream>
+#include <map>
+#include <string>
 #include "rclcpp/rclcpp.hpp"
 #include "ethercat_manager/ec_master_async_io.hpp"
 
 
 namespace ethercat_manager
 {
+
+class MasterException
+  : public std::runtime_error
+{
+public:
+  explicit MasterException(const std::string & msg)
+  : std::runtime_error(msg) {}
+};
+
 class EcMasterAsync
 {
 public:
@@ -51,7 +62,7 @@ public:
 
   enum Permissions {Read, ReadWrite};
 
-  int open(Permissions perm)
+  void open(Permissions perm)
   {
     std::stringstream deviceName;
 
@@ -66,8 +77,7 @@ public:
         std::stringstream err;
         err << "Failed to open master device " << deviceName.str() << ": "
             << strerror(errno);
-        RCLCPP_ERROR(rclcpp::get_logger("ethercat_manager"), err.str().c_str());
-        return -1;
+        throw MasterException(err.str());
       }
 
       getModule(&module_data);
@@ -76,62 +86,90 @@ public:
         err << "ioctl() version magic is differing: "
             << deviceName.str() << ": " << module_data.ioctl_version_magic
             << ", ethercat tool: " << EC_IOCTL_VERSION_MAGIC;
-        RCLCPP_ERROR(rclcpp::get_logger("ethercat_manager"), err.str().c_str());
-        return -1;
+        throw MasterException(err.str());
       }
       mcount_ = module_data.master_count;
     }
-    return 0;
   }
 
-  int sdo_download(ec_ioctl_slave_sdo_download_t * data)
+  void sdo_download(ec_ioctl_slave_sdo_download_t * data)
   {
     if (ioctl(fd_, EC_IOCTL_SLAVE_SDO_DOWNLOAD, data) < 0) {
       std::stringstream err;
       if (errno == EIO && data->abort_code) {
-        err << "SDO transfer aborted with code " << data->abort_code;
-        RCLCPP_ERROR(rclcpp::get_logger("ethercat_manager"), err.str().c_str());
-        return -1;
+        err << "SDO transfer aborted: " << abort_code_map_.find(data->abort_code)->second;
+        throw MasterException(err.str());
       } else {
         err << "Failed to download SDO: " << strerror(errno);
-        RCLCPP_ERROR(rclcpp::get_logger("ethercat_manager"), err.str().c_str());
-        return -1;
+        throw MasterException(err.str());
       }
     }
-    return 0;
   }
 
-  int sdo_upload(ec_ioctl_slave_sdo_upload_t * data)
+  void sdo_upload(ec_ioctl_slave_sdo_upload_t * data)
   {
     if (ioctl(fd_, EC_IOCTL_SLAVE_SDO_UPLOAD, data) < 0) {
       std::stringstream err;
       if (errno == EIO && data->abort_code) {
-        err << "SDO transfer aborted with code " << data->abort_code;
-        RCLCPP_ERROR(rclcpp::get_logger("ethercat_manager"), err.str().c_str());
-        return -1;
+        err << "SDO transfer aborted: " << abort_code_map_.find(data->abort_code)->second;
+        throw MasterException(err.str());
       } else {
-        RCLCPP_ERROR(rclcpp::get_logger("ethercat_manager"), err.str().c_str());
-        return -1;
+        err << "Failed to upload SDO: " << strerror(errno);
+        throw MasterException(err.str());
       }
     }
-    return 0;
   }
 
-  int getModule(ec_ioctl_module_t * data)
+  void getModule(ec_ioctl_module_t * data)
   {
     if (ioctl(fd_, EC_IOCTL_MODULE, data) < 0) {
       std::stringstream err;
       err << "Failed to get module information: " << strerror(errno);
-      RCLCPP_ERROR(rclcpp::get_logger("ethercat_manager"), err.str().c_str());
-      return -1;
+      throw MasterException(err.str());
     }
-    return 0;
   }
 
 private:
   unsigned int index_;
   unsigned int mcount_;
   int fd_;
+
+  const std::map<uint32_t, std::string> abort_code_map_ = {
+    {0x05030000, "Toggle bit not changed"},
+    {0x05040000, "SDO protocol timeout"},
+    {0x05040001, "Client/Server command specifier not valid or unknown"},
+    {0x05040005, "Out of memory"},
+    {0x06010000, "Unsupported access to an object"},
+    {0x06010001, "Attempt to read a write-only object"},
+    {0x06010002, "Attempt to write a read-only object"},
+    {0x06020000, "This object does not exist in the object directory"},
+    {0x06040041, "The object cannot be mapped into the PDO"},
+    {0x06040042, "The number and length of the objects to be mapped would"
+      " exceed the PDO length"},
+    {0x06040043, "General parameter incompatibility reason"},
+    {0x06040047, "General internal incompatibility in device"},
+    {0x06060000, "Access failure due to a hardware error"},
+    {0x06070010, "Data type does not match, length of service parameter does"
+      " not match"},
+    {0x06070012, "Data type does not match, length of service parameter too"
+      " high"},
+    {0x06070013, "Data type does not match, length of service parameter too"
+      " low"},
+    {0x06090011, "Subindex does not exist"},
+    {0x06090030, "Value range of parameter exceeded"},
+    {0x06090031, "Value of parameter written too high"},
+    {0x06090032, "Value of parameter written too low"},
+    {0x06090036, "Maximum value is less than minimum value"},
+    {0x08000000, "General error"},
+    {0x08000020, "Data cannot be transferred or stored to the application"},
+    {0x08000021, "Data cannot be transferred or stored to the application"
+      " because of local control"},
+    {0x08000022, "Data cannot be transferred or stored to the application"
+      " because of the present device state"},
+    {0x08000023, "Object dictionary dynamic generation fails or no object"
+      " dictionary is present"},
+    {}
+  };
 };
 }  // namespace ethercat_manager
 #endif  // ETHERCAT_MANAGER__EC_MASTER_ASYNC_HPP_
