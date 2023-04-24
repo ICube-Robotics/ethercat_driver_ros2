@@ -38,8 +38,6 @@ EtherCAT Slave module plugins come in two version:
 * **Generic plugins** : generic module implementation configured using a configuration file which purpose is to facilitate the use of generally available devices. For most applications, the use of these plugins is encouraged.
 * **Specific plugins** : specific implementations for dedicated devices or dedicated functionalities.
 
-.. note:: A list of implemented specific plugins for EtherCAT modules and their parameters can be found in this list of `available plugins <ethercat_plugins/available_plugins.md>`_.
-
 Creating components with EtherCAT Slave modules
 -----------------------------------------------
 

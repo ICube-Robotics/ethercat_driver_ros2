@@ -3,6 +3,8 @@ EtherCAT Driver ROS2 Stack
 
 `EtherCAT <https://www.ethercat.org/default.htm>`_ provides applications with the capacity of reliable, real-time communication between systems and is therefore a common industrial standard. In order to simplify the development/deployment of new application using EtherCAT modules, this stack allows to combine them with `ros2_control <https://github.com/ros-controls/ros2_control>`_. This driver proposes a generic ways to parametrize and assemble Hardware Interfaces based on EtherCAT modules that can be defined using parameter files.
 
+**Project GitHub repository:** `ethercat_driver_ros2 <https://github.com/ICube-Robotics/ethercat_driver_ros2>`_
+
 .. toctree::
   :maxdepth: 1
   :caption: Quickstart
