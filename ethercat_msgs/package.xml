@@ -7,6 +7,7 @@
   <maintainer email="mcbed.robotics@gmail.com">mcbed</maintainer>
   <license>Apache-2.0</license>
 
+  <depend>std_msgs</depend>
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>rosidl_default_generators</buildtool_depend>
   <exec_depend>rosidl_default_runtime</exec_depend>
