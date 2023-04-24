@@ -1,0 +1,10 @@
+int16 master_id
+uint16 slave_position
+uint16 sdo_index
+uint8 sdo_subindex
+string sdo_data_type
+---
+bool success
+string sdo_return_message
+string sdo_return_value_string
+float64 sdo_return_value
