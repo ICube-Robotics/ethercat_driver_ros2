@@ -27,10 +27,12 @@
 #include "realtime_tools/realtime_buffer.h"
 #include "realtime_tools/realtime_publisher.h"
 #include "ethercat_msgs/msg/cia402_drive_states.hpp"
+#include "ethercat_msgs/srv/switch_drive_modes_of_operation.hpp"
 
 namespace ethercat_controllers
 {
 using DriveStateMsgType = ethercat_msgs::msg::Cia402DriveStates;
+using SwitchMOOSrv = ethercat_msgs::srv::SwitchDriveModesOfOperation;
 using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
 class CiA402Controller : public controller_interface::ControllerInterface
@@ -64,18 +66,26 @@ public:
 
 protected:
   std::vector<std::string> dof_names_;
-  std::vector<double> mode_ops_;
-  std::vector<double> status_words_;
+  std::vector<int> mode_ops_;
+  std::vector<double> control_words_;
 
 
   using DriveStatePublisher = realtime_tools::RealtimePublisher<DriveStateMsgType>;
   rclcpp::Publisher<DriveStateMsgType>::SharedPtr drive_state_publisher_;
   std::unique_ptr<DriveStatePublisher> rt_drive_state_publisher_;
 
+  realtime_tools::RealtimeBuffer<std::shared_ptr<SwitchMOOSrv::Request>> rt_moo_srv_ptr_;
+  rclcpp::Service<SwitchMOOSrv>::SharedPtr moo_srv_ptr_;
+
   std::string logger_name_;
 
   std::string device_state_str(uint16_t status_word);
   std::string mode_of_operation_str(double mode_of_operation);
+
+  void switch_moo_callback(
+    const std::shared_ptr<SwitchMOOSrv::Request> request,
+    std::shared_ptr<SwitchMOOSrv::Response> response
+  );
 };
 
 }  // namespace ethercat_controllers

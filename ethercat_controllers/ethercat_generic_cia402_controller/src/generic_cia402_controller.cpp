@@ -59,6 +59,9 @@ CallbackReturn CiA402Controller::on_configure(
     return CallbackReturn::FAILURE;
   }
 
+  mode_ops_.resize(dof_names_.size(), std::numeric_limits<int>::quiet_NaN());
+  control_words_.resize(dof_names_.size(), std::numeric_limits<double>::quiet_NaN());
+
   try {
     // register data publisher
     drive_state_publisher_ = get_node()->create_publisher<DriveStateMsgType>(
@@ -74,6 +77,10 @@ CallbackReturn CiA402Controller::on_configure(
     return CallbackReturn::ERROR;
   }
 
+  using namespace std::placeholders;
+  moo_srv_ptr_ = get_node()->create_service<SwitchMOOSrv>(
+    "~/switch_modes_of_operation", std::bind(&CiA402Controller::switch_moo_callback, this, _1, _2));
+
   RCLCPP_INFO(get_node()->get_logger(), "configure successful");
   return CallbackReturn::SUCCESS;
 }
@@ -82,7 +89,12 @@ controller_interface::InterfaceConfiguration
 CiA402Controller::command_interface_configuration() const
 {
   controller_interface::InterfaceConfiguration conf;
-  conf.type = controller_interface::interface_configuration_type::NONE;
+  conf.type = controller_interface::interface_configuration_type::INDIVIDUAL;
+  conf.names.reserve(dof_names_.size() * 2);
+  for (const auto & dof_name : dof_names_) {
+    conf.names.push_back(dof_name + "/" + "mode_of_operation");
+    conf.names.push_back(dof_name + "/" + "control_word");
+  }
   return conf;
 }
 
@@ -131,6 +143,20 @@ controller_interface::return_type CiA402Controller::update(
     }
 
     rt_drive_state_publisher_->unlockAndPublish();
+  }
+
+  // getting the data from the moo service using the rt pipe
+  auto moo_request = rt_moo_srv_ptr_.readFromRT();
+  if (!moo_request || !(*moo_request)) {
+    for (auto i = 0ul; i < dof_names_.size(); i++) {
+      mode_ops_[i] = state_interfaces_[2 * i].get_value();
+    }
+  } else {
+    mode_ops_ = (*moo_request)->modes_of_operation;
+  }
+
+  for (auto i = 0ul; i < dof_names_.size(); i++) {
+    command_interfaces_[2 * i].set_value(mode_ops_[i]);
   }
 
   return controller_interface::return_type::OK;
@@ -182,6 +208,15 @@ std::string CiA402Controller::mode_of_operation_str(double mode_of_operation)
     return "MODE_CYCLIC_SYNC_TORQUE";
   }
   return "MODE_UNDEFINED";
+}
+
+void CiA402Controller::switch_moo_callback(
+  const std::shared_ptr<SwitchMOOSrv::Request> request,
+  std::shared_ptr<SwitchMOOSrv::Response> response
+)
+{
+  rt_moo_srv_ptr_.writeFromNonRT(request);
+  response->success = true;
 }
 
 }  // namespace ethercat_controllers
