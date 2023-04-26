@@ -61,6 +61,7 @@ CallbackReturn CiA402Controller::on_configure(
 
   mode_ops_.resize(dof_names_.size(), std::numeric_limits<int>::quiet_NaN());
   control_words_.resize(dof_names_.size(), std::numeric_limits<double>::quiet_NaN());
+  reset_faults_.resize(dof_names_.size(), false);
 
   try {
     // register data publisher
@@ -79,7 +80,9 @@ CallbackReturn CiA402Controller::on_configure(
 
   using namespace std::placeholders;
   moo_srv_ptr_ = get_node()->create_service<SwitchMOOSrv>(
-    "~/switch_modes_of_operation", std::bind(&CiA402Controller::switch_moo_callback, this, _1, _2));
+    "~/switch_mode_of_operation", std::bind(&CiA402Controller::switch_moo_callback, this, _1, _2));
+  reset_fault_srv_ptr_ = get_node()->create_service<ResetFaultSrv>(
+    "~/reset_fault", std::bind(&CiA402Controller::reset_fault_callback, this, _1, _2));
 
   RCLCPP_INFO(get_node()->get_logger(), "configure successful");
   return CallbackReturn::SUCCESS;
@@ -92,8 +95,9 @@ CiA402Controller::command_interface_configuration() const
   conf.type = controller_interface::interface_configuration_type::INDIVIDUAL;
   conf.names.reserve(dof_names_.size() * 2);
   for (const auto & dof_name : dof_names_) {
-    conf.names.push_back(dof_name + "/" + "mode_of_operation");
     conf.names.push_back(dof_name + "/" + "control_word");
+    conf.names.push_back(dof_name + "/" + "mode_of_operation");
+    conf.names.push_back(dof_name + "/" + "reset_fault");
   }
   return conf;
 }
@@ -145,18 +149,29 @@ controller_interface::return_type CiA402Controller::update(
     rt_drive_state_publisher_->unlockAndPublish();
   }
 
-  // getting the data from the moo service using the rt pipe
+  // getting the data from services using the rt pipe
   auto moo_request = rt_moo_srv_ptr_.readFromRT();
-  if (!moo_request || !(*moo_request)) {
-    for (auto i = 0ul; i < dof_names_.size(); i++) {
-      mode_ops_[i] = state_interfaces_[2 * i].get_value();
-    }
-  } else {
-    mode_ops_ = (*moo_request)->modes_of_operation;
-  }
+  auto reset_fault_request = rt_reset_fault_srv_ptr_.readFromRT();
 
   for (auto i = 0ul; i < dof_names_.size(); i++) {
-    command_interfaces_[2 * i].set_value(mode_ops_[i]);
+    if (!moo_request || !(*moo_request)) {
+      mode_ops_[i] = state_interfaces_[2 * i].get_value();
+    } else {
+      if (dof_names_[i] == (*moo_request)->dof_name) {
+        mode_ops_[i] = (*moo_request)->mode_of_operation;
+      }
+    }
+
+    if (reset_fault_request && (*reset_fault_request)) {
+      if (dof_names_[i] == (*reset_fault_request)->dof_name) {
+        reset_faults_[i] = true;
+        rt_reset_fault_srv_ptr_.reset();
+      }
+    }
+
+    command_interfaces_[2 * i + 1].set_value(mode_ops_[i]);  // mode_of_operation
+    command_interfaces_[2 * i + 2].set_value(reset_faults_[i]);  // reset_fault
+    reset_faults_[i] = false;
   }
 
   return controller_interface::return_type::OK;
@@ -215,8 +230,25 @@ void CiA402Controller::switch_moo_callback(
   std::shared_ptr<SwitchMOOSrv::Response> response
 )
 {
-  rt_moo_srv_ptr_.writeFromNonRT(request);
-  response->success = true;
+  if (find(dof_names_.begin(), dof_names_.end(), request->dof_name) != dof_names_.end()) {
+    rt_moo_srv_ptr_.writeFromNonRT(request);
+    response->return_message = "Request transmitted to drive at dof:" + request->dof_name;
+  } else {
+    response->return_message = "Abort. DoF " + request->dof_name + " not configured.";
+  }
+}
+
+void CiA402Controller::reset_fault_callback(
+  const std::shared_ptr<ResetFaultSrv::Request> request,
+  std::shared_ptr<ResetFaultSrv::Response> response
+)
+{
+  if (find(dof_names_.begin(), dof_names_.end(), request->dof_name) != dof_names_.end()) {
+    rt_reset_fault_srv_ptr_.writeFromNonRT(request);
+    response->return_message = "Request transmitted to drive at dof:" + request->dof_name;
+  } else {
+    response->return_message = "Abort. DoF " + request->dof_name + " not configured.";
+  }
 }
 
 }  // namespace ethercat_controllers
