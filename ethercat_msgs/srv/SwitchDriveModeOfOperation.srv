@@ -1,4 +1,4 @@
-# This service handles the setting up of the modes of operation for a CiA402 drives on multiple DoFs.
+# This service handles the setting up of the mode of operation for a CiA402 drive.
 
 # Modes of Operation
 uint8 MODE_NO_MODE=0
@@ -11,6 +11,11 @@ uint8 MODE_CYCLIC_SYNC_POSITION=8
 uint8 MODE_CYCLIC_SYNC_VELOCITY=9
 uint8 MODE_CYCLIC_SYNC_TORQUE=10
 
-int32[] modes_of_operation
+# DoF name
+string dof_name
+
+# Mode of Operation
+int32 mode_of_operation
 ---
-bool success
+# Return message
+string return_message

@@ -13,8 +13,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Cia402DriveStates.msg"
   "srv/SetSdo.srv"
   "srv/GetSdo.srv"
-  "srv/SwitchDriveModesOfOperation.srv"
-  "srv/ResetDriveFaults.srv"
+  "srv/SwitchDriveModeOfOperation.srv"
+  "srv/ResetDriveFault.srv"
   DEPENDENCIES
   std_msgs
 )
