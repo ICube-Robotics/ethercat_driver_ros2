@@ -29,10 +29,10 @@ std_msgs/Header header
 string[] dof_names
 
 # Current state of the drive
-int32[] drive_states
+string[] drive_states
 
 # Current mode of operation
-int32[] modes_of_operation
+string[] modes_of_operation
 
 # Current Status Word
 int16[] status_words
