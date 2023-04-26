@@ -125,9 +125,9 @@ controller_interface::return_type CiA402Controller::update(
 
     for (auto i = 0ul; i < dof_names_.size(); i++) {
       msg.dof_names[i] = dof_names_[i];
-      msg.modes_of_operation[i] = state_interfaces_[2 * i].get_value();
+      msg.modes_of_operation[i] = mode_of_operation_str(state_interfaces_[2 * i].get_value());
       msg.status_words[i] = state_interfaces_[2 * i + 1].get_value();
-      msg.drive_states[i] = deviceState(state_interfaces_[2 * i + 1].get_value());
+      msg.drive_states[i] = device_state_str(state_interfaces_[2 * i + 1].get_value());
     }
 
     rt_drive_state_publisher_->unlockAndPublish();
@@ -137,26 +137,51 @@ controller_interface::return_type CiA402Controller::update(
 }
 
 /** returns device state based upon the status_word */
-int CiA402Controller::deviceState(uint16_t status_word)
+std::string CiA402Controller::device_state_str(uint16_t status_word)
 {
   if ((status_word & 0b01001111) == 0b00000000) {
-    return 2;
+    return "STATE_NOT_READY_TO_SWITCH_ON";
   } else if ((status_word & 0b01001111) == 0b01000000) {
-    return 3;
+    return "STATE_SWITCH_ON_DISABLED";
   } else if ((status_word & 0b01101111) == 0b00100001) {
-    return 4;
+    return "STATE_READY_TO_SWITCH_ON";
   } else if ((status_word & 0b01101111) == 0b00100011) {
-    return 5;
+    return "STATE_SWITCH_ON";
   } else if ((status_word & 0b01101111) == 0b00100111) {
-    return 6;
+    return "STATE_OPERATION_ENABLED";
   } else if ((status_word & 0b01101111) == 0b00000111) {
-    return 7;
+    return "STATE_QUICK_STOP_ACTIVE";
   } else if ((status_word & 0b01001111) == 0b00001111) {
-    return 8;
+    return "STATE_FAULT_REACTION_ACTIVE";
   } else if ((status_word & 0b01001111) == 0b00001000) {
-    return 9;
+    return "STATE_FAULT";
   }
-  return 0;
+  return "STATE_UNDEFINED";
+}
+
+/** returns mode str based upon the mode_of_operation value */
+std::string CiA402Controller::mode_of_operation_str(double mode_of_operation)
+{
+  if (mode_of_operation == 0) {
+    return "MODE_NO_MODE";
+  } else if (mode_of_operation == 1) {
+    return "MODE_PROFILED_POSITION";
+  } else if (mode_of_operation == 3) {
+    return "MODE_PROFILED_VELOCITY";
+  } else if (mode_of_operation == 4) {
+    return "MODE_PROFILED_TORQUE";
+  } else if (mode_of_operation == 6) {
+    return "MODE_HOMING";
+  } else if (mode_of_operation == 7) {
+    return "MODE_INTERPOLATED_POSITION";
+  } else if (mode_of_operation == 8) {
+    return "MODE_CYCLIC_SYNC_POSITION";
+  } else if (mode_of_operation == 9) {
+    return "MODE_CYCLIC_SYNC_VELOCITY";
+  } else if (mode_of_operation == 10) {
+    return "MODE_CYCLIC_SYNC_TORQUE";
+  }
+  return "MODE_UNDEFINED";
 }
 
 }  // namespace ethercat_controllers

@@ -74,7 +74,8 @@ protected:
 
   std::string logger_name_;
 
-  int deviceState(uint16_t status_word);
+  std::string device_state_str(uint16_t status_word);
+  std::string mode_of_operation_str(double mode_of_operation);
 };
 
 }  // namespace ethercat_controllers
