@@ -10,7 +10,6 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
   <exec_depend>ethercat_driver</exec_depend>
   <exec_depend>ethercat_interface</exec_depend>
-  <exec_depend>ethercat_plugins</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
