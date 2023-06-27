@@ -42,7 +42,7 @@ int GenericEcSlave::assign_activate_dc_sync() {return assign_activate_;}
 
 void GenericEcSlave::processData(size_t index, uint8_t * domain_address)
 {
-  pdo_channels_info_[index].ec_update(domain_address);
+  pdo_channels_info_[domain_map_[index]].ec_update(domain_address);
 }
 
 const ec_sync_info_t * GenericEcSlave::syncs()
@@ -59,9 +59,7 @@ const ec_pdo_entry_info_t * GenericEcSlave::channels()
 }
 void GenericEcSlave::domains(DomainMap & domains) const
 {
-  std::vector<unsigned int> v(all_channels_.size());
-  std::iota(std::begin(v), std::end(v), 0);
-  domains = {{0, v}};
+  domains = {{0, domain_map_}};
 }
 
 void GenericEcSlave::setup_syncs()
@@ -202,6 +200,13 @@ bool GenericEcSlave::setup_from_config(YAML::Node slave_config)
           }
         );
         channels_nbr += tpdo_channels_size;
+      }
+    }
+
+    // Remove gaps from domain mapping
+    for (auto i = 0ul; i < all_channels_.size(); i++) {
+      if (all_channels_[i].index != 0x0000) {
+        domain_map_.push_back(i);
       }
     }
 
