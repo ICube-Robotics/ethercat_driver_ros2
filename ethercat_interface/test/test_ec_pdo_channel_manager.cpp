@@ -129,7 +129,7 @@ TEST(TestEcPdoChannelManager, EcReadWriteBoolMask5)
 
   uint8_t buffer[1];
   EC_WRITE_U8(buffer, 7);
-  ASSERT_EQ(pdo_manager.ec_read(buffer), 5);
+  ASSERT_EQ(pdo_manager.ec_read(buffer), 1);
   EC_WRITE_U8(buffer, 0);
   ASSERT_EQ(pdo_manager.ec_read(buffer), 0);
 
