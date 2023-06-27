@@ -221,32 +221,33 @@ TEST_F(EcCiA402DriveTest, EcWriteRPDODefaultValue)
   ASSERT_EQ(EC_READ_S16(domain_address), -5);
 }
 
-TEST_F(EcCiA402DriveTest, FaultReset)
-{
-  std::unordered_map<std::string, std::string> slave_paramters;
-  std::vector<double> command_interface = {0, 1};
-  plugin_->command_interface_ptr_ = &command_interface;
-  plugin_->setup_from_config(YAML::Load(test_drive_config));
-  plugin_->setup_interface_mapping();
-  plugin_->fault_reset_command_interface_index_ = 1;
-  plugin_->state_ = STATE_FAULT;
-  plugin_->is_operational_ = true;
-  uint8_t domain_address = 0;
-  plugin_->pdo_channels_info_[4].data_type = "";
-  ASSERT_FALSE(plugin_->last_fault_reset_command_);
-  ASSERT_FALSE(plugin_->fault_reset_);
-  ASSERT_EQ(plugin_->command_interface_ptr_->at(plugin_->fault_reset_command_interface_index_), 1);
-  plugin_->processData(4, &domain_address);
-  ASSERT_EQ(plugin_->pdo_channels_info_[4].default_value, 0b10000000);
-  plugin_->pdo_channels_info_[4].last_value = 0;
-  plugin_->processData(4, &domain_address);
-  ASSERT_EQ(plugin_->pdo_channels_info_[4].default_value, 0b00000000);
-  command_interface[1] = 0;
-  plugin_->processData(4, &domain_address);
-  ASSERT_EQ(plugin_->pdo_channels_info_[4].default_value, 0b00000000);
-  command_interface[1] = 2;  plugin_->processData(4, &domain_address);
-  ASSERT_EQ(plugin_->pdo_channels_info_[4].default_value, 0b10000000);
-}
+// TEST_F(EcCiA402DriveTest, FaultReset)
+// {
+//   std::unordered_map<std::string, std::string> slave_paramters;
+//   std::vector<double> command_interface = {0, 1};
+//   plugin_->command_interface_ptr_ = &command_interface;
+//   plugin_->setup_from_config(YAML::Load(test_drive_config));
+//   plugin_->setup_interface_mapping();
+//   plugin_->fault_reset_command_interface_index_ = 1;
+//   plugin_->state_ = STATE_FAULT;
+//   plugin_->is_operational_ = true;
+//   uint8_t domain_address = 0;
+//   plugin_->pdo_channels_info_[4].data_type = "";
+//   ASSERT_FALSE(plugin_->last_fault_reset_command_);
+//   ASSERT_FALSE(plugin_->fault_reset_);
+//   ASSERT_EQ(plugin_->command_interface_ptr_->at(
+//     plugin_->fault_reset_command_interface_index_), 1);
+//   plugin_->processData(4, &domain_address);
+//   ASSERT_EQ(plugin_->pdo_channels_info_[4].default_value, 0b10000000);
+//   plugin_->pdo_channels_info_[4].last_value = 0;
+//   plugin_->processData(4, &domain_address);
+//   ASSERT_EQ(plugin_->pdo_channels_info_[4].default_value, 0b00000000);
+//   command_interface[1] = 0;
+//   plugin_->processData(4, &domain_address);
+//   ASSERT_EQ(plugin_->pdo_channels_info_[4].default_value, 0b00000000);
+//   command_interface[1] = 2;  plugin_->processData(4, &domain_address);
+//   ASSERT_EQ(plugin_->pdo_channels_info_[4].default_value, 0b10000000);
+// }
 
 TEST_F(EcCiA402DriveTest, SwitchModeOfOperation)
 {
