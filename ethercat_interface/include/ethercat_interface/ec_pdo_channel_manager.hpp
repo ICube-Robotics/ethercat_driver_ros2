@@ -206,7 +206,7 @@ public:
   uint8_t sub_index;
   std::string data_type;
   std::string interface_name;
-  uint8_t data_mask = 0;
+  uint8_t data_mask = 255;
   double default_value = std::numeric_limits<double>::quiet_NaN();
   int interface_index = -1;
   double last_value = std::numeric_limits<double>::quiet_NaN();
