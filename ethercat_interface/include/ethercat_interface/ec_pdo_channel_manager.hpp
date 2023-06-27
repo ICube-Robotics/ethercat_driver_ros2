@@ -65,6 +65,8 @@ public:
       last_value = static_cast<double>(EC_READ_U64(domain_address));
     } else if (data_type == "int64") {
       last_value = static_cast<double>(EC_READ_S64(domain_address));
+    } else if (data_type == "bool") {
+      last_value = (EC_READ_U8(domain_address) & data_mask) ? 1 : 0;
     } else {
       last_value = static_cast<double>(EC_READ_U8(domain_address) & data_mask);
     }
