@@ -21,7 +21,11 @@ class Beckhoff_EL2008 : public ethercat_interface::EcSlave
 {
 public:
   Beckhoff_EL2008()
-  : EcSlave(0x00000002, 0x07d83052) {}
+  : EcSlave(0x00000002, 0x07d83052)
+  {
+    std::cerr << "The Beckhoff_EL2008 plugin is depreciated and will be removed in the future."
+              << "Use the GenericEcSlave plugin instead." << std::endl;
+  }
   virtual ~Beckhoff_EL2008() {}
   virtual void processData(size_t index, uint8_t * domain_address)
   {
@@ -130,7 +134,11 @@ class Beckhoff_EL2088 : public ethercat_interface::EcSlave
 {
 public:
   Beckhoff_EL2088()
-  : EcSlave(0x00000002, 0x08283052) {}
+  : EcSlave(0x00000002, 0x08283052)
+  {
+    std::cerr << "The Beckhoff_EL2088 plugin is depreciated and will be removed in the future."
+              << "Use the GenericEcSlave plugin instead." << std::endl;
+  }
   virtual ~Beckhoff_EL2088() {}
   virtual void processData(size_t index, uint8_t * domain_address)
   {

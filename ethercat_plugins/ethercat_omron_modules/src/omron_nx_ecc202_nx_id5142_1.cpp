@@ -21,7 +21,12 @@ class Omron_NX_ECC202_NX_ID5142_1 : public ethercat_interface::EcSlave
 {
 public:
   Omron_NX_ECC202_NX_ID5142_1()
-  : EcSlave(0x00000083, 0x000000a6) {}
+  : EcSlave(0x00000083, 0x000000a6)
+  {
+    std::cerr <<
+      "The Omron_NX_ECC202_NX_ID5142_1 plugin is depreciated and will be removed in the future."
+              << "Use the GenericEcSlave plugin instead." << std::endl;
+  }
   // 0x01115142 for NX-ID5142-1 and 0x05115142 for NX-ID5142-5
   virtual ~Omron_NX_ECC202_NX_ID5142_1() {}
   virtual void processData(size_t index, uint8_t * domain_address)

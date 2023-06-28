@@ -22,7 +22,11 @@ class Schneider_ATV320 : public ethercat_interface::EcSlave
 {
 public:
   Schneider_ATV320()
-  : EcSlave(0x0800005a, 0x00000389) {}
+  : EcSlave(0x0800005a, 0x00000389)
+  {
+    std::cerr << "The Schneider_ATV320 plugin is depreciated and will be removed in the future."
+              << "Use the EcCiA402Drive plugin instead." << std::endl;
+  }
   virtual ~Schneider_ATV320() {}
   /* Returns true if atv320 has reached "operation enabled" state. */
   bool initialized() const {return state_ == STATE_OPERATION_ENABLED;}

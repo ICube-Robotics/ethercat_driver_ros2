@@ -22,7 +22,11 @@ class Maxon_EPOS3 : public ethercat_interface::EcSlave
 {
 public:
   Maxon_EPOS3()
-  : EcSlave(0x000000fb, 0x64400000) {}
+  : EcSlave(0x000000fb, 0x64400000)
+  {
+    std::cerr << "The Maxon_EPOS3 plugin is depreciated and will be removed in the future."
+              << "Use the EcCiA402Drive plugin instead." << std::endl;
+  }
   virtual ~Maxon_EPOS3() {}
   /** Returns true if Epos3 has reached "operation enabled" state.
     *  The transition through the state machine is handled automatically. */

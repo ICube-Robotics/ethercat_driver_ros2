@@ -21,7 +21,11 @@ class Beckhoff_EK1100 : public ethercat_interface::EcSlave
 {
 public:
   Beckhoff_EK1100()
-  : EcSlave(0x00000002, 0x044c2c52) {}
+  : EcSlave(0x00000002, 0x044c2c52)
+  {
+    std::cerr << "The Beckhoff_EK1100 plugin is depreciated and will be removed in the future."
+              << "Use the GenericEcSlave plugin instead." << std::endl;
+  }
   virtual ~Beckhoff_EK1100() {}
 };
 
