@@ -21,7 +21,11 @@ class Advantech_AMAX5056 : public ethercat_interface::EcSlave
 {
 public:
   Advantech_AMAX5056()
-  : EcSlave(0x000013FE, 0x00035056) {}
+  : EcSlave(0x000013FE, 0x00035056)
+  {
+    std::cerr << "The Advantech_AMAX5056 plugin is depreciated and will be removed in the future."
+              << "Use the GenericEcSlave plugin instead." << std::endl;
+  }
   virtual ~Advantech_AMAX5056() {}
   virtual void processData(size_t index, uint8_t * domain_address)
   {

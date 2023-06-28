@@ -21,7 +21,11 @@ class ATI_FTSensor : public ethercat_interface::EcSlave
 {
 public:
   ATI_FTSensor()
-  : EcSlave(0x00000732, 0x26483052) {}
+  : EcSlave(0x00000732, 0x26483052)
+  {
+    std::cerr << "The ATI_FTSensor plugin is depreciated and will be removed in the future."
+              << "Use the GenericEcSlave plugin instead." << std::endl;
+  }
   virtual ~ATI_FTSensor() {}
   virtual void processData(size_t index, uint8_t * domain_address)
   {
