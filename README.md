@@ -1,5 +1,6 @@
 # ethercat_driver_ros2
 [![Licence](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![DOI](https://zenodo.org/badge/491930126.svg)](https://zenodo.org/badge/latestdoi/491930126)
 [![Build](https://github.com/ICube-Robotics/ethercat_driver_ros2/actions/workflows/ci.yml/badge.svg)](https://github.com/ICube-Robotics/ethercat_driver_ros2/actions/workflows/ci.yml)
 
 Implementation of a `Hardware Interface` for simple Ethercat module integration with [`ros2_control`](https://github.com/ros-controls/ros2_control) and building upon [IgH EtherCAT Master for Linux](https://etherlab.org/en/ethercat/).
