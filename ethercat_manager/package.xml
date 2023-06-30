@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>ethercat_manager</name>
-  <version>1.1.0</version>
+  <version>1.2.0</version>
   <description>Components to interact with EtherCAT slave modules</description>
   <maintainer email="mcbed.robotics@gmail.com">Maciej Bednarczyk</maintainer>
   <license>Apache-2.0</license>
