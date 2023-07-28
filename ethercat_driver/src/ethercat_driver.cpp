@@ -274,72 +274,42 @@ CallbackReturn EthercatDriver::on_activate(
 
   // start EC and wait until state operative
 
-  master_.setCtrlFrequency(control_frequency_);
+  master_.set_ctrl_frequency(control_frequency_);
 
   for (auto i = 0ul; i < ec_modules_.size(); i++) {
-    master_.addSlave(
-      std::stod(ec_module_parameters_[i]["alias"]),
-      std::stod(ec_module_parameters_[i]["position"]),
-      ec_modules_[i].get());
+    master_.add_slave(ec_modules_[i].get());
   }
 
-  // configure SDO
+  // configure slave
   for (auto i = 0ul; i < ec_modules_.size(); i++) {
-    for (auto & sdo : ec_modules_[i]->sdo_config) {
-      uint32_t abort_code;
-      int ret = master_.configSlaveSdo(
-        std::stod(ec_module_parameters_[i]["position"]),
-        sdo,
-        &abort_code
+    uint32_t abort_code;
+    int ret = master_.config_slave(
+      ec_modules_[i].get(),
+      &abort_code
+    );
+    if (ret) {
+      RCLCPP_INFO(
+        rclcpp::get_logger("EthercatDriver"),
+        "Failed to download config SDO for module at position %s with Error: %d",
+        ec_module_parameters_[i]["position"].c_str(),
+        abort_code
       );
-      if (ret) {
-        RCLCPP_INFO(
-          rclcpp::get_logger("EthercatDriver"),
-          "Failed to download config SDO for module at position %s with Error: %d",
-          ec_module_parameters_[i]["position"].c_str(),
-          abort_code
-        );
-      }
     }
   }
 
   master_.activate();
   RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"), "Activated EcMaster!");
 
-  // start after one second
-  struct timespec t;
-  clock_gettime(CLOCK_MONOTONIC, &t);
-  t.tv_sec++;
-
-  bool running = true;
-  while (running) {
-    // wait until next shot
-    clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &t, NULL);
-    // update EtherCAT bus
-
-    master_.update();
-    RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"), "updated!");
-
-    // check if operational
-    bool isAllInit = true;
-    for (auto & module : ec_modules_) {
-      isAllInit = isAllInit && module->initialized();
-    }
-    if (isAllInit) {
-      running = false;
-    }
-    // calculate next shot. carry over nanoseconds into microseconds.
-    t.tv_nsec += master_.getInterval();
-    while (t.tv_nsec >= 1000000000) {
-      t.tv_nsec -= 1000000000;
-      t.tv_sec++;
-    }
+  if (master_.spin_slaves_until_operational()) {
+    RCLCPP_INFO(
+      rclcpp::get_logger("EthercatDriver"), "System Successfully started!");
+    return CallbackReturn::SUCCESS;
+  } else {
+    RCLCPP_FATAL(
+      rclcpp::get_logger("EthercatDriver"),
+      "Failed to bring all slaves into OPERATIONAL state");
+    return CallbackReturn::ERROR;
   }
-
-  RCLCPP_INFO(
-    rclcpp::get_logger("EthercatDriver"), "System Successfully started!");
-
-  return CallbackReturn::SUCCESS;
 }
 
 CallbackReturn EthercatDriver::on_deactivate(
@@ -348,7 +318,7 @@ CallbackReturn EthercatDriver::on_deactivate(
   RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"), "Stopping ...please wait...");
 
   // stop EC and disconnect
-  master_.stop();
+  master_.deactivate();
 
   RCLCPP_INFO(
     rclcpp::get_logger("EthercatDriver"), "System successfully stopped!");
@@ -360,16 +330,22 @@ hardware_interface::return_type EthercatDriver::read(
   const rclcpp::Time & /*time*/,
   const rclcpp::Duration & /*period*/)
 {
-  master_.readData();
-  return hardware_interface::return_type::OK;
+  if (master_.read_process_data()) {
+    return hardware_interface::return_type::OK;
+  } else {
+    return hardware_interface::return_type::ERROR;
+  }
 }
 
 hardware_interface::return_type EthercatDriver::write(
   const rclcpp::Time & /*time*/,
   const rclcpp::Duration & /*period*/)
 {
-  master_.writeData();
-  return hardware_interface::return_type::OK;
+  if (master_.write_process_data()) {
+    return hardware_interface::return_type::OK;
+  } else {
+    return hardware_interface::return_type::ERROR;
+  }
 }
 
 std::vector<std::unordered_map<std::string, std::string>> EthercatDriver::getEcModuleParam(

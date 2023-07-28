@@ -12,17 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-// Author: Maciej Bednarczyk (macbednarczyk@gmail.com)
+// Author: Maciej Bednarczyk (mcbed.robotics@gmail.com)
 
 #ifndef ETHERCAT_INTERFACE__EC_PDO_CHANNEL_MANAGER_HPP_
 #define ETHERCAT_INTERFACE__EC_PDO_CHANNEL_MANAGER_HPP_
 
-#include <ecrt.h>
 #include <string>
 #include <vector>
 #include <limits>
 
 #include "yaml-cpp/yaml.h"
+#include "ethercat_interface/ec_buffer_tools.h"
 
 namespace ethercat_interface
 {
@@ -45,7 +45,7 @@ public:
     state_interface_ptr_ = state_interface;
   }
 
-  ec_pdo_entry_info_t get_pdo_entry_info() {return {index, sub_index, type2bits(data_type)};}
+  // ec_pdo_entry_info_t get_pdo_entry_info() {return {index, sub_index, type2bits(data_type)};}
 
   double ec_read(uint8_t * domain_address)
   {

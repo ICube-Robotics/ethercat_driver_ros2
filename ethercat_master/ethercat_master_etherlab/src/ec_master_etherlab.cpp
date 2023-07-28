@@ -12,9 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "ethercat_interface/ec_master.hpp"
-#include "ethercat_interface/ec_slave.hpp"
-
 #include <unistd.h>
 #include <sys/resource.h>
 #include <pthread.h>
@@ -26,13 +23,17 @@
 #include <iostream>
 #include <sstream>
 
+#include "ethercat_master/ec_master_etherlab.hpp"
+#include "ethercat_interface/ec_master.hpp"
+#include "rclcpp/rclcpp.hpp"
+
 #define EC_NEWTIMEVAL2NANO(TV) \
   (((TV).tv_sec - 946684800ULL) * 1000000000ULL + (TV).tv_nsec)
 
-namespace ethercat_interface
+namespace ethercat_master
 {
 
-EcMaster::DomainInfo::DomainInfo(ec_master_t * master)
+EtherlabMaster::DomainInfo::DomainInfo(ec_master_t * master)
 {
   domain = ecrt_master_create_domain(master);
   if (domain == NULL) {
@@ -45,7 +46,7 @@ EcMaster::DomainInfo::DomainInfo(ec_master_t * master)
 }
 
 
-EcMaster::DomainInfo::~DomainInfo()
+EtherlabMaster::DomainInfo::~DomainInfo()
 {
   for (Entry & entry : entries) {
     delete[] entry.offset;
@@ -54,17 +55,12 @@ EcMaster::DomainInfo::~DomainInfo()
 }
 
 
-EcMaster::EcMaster(const int master)
+EtherlabMaster::EtherlabMaster()
 {
-  master_ = ecrt_request_master(master);
-  if (master_ == NULL) {
-    printWarning("Failed to obtain master.");
-    return;
-  }
   interval_ = 0;
 }
 
-EcMaster::~EcMaster()
+EtherlabMaster::~EtherlabMaster()
 {
   for (SlaveInfo & slave : slave_info_) {
     //
@@ -74,19 +70,29 @@ EcMaster::~EcMaster()
   }
 }
 
-void EcMaster::addSlave(uint16_t alias, uint16_t position, EcSlave * slave)
+bool EtherlabMaster::init(std::string master_interface)
+{
+  master_ = ecrt_request_master(std::stoi(master_interface));
+  if (master_ == NULL) {
+    printWarning("Failed to obtain master.");
+    return false;
+  }
+  return true;
+}
+
+bool EtherlabMaster::add_slave(ethercat_interface::EcSlave * slave)
 {
   // configure slave in master
 
   SlaveInfo slave_info;
   slave_info.slave = slave;
   slave_info.config = ecrt_master_slave_config(
-    master_, alias, position,
+    master_, slave->bus_alias_, slave->bus_position_,
     slave->vendor_id_,
     slave->product_id_);
   if (slave_info.config == NULL) {
     printWarning("Add slave. Failed to get slave configuration.");
-    return;
+    return false;
   }
 
   // check and setup dc
@@ -114,16 +120,16 @@ void EcMaster::addSlave(uint16_t alias, uint16_t position, EcSlave * slave)
     int pdos_status = ecrt_slave_config_pdos(slave_info.config, num_syncs, syncs);
     if (pdos_status) {
       printWarning("Add slave. Failed to configure PDOs");
-      return;
+      return false;
     }
   } else {
     printWarning(
       "Add slave. Sync size is zero for " +
-      std::to_string(alias) + ":" + std::to_string(position));
+      std::to_string(slave->bus_alias_) + ":" + std::to_string(slave->bus_position_));
   }
 
   // check if slave registered any pdos for the domain
-  EcSlave::DomainMap domain_map;
+  ethercat_interface::EcSlave::DomainMap domain_map;
   slave->domains(domain_map);
   for (auto & iter : domain_map) {
     // get the domain info, create if necessary
@@ -135,35 +141,39 @@ void EcMaster::addSlave(uint16_t alias, uint16_t position, EcSlave * slave)
     }
 
     registerPDOInDomain(
-      alias, position,
+      slave->bus_alias_, slave->bus_position_,
       iter.second, domain_info,
       slave);
   }
+
+  return true;
 }
 
-int EcMaster::configSlaveSdo(
-  uint16_t slave_position, SdoConfigEntry sdo_config,
-  uint32_t * abort_code)
+int EtherlabMaster::config_slave(ethercat_interface::EcSlave * slave, uint32_t * abort_code)
 {
-  uint8_t buffer[8];
-  sdo_config.buffer_write(buffer);
-  int ret = ecrt_master_sdo_download(
-    master_,
-    slave_position,
-    sdo_config.index,
-    sdo_config.sub_index,
-    buffer,
-    sdo_config.data_size(),
-    abort_code
-  );
+  int ret = 0;
+  for (auto & sdo : slave->sdo_config) {
+    uint8_t buffer[8];
+    sdo.buffer_write(buffer);
+    ret += ecrt_master_sdo_download(
+      master_,
+      slave->bus_position_,
+      sdo.index,
+      sdo.sub_index,
+      buffer,
+      sdo.data_size(),
+      abort_code
+    );
+  }
+
   return ret;
 }
 
-void EcMaster::registerPDOInDomain(
+void EtherlabMaster::registerPDOInDomain(
   uint16_t alias, uint16_t position,
   std::vector<uint32_t> & channel_indices,
   DomainInfo * domain_info,
-  EcSlave * slave)
+  ethercat_interface::EcSlave * slave)
 {
   // expand the size of the domain
   uint32_t num_pdo_regs = channel_indices.size();
@@ -178,7 +188,7 @@ void EcMaster::registerPDOInDomain(
   domain_entry.bit_position = new uint32_t[num_pdo_regs];
   domain_info->entries.push_back(domain_entry);
 
-  EcSlave::DomainMap domain_map;
+  ethercat_interface::EcSlave::DomainMap domain_map;
   slave->domains(domain_map);
 
   // add to array of pdos registrations
@@ -210,7 +220,7 @@ void EcMaster::registerPDOInDomain(
   domain_info->domain_regs.back() = empty;
 }
 
-void EcMaster::activate()
+bool EtherlabMaster::activate()
 {
   // register domain
   for (auto & iter : domain_info_) {
@@ -220,7 +230,7 @@ void EcMaster::activate()
       &(domain_info->domain_regs[0]));
     if (domain_status) {
       printWarning("Activate. Failed to register domain PDO entries.");
-      return;
+      return false;
     }
   }
   // set application time
@@ -232,7 +242,7 @@ void EcMaster::activate()
   bool activate_status = ecrt_master_activate(master_);
   if (activate_status) {
     printWarning("Activate. Failed to activate master.");
-    return;
+    return false;
   }
 
   // retrieve domain data
@@ -241,12 +251,46 @@ void EcMaster::activate()
     domain_info->domain_pd = ecrt_domain_data(domain_info->domain);
     if (domain_info->domain_pd == NULL) {
       printWarning("Activate. Failed to retrieve domain process data.");
-      return;
+      return false;
     }
   }
+  return true;
 }
 
-void EcMaster::update(uint32_t domain)
+bool EtherlabMaster::spin_slaves_until_operational()
+{
+  // start after one second
+  // struct timespec t;
+  // clock_gettime(CLOCK_MONOTONIC, &t);
+  // t.tv_sec++;
+
+  // bool running = true;
+  // while (running) {
+  //   // wait until next shot
+  //   clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &t, NULL);
+  //   // update EtherCAT bus
+
+  //   update();
+  //   RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"), "updated!");
+
+  //   // check if operational
+  //   bool isAllInit = true;
+  //   for (auto & module : ec_modules_) {
+  //     isAllInit = isAllInit && module->initialized();
+  //   }
+  //   if (isAllInit) {
+  //     running = false;
+  //   }
+  //   // calculate next shot. carry over nanoseconds into microseconds.
+  //   t.tv_nsec += get_interval();
+  //   while (t.tv_nsec >= 1000000000) {
+  //     t.tv_nsec -= 1000000000;
+  //     t.tv_sec++;
+  //   }
+  // }
+}
+
+void EtherlabMaster::update(uint32_t domain)
 {
   // receive process data
   ecrt_master_receive(master_);
@@ -285,17 +329,17 @@ void EcMaster::update(uint32_t domain)
   ++update_counter_;
 }
 
-void EcMaster::readData(uint32_t domain)
+bool EtherlabMaster::read_process_data()
 {
   // receive process data
   ecrt_master_receive(master_);
 
-  DomainInfo * domain_info = domain_info_[domain];
+  DomainInfo * domain_info = domain_info_[0];
 
   ecrt_domain_process(domain_info->domain);
 
   // check process data state (optional)
-  checkDomainState(domain);
+  checkDomainState(0);
 
   // check for master and slave state change
   if (update_counter_ % check_state_frequency_ == 0) {
@@ -313,9 +357,9 @@ void EcMaster::readData(uint32_t domain)
   ++update_counter_;
 }
 
-void EcMaster::writeData(uint32_t domain)
+bool EtherlabMaster::write_process_data()
 {
-  DomainInfo * domain_info = domain_info_[domain];
+  DomainInfo * domain_info = domain_info_[0];
   // read and write process data
   for (DomainInfo::Entry & entry : domain_info->entries) {
     for (int i = 0; i < entry.num_pdos; ++i) {
@@ -335,7 +379,7 @@ void EcMaster::writeData(uint32_t domain)
   ecrt_master_send(master_);
 }
 
-void EcMaster::setCtrlCHandler(SIMPLECAT_EXIT_CALLBACK user_callback)
+void EtherlabMaster::setCtrlCHandler(SIMPLECAT_EXIT_CALLBACK user_callback)
 {
   // ctrl c handler
   struct sigaction sigIntHandler;
@@ -345,7 +389,7 @@ void EcMaster::setCtrlCHandler(SIMPLECAT_EXIT_CALLBACK user_callback)
   sigaction(SIGINT, &sigIntHandler, NULL);
 }
 
-void EcMaster::run(SIMPLECAT_CONTRL_CALLBACK user_callback)
+void EtherlabMaster::run(SIMPLECAT_CONTRL_CALLBACK user_callback)
 {
   // start after one second
   struct timespec t;
@@ -376,18 +420,18 @@ void EcMaster::run(SIMPLECAT_CONTRL_CALLBACK user_callback)
   }
 }
 
-double EcMaster::elapsedTime()
+double EtherlabMaster::elapsedTime()
 {
   std::chrono::duration<double> elapsed_seconds = curr_t_ - start_t_;
   return elapsed_seconds.count() - 1.0;  // started after 1 second
 }
 
-uint64_t EcMaster::elapsedCycles()
+uint64_t EtherlabMaster::elapsedCycles()
 {
   return update_counter_;
 }
 
-void EcMaster::setThreadHighPriority()
+void EtherlabMaster::setThreadHighPriority()
 {
   pid_t pid = getpid();
   int priority_status = setpriority(PRIO_PROCESS, pid, -19);
@@ -397,7 +441,7 @@ void EcMaster::setThreadHighPriority()
   }
 }
 
-void EcMaster::setThreadRealTime()
+void EtherlabMaster::setThreadRealTime()
 {
   /* Declare ourself as a real time task, priority 49.
       PRREMPT_RT uses priority 50
@@ -424,7 +468,7 @@ void EcMaster::setThreadRealTime()
   memset(dummy, 0, MAX_SAFE_STACK);
 }
 
-void EcMaster::checkDomainState(uint32_t domain)
+void EtherlabMaster::checkDomainState(uint32_t domain)
 {
   DomainInfo * domain_info = domain_info_[domain];
 
@@ -441,7 +485,7 @@ void EcMaster::checkDomainState(uint32_t domain)
 }
 
 
-void EcMaster::checkMasterState()
+void EtherlabMaster::checkMasterState()
 {
   ec_master_state_t ms;
   ecrt_master_state(master_, &ms);
@@ -459,7 +503,7 @@ void EcMaster::checkMasterState()
 }
 
 
-void EcMaster::checkSlaveStates()
+void EtherlabMaster::checkSlaveStates()
 {
   for (SlaveInfo & slave : slave_info_) {
     ec_slave_config_state_t s;
@@ -481,9 +525,13 @@ void EcMaster::checkSlaveStates()
 }
 
 
-void EcMaster::printWarning(const std::string & message)
+void EtherlabMaster::printWarning(const std::string & message)
 {
   std::cout << "WARNING. Master. " << message << std::endl;
 }
 
-}  // namespace ethercat_interface
+}  // namespace ethercat_master
+
+#include <pluginlib/class_list_macros.hpp>
+
+PLUGINLIB_EXPORT_CLASS(ethercat_master::EtherlabMaster, ethercat_interface::EcMaster)

@@ -15,7 +15,6 @@
 #ifndef ETHERCAT_INTERFACE__EC_SLAVE_HPP_
 #define ETHERCAT_INTERFACE__EC_SLAVE_HPP_
 
-#include <ecrt.h>
 #include <map>
 #include <vector>
 #include <unordered_map>
@@ -24,6 +23,7 @@
 #include <string>
 
 #include "ethercat_interface/ec_sdo_manager.hpp"
+#include "ethercat_interface/ec_buffer_tools.h"
 
 namespace ethercat_interface
 {
@@ -59,10 +59,14 @@ public:
     state_interface_ptr_ = state_interface;
     command_interface_ptr_ = command_interface;
     paramters_ = slave_paramters;
+    bus_position_ = std::stoi(slave_paramters["position"]);
+    bus_alias_ = std::stoi(slave_paramters["alias"]);
     return true;
   }
   uint32_t vendor_id_;
   uint32_t product_id_;
+  int bus_position_;
+  int bus_alias_;
 
   std::vector<SdoConfigEntry> sdo_config;
 

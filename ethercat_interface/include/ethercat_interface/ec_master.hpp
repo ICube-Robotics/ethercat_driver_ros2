@@ -18,34 +18,33 @@
 #define ETHERCAT_INTERFACE__EC_MASTER_HPP_
 
 #include <string>
+#include "ethercat_interface/ec_slave.hpp"
 
 namespace ethercat_interface
 {
 class EcMaster
 {
 public:
-  EcMaster();
-  virtual ~EcMaster();
+  EcMaster() {}
+  virtual ~EcMaster() {}
 
   /** \brief add a slave device to the master */
-  virtual void add_slave(EcSlave * slave);
+  virtual bool add_slave(EcSlave * slave) = 0;
 
   /** \brief configure slave using SDO */
-  virtual int config_slave_sdo(
-    uint16_t slave_position, SdoConfigEntry sdo_config,
-    uint32_t * abort_code);
+  virtual int config_slave(EcSlave * slave, uint32_t * abort_code) = 0;
 
-  virtual bool init(std::string iface);
+  virtual bool init(std::string iface) = 0;
 
-  virtual void activate();
+  virtual bool activate() = 0;
 
-  virtual void deactivate();
+  virtual bool deactivate() = 0;
 
-  virtual bool spin_slave_until_operational();
+  virtual bool spin_slaves_until_operational() = 0;
 
-  virtual bool read_process_data();
+  virtual bool read_process_data() = 0;
 
-  virtual void write_process_data();
+  virtual bool write_process_data() = 0;
 
   void set_ctrl_frequency(double frequency)
   {
