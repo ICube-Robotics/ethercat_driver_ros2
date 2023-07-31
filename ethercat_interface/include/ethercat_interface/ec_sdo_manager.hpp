@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-// Author: Maciej Bednarczyk (macbednarczyk@gmail.com)
+// Author: Maciej Bednarczyk (mcbed.robotics@gmail.com)
 
 #ifndef ETHERCAT_INTERFACE__EC_SDO_MANAGER_HPP_
 #define ETHERCAT_INTERFACE__EC_SDO_MANAGER_HPP_
@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 #include <limits>
+#include <iostream>
 
 #include "yaml-cpp/yaml.h"
 #include "ethercat_interface/ec_buffer_tools.h"
