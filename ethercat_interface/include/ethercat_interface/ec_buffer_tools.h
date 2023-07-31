@@ -22,20 +22,20 @@
  * Bitwise read/write macros
  *****************************************************************************/
 
-/** Read a certain bit of an EtherCAT data byte.
+/** Read a certain bit of an Buffer data byte.
  *
- * \param DATA EtherCAT data pointer
+ * \param DATA Buffer data pointer
  * \param POS bit position
  */
 #define EC_READ_BIT(DATA, POS) ((*((uint8_t *) (DATA)) >> (POS)) & 0x01)
 
-/** Write a certain bit of an EtherCAT data byte.
+/** Write a certain bit of an Buffer data byte.
  *
- * \param DATA EtherCAT data pointer
+ * \param DATA Buffer data pointer
  * \param POS bit position
  * \param VAL new bit value
  */
-#define EC_WRITE_BIT(DATA, POS, VAL) \
+#define write_BIT(DATA, POS, VAL) \
   do { \
     if (VAL) *((uint8_t *) (DATA)) |= (1 << (POS)); \
     else * ((uint8_t *) (DATA)) &= ~(1 << (POS)); \
@@ -100,139 +100,139 @@
  * Read macros
  *****************************************************************************/
 
-/** Read an 8-bit unsigned value from EtherCAT data.
+/** Read an 8-bit unsigned value from Buffer data.
  *
- * \return EtherCAT data value
+ * \return Buffer data value
  */
-#define EC_READ_U8(DATA) \
+#define read_u8(DATA) \
   ((uint8_t) *((uint8_t *) (DATA)))
 
-/** Read an 8-bit signed value from EtherCAT data.
+/** Read an 8-bit signed value from Buffer data.
  *
- * \param DATA EtherCAT data pointer
- * \return EtherCAT data value
+ * \param DATA Buffer data pointer
+ * \return Buffer data value
  */
-#define EC_READ_S8(DATA) \
+#define read_s8(DATA) \
   ((int8_t) *((uint8_t *) (DATA)))
 
-/** Read a 16-bit unsigned value from EtherCAT data.
+/** Read a 16-bit unsigned value from Buffer data.
  *
- * \param DATA EtherCAT data pointer
- * \return EtherCAT data value
+ * \param DATA Buffer data pointer
+ * \return Buffer data value
  */
-#define EC_READ_U16(DATA) \
+#define read_u16(DATA) \
   ((uint16_t) le16_to_cpup((void *) (DATA)))
 
-/** Read a 16-bit signed value from EtherCAT data.
+/** Read a 16-bit signed value from Buffer data.
  *
- * \param DATA EtherCAT data pointer
- * \return EtherCAT data value
+ * \param DATA Buffer data pointer
+ * \return Buffer data value
  */
-#define EC_READ_S16(DATA) \
+#define read_s16(DATA) \
   ((int16_t) le16_to_cpup((void *) (DATA)))
 
-/** Read a 32-bit unsigned value from EtherCAT data.
+/** Read a 32-bit unsigned value from Buffer data.
  *
- * \param DATA EtherCAT data pointer
- * \return EtherCAT data value
+ * \param DATA Buffer data pointer
+ * \return Buffer data value
  */
-#define EC_READ_U32(DATA) \
+#define read_u32(DATA) \
   ((uint32_t) le32_to_cpup((void *) (DATA)))
 
-/** Read a 32-bit signed value from EtherCAT data.
+/** Read a 32-bit signed value from Buffer data.
  *
- * \param DATA EtherCAT data pointer
- * \return EtherCAT data value
+ * \param DATA Buffer data pointer
+ * \return Buffer data value
  */
-#define EC_READ_S32(DATA) \
+#define read_s32(DATA) \
   ((int32_t) le32_to_cpup((void *) (DATA)))
 
-/** Read a 64-bit unsigned value from EtherCAT data.
+/** Read a 64-bit unsigned value from Buffer data.
  *
- * \param DATA EtherCAT data pointer
- * \return EtherCAT data value
+ * \param DATA Buffer data pointer
+ * \return Buffer data value
  */
-#define EC_READ_U64(DATA) \
+#define read_u64(DATA) \
   ((uint64_t) le64_to_cpup((void *) (DATA)))
 
-/** Read a 64-bit signed value from EtherCAT data.
+/** Read a 64-bit signed value from Buffer data.
  *
- * \param DATA EtherCAT data pointer
- * \return EtherCAT data value
+ * \param DATA Buffer data pointer
+ * \return Buffer data value
  */
-#define EC_READ_S64(DATA) \
+#define read_s64(DATA) \
   ((int64_t) le64_to_cpup((void *) (DATA)))
 
 /******************************************************************************
  * Write macros
  *****************************************************************************/
 
-/** Write an 8-bit unsigned value to EtherCAT data.
+/** Write an 8-bit unsigned value to Buffer data.
  *
- * \param DATA EtherCAT data pointer
+ * \param DATA Buffer data pointer
  * \param VAL new value
  */
-#define EC_WRITE_U8(DATA, VAL) \
+#define write_u8(DATA, VAL) \
   do { \
     *((uint8_t *)(DATA)) = ((uint8_t) (VAL)); \
   } while (0)
 
-/** Write an 8-bit signed value to EtherCAT data.
+/** Write an 8-bit signed value to Buffer data.
  *
- * \param DATA EtherCAT data pointer
+ * \param DATA Buffer data pointer
  * \param VAL new value
  */
-#define EC_WRITE_S8(DATA, VAL) EC_WRITE_U8(DATA, VAL)
+#define write_s8(DATA, VAL) write_u8(DATA, VAL)
 
-/** Write a 16-bit unsigned value to EtherCAT data.
+/** Write a 16-bit unsigned value to Buffer data.
  *
- * \param DATA EtherCAT data pointer
+ * \param DATA Buffer data pointer
  * \param VAL new value
  */
-#define EC_WRITE_U16(DATA, VAL) \
+#define write_u16(DATA, VAL) \
   do { \
     *((uint16_t *) (DATA)) = cpu_to_le16((uint16_t) (VAL)); \
   } while (0)
 
-/** Write a 16-bit signed value to EtherCAT data.
+/** Write a 16-bit signed value to Buffer data.
  *
- * \param DATA EtherCAT data pointer
+ * \param DATA Buffer data pointer
  * \param VAL new value
  */
-#define EC_WRITE_S16(DATA, VAL) EC_WRITE_U16(DATA, VAL)
+#define write_s16(DATA, VAL) write_u16(DATA, VAL)
 
-/** Write a 32-bit unsigned value to EtherCAT data.
+/** Write a 32-bit unsigned value to Buffer data.
  *
- * \param DATA EtherCAT data pointer
+ * \param DATA Buffer data pointer
  * \param VAL new value
  */
-#define EC_WRITE_U32(DATA, VAL) \
+#define write_u32(DATA, VAL) \
   do { \
     *((uint32_t *) (DATA)) = cpu_to_le32((uint32_t) (VAL)); \
   } while (0)
 
-/** Write a 32-bit signed value to EtherCAT data.
+/** Write a 32-bit signed value to Buffer data.
  *
- * \param DATA EtherCAT data pointer
+ * \param DATA Buffer data pointer
  * \param VAL new value
  */
-#define EC_WRITE_S32(DATA, VAL) EC_WRITE_U32(DATA, VAL)
+#define write_s32(DATA, VAL) write_u32(DATA, VAL)
 
-/** Write a 64-bit unsigned value to EtherCAT data.
+/** Write a 64-bit unsigned value to Buffer data.
  *
- * \param DATA EtherCAT data pointer
+ * \param DATA Buffer data pointer
  * \param VAL new value
  */
-#define EC_WRITE_U64(DATA, VAL) \
+#define write_u64(DATA, VAL) \
   do { \
     *((uint64_t *) (DATA)) = cpu_to_le64((uint64_t) (VAL)); \
   } while (0)
 
-/** Write a 64-bit signed value to EtherCAT data.
+/** Write a 64-bit signed value to Buffer data.
  *
- * \param DATA EtherCAT data pointer
+ * \param DATA Buffer data pointer
  * \param VAL new value
  */
-#define EC_WRITE_S64(DATA, VAL) EC_WRITE_U64(DATA, VAL)
+#define write_s64(DATA, VAL) write_u64(DATA, VAL)
 
 #endif  // ETHERCAT_INTERFACE__EC_BUFFER_TOOLS_H_
