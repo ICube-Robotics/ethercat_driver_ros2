@@ -17,7 +17,6 @@
 #ifndef ETHERCAT_INTERFACE__EC_SYNC_MANAGER_HPP_
 #define ETHERCAT_INTERFACE__EC_SYNC_MANAGER_HPP_
 
-#include <ecrt.h>
 #include <string>
 #include <vector>
 #include <limits>
@@ -45,9 +44,9 @@ public:
     // type
     if (sm_config["type"]) {
       if (sm_config["type"].as<std::string>() == "input") {
-        type = EC_DIR_INPUT;
+        type = 1;
       } else if (sm_config["type"].as<std::string>() == "output") {
-        type = EC_DIR_OUTPUT;
+        type = 0;
       } else {
         std::cerr << "sm " << index << ": type should be input/output" << std::endl;
         return false;
@@ -67,9 +66,9 @@ public:
     // watchdog
     if (sm_config["watchdog"]) {
       if (sm_config["watchdog"].as<std::string>() == "enable") {
-        watchdog = EC_WD_ENABLE;
+        watchdog = 1;
       } else if (sm_config["watchdog"].as<std::string>() == "disable") {
-        watchdog = EC_WD_DISABLE;
+        watchdog = -1;
       }
     }
 
@@ -77,9 +76,9 @@ public:
   }
 
   uint8_t index;
-  ec_direction_t type;
+  int type;  // 0=output, 1=input
   std::string pdo_name = "null";
-  ec_watchdog_mode_t watchdog = EC_WD_DEFAULT;
+  int watchdog = 0;  // 0=default, 1=enable, -1=disable
 };
 
 }  // namespace ethercat_interface

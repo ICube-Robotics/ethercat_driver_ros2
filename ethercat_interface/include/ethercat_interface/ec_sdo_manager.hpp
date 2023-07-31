@@ -17,12 +17,12 @@
 #ifndef ETHERCAT_INTERFACE__EC_SDO_MANAGER_HPP_
 #define ETHERCAT_INTERFACE__EC_SDO_MANAGER_HPP_
 
-#include <ecrt.h>
 #include <string>
 #include <vector>
 #include <limits>
 
 #include "yaml-cpp/yaml.h"
+#include "ethercat_interface/ec_buffer_tools.h"
 
 namespace ethercat_interface
 {
@@ -36,21 +36,21 @@ public:
   void buffer_write(uint8_t * buffer)
   {
     if (data_type == "uint8") {
-      EC_WRITE_U8(buffer, static_cast<uint8_t>(data));
+      write_u8(buffer, static_cast<uint8_t>(data));
     } else if (data_type == "int8") {
-      EC_WRITE_S8(buffer, static_cast<int8_t>(data));
+      write_s8(buffer, static_cast<int8_t>(data));
     } else if (data_type == "uint16") {
-      EC_WRITE_U16(buffer, static_cast<uint16_t>(data));
+      write_u16(buffer, static_cast<uint16_t>(data));
     } else if (data_type == "int16") {
-      EC_WRITE_S16(buffer, static_cast<int16_t>(data));
+      write_s16(buffer, static_cast<int16_t>(data));
     } else if (data_type == "uint32") {
-      EC_WRITE_U32(buffer, static_cast<uint32_t>(data));
+      write_u32(buffer, static_cast<uint32_t>(data));
     } else if (data_type == "int32") {
-      EC_WRITE_S32(buffer, static_cast<int32_t>(data));
+      write_s32(buffer, static_cast<int32_t>(data));
     } else if (data_type == "uint64") {
-      EC_WRITE_U64(buffer, static_cast<uint64_t>(data));
+      write_u64(buffer, static_cast<uint64_t>(data));
     } else if (data_type == "int64") {
-      EC_WRITE_S64(buffer, static_cast<int64_t>(data));
+      write_s64(buffer, static_cast<int64_t>(data));
     }
   }
 

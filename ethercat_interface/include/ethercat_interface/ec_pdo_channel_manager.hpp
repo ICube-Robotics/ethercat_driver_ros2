@@ -50,25 +50,25 @@ public:
   double ec_read(uint8_t * domain_address)
   {
     if (data_type == "uint8") {
-      last_value = static_cast<double>(EC_READ_U8(domain_address));
+      last_value = static_cast<double>(read_u8(domain_address));
     } else if (data_type == "int8") {
-      last_value = static_cast<double>(EC_READ_S8(domain_address));
+      last_value = static_cast<double>(read_s8(domain_address));
     } else if (data_type == "uint16") {
-      last_value = static_cast<double>(EC_READ_U16(domain_address));
+      last_value = static_cast<double>(read_u16(domain_address));
     } else if (data_type == "int16") {
-      last_value = static_cast<double>(EC_READ_S16(domain_address));
+      last_value = static_cast<double>(read_s16(domain_address));
     } else if (data_type == "uint32") {
-      last_value = static_cast<double>(EC_READ_U32(domain_address));
+      last_value = static_cast<double>(read_u32(domain_address));
     } else if (data_type == "int32") {
-      last_value = static_cast<double>(EC_READ_S32(domain_address));
+      last_value = static_cast<double>(read_s32(domain_address));
     } else if (data_type == "uint64") {
-      last_value = static_cast<double>(EC_READ_U64(domain_address));
+      last_value = static_cast<double>(read_u64(domain_address));
     } else if (data_type == "int64") {
-      last_value = static_cast<double>(EC_READ_S64(domain_address));
+      last_value = static_cast<double>(read_s64(domain_address));
     } else if (data_type == "bool") {
-      last_value = (EC_READ_U8(domain_address) & data_mask) ? 1 : 0;
+      last_value = (read_u8(domain_address) & data_mask) ? 1 : 0;
     } else {
-      last_value = static_cast<double>(EC_READ_U8(domain_address) & data_mask);
+      last_value = static_cast<double>(read_u8(domain_address) & data_mask);
     }
     last_value = factor * last_value + offset;
     return last_value;
@@ -77,23 +77,23 @@ public:
   void ec_write(uint8_t * domain_address, double value)
   {
     if (data_type == "uint8") {
-      EC_WRITE_U8(domain_address, static_cast<uint8_t>(value));
+      write_u8(domain_address, static_cast<uint8_t>(value));
     } else if (data_type == "int8") {
-      EC_WRITE_S8(domain_address, static_cast<int8_t>(value));
+      write_s8(domain_address, static_cast<int8_t>(value));
     } else if (data_type == "uint16") {
-      EC_WRITE_U16(domain_address, static_cast<uint16_t>(value));
+      write_u16(domain_address, static_cast<uint16_t>(value));
     } else if (data_type == "int16") {
-      EC_WRITE_S16(domain_address, static_cast<int16_t>(value));
+      write_s16(domain_address, static_cast<int16_t>(value));
     } else if (data_type == "uint32") {
-      EC_WRITE_U32(domain_address, static_cast<uint32_t>(value));
+      write_u32(domain_address, static_cast<uint32_t>(value));
     } else if (data_type == "int32") {
-      EC_WRITE_S32(domain_address, static_cast<int32_t>(value));
+      write_s32(domain_address, static_cast<int32_t>(value));
     } else if (data_type == "uint64") {
-      EC_WRITE_U64(domain_address, static_cast<uint64_t>(value));
+      write_u64(domain_address, static_cast<uint64_t>(value));
     } else if (data_type == "int64") {
-      EC_WRITE_S64(domain_address, static_cast<int64_t>(value));
+      write_s64(domain_address, static_cast<int64_t>(value));
     } else {
-      buffer_ = EC_READ_U8(domain_address);
+      buffer_ = read_u8(domain_address);
       if (popcount(data_mask) == 1) {
         buffer_ &= ~(data_mask);
         if (value) {buffer_ |= data_mask;}
@@ -101,7 +101,7 @@ public:
         buffer_ = 0;
         buffer_ |= (static_cast<uint8_t>(value) & data_mask);
       }
-      EC_WRITE_U8(domain_address, buffer_);
+      write_u8(domain_address, buffer_);
     }
     last_value = value;
   }
