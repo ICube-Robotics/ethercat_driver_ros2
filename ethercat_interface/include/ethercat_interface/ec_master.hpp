@@ -32,13 +32,13 @@ public:
   virtual bool add_slave(EcSlave * slave) = 0;
 
   /** \brief configure slave using SDO */
-  virtual int config_slave(EcSlave * slave, uint32_t * abort_code) = 0;
+  virtual bool configure_slaves() = 0;
 
   virtual bool init(std::string iface) = 0;
 
-  virtual bool activate() = 0;
+  virtual bool start() = 0;
 
-  virtual bool deactivate() = 0;
+  virtual bool stop() = 0;
 
   virtual bool spin_slaves_until_operational() = 0;
 
