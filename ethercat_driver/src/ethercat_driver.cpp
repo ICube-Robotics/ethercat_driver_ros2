@@ -83,7 +83,7 @@ CallbackReturn EthercatDriver::on_init(
           info_.joints[j].command_interfaces[k].name] = std::to_string(k);
       }
       try {
-        auto module = ec_loader_.createSharedInstance(module_params[i].at("plugin"));
+        auto module = ec_slave_loader_.createSharedInstance(module_params[i].at("plugin"));
         if (!module->setupSlave(
             module_params[i], &hw_joint_states_[j], &hw_joint_commands_[j]))
         {
@@ -117,7 +117,7 @@ CallbackReturn EthercatDriver::on_init(
           info_.gpios[g].command_interfaces[k].name] = std::to_string(k);
       }
       try {
-        auto module = ec_loader_.createSharedInstance(module_params[i].at("plugin"));
+        auto module = ec_slave_loader_.createSharedInstance(module_params[i].at("plugin"));
         if (!module->setupSlave(
             module_params[i], &hw_gpio_states_[g], &hw_gpio_commands_[g]))
         {
@@ -151,7 +151,7 @@ CallbackReturn EthercatDriver::on_init(
           info_.sensors[s].command_interfaces[k].name] = std::to_string(k);
       }
       try {
-        auto module = ec_loader_.createSharedInstance(module_params[i].at("plugin"));
+        auto module = ec_slave_loader_.createSharedInstance(module_params[i].at("plugin"));
         if (!module->setupSlave(
             module_params[i], &hw_sensor_states_[s], &hw_sensor_commands_[s]))
         {
@@ -260,49 +260,86 @@ CallbackReturn EthercatDriver::on_activate(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
   RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"), "Starting ...please wait...");
-  if (info_.hardware_parameters.find("control_frequency") == info_.hardware_parameters.end()) {
-    control_frequency_ = 100;
-  } else {
-    control_frequency_ = std::stod(info_.hardware_parameters["control_frequency"]);
+
+  // Get master plugin from hardware description parameter "master_plugin".
+  // Default master plugin is EtherlabMaster
+  std::string master_plugin_name = "ethercat_master/EtherlabMaster";
+  if (info_.hardware_parameters.find("master_plugin") != info_.hardware_parameters.end()) {
+    master_plugin_name = info_.hardware_parameters["master_plugin"];
   }
 
-  if (control_frequency_ < 0) {
+  // Dynamically load master plugin
+  try {
+    master_ = ec_master_loader_.createSharedInstance(master_plugin_name);
+  } catch (pluginlib::PluginlibException & ex) {
+    RCLCPP_FATAL(
+      rclcpp::get_logger("EthercatDriver"),
+      "The master plugin %s failed to load for some reason. Error: %s\n",
+      master_plugin_name.c_str(), ex.what());
+    return CallbackReturn::ERROR;
+  }
+
+  // Initialize Master
+  std::string master_id = "0";
+  if (info_.hardware_parameters.find("master_id") != info_.hardware_parameters.end()) {
+    master_id = info_.hardware_parameters["master_id"];
+  }
+
+  if (!master_->init(master_id)) {
+    RCLCPP_FATAL(
+      rclcpp::get_logger("EthercatDriver"),
+      "Failed to initialize Master. Aborting.");
+    return CallbackReturn::ERROR;
+  }
+
+  // Get control frequency for DC sync. Default is 100Hz.
+  int control_frequency = 100;
+  if (info_.hardware_parameters.find("control_frequency") != info_.hardware_parameters.end()) {
+    control_frequency = std::stod(info_.hardware_parameters["control_frequency"]);
+  }
+
+  if (control_frequency < 0) {
     RCLCPP_FATAL(
       rclcpp::get_logger("EthercatDriver"), "Invalid control frequency!");
     return CallbackReturn::ERROR;
   }
 
-  // start EC and wait until state operative
+  master_->set_ctrl_frequency(control_frequency);
 
-  master_.set_ctrl_frequency(control_frequency_);
-
+  // Add slaves to master
   for (auto i = 0ul; i < ec_modules_.size(); i++) {
-    master_.add_slave(ec_modules_[i].get());
-  }
-
-  // configure slave
-  for (auto i = 0ul; i < ec_modules_.size(); i++) {
-    uint32_t abort_code;
-    int ret = master_.config_slave(
-      ec_modules_[i].get(),
-      &abort_code
-    );
-    if (ret) {
-      RCLCPP_INFO(
+    if (!master_->add_slave(ec_modules_[i].get())) {
+      RCLCPP_FATAL(
         rclcpp::get_logger("EthercatDriver"),
-        "Failed to download config SDO for module at position %s with Error: %d",
-        ec_module_parameters_[i]["position"].c_str(),
-        abort_code
-      );
+        "Failed to add Slave %li to Master. Aborting.", i);
+      return CallbackReturn::ERROR;
     }
   }
 
-  master_.activate();
-  RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"), "Activated EcMaster!");
+  // configure all slaves
+  if (!master_->configure_slaves()) {
+    RCLCPP_FATAL(
+      rclcpp::get_logger("EthercatDriver"),
+      "Failed to configure Slaves. Aborting.");
+    return CallbackReturn::ERROR;
+  }
 
-  if (master_.spin_slaves_until_operational()) {
+  // start EtherCAT communication
+  if (!master_->start()) {
+    RCLCPP_FATAL(
+      rclcpp::get_logger("EthercatDriver"),
+      "Failed to start Master. Aborting.");
+    return CallbackReturn::ERROR;
+  }
+
+  RCLCPP_INFO(
+    rclcpp::get_logger("EthercatDriver"),
+    "Master successfully started!");
+
+  if (master_->spin_slaves_until_operational()) {
     RCLCPP_INFO(
-      rclcpp::get_logger("EthercatDriver"), "System Successfully started!");
+      rclcpp::get_logger("EthercatDriver"),
+      "All Slaves are in OPERATIONAL state. System Successfully started!");
     return CallbackReturn::SUCCESS;
   } else {
     RCLCPP_FATAL(
@@ -318,7 +355,7 @@ CallbackReturn EthercatDriver::on_deactivate(
   RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"), "Stopping ...please wait...");
 
   // stop EC and disconnect
-  master_.deactivate();
+  master_->stop();
 
   RCLCPP_INFO(
     rclcpp::get_logger("EthercatDriver"), "System successfully stopped!");
@@ -330,7 +367,7 @@ hardware_interface::return_type EthercatDriver::read(
   const rclcpp::Time & /*time*/,
   const rclcpp::Duration & /*period*/)
 {
-  if (master_.read_process_data()) {
+  if (master_->read_process_data()) {
     return hardware_interface::return_type::OK;
   } else {
     return hardware_interface::return_type::ERROR;
@@ -341,7 +378,7 @@ hardware_interface::return_type EthercatDriver::write(
   const rclcpp::Time & /*time*/,
   const rclcpp::Duration & /*period*/)
 {
-  if (master_.write_process_data()) {
+  if (master_->write_process_data()) {
     return hardware_interface::return_type::OK;
   } else {
     return hardware_interface::return_type::ERROR;
