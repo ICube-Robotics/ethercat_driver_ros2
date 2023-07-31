@@ -31,26 +31,13 @@ namespace ethercat_interface
 class EcSlave
 {
 public:
-  EcSlave(uint32_t vendor_id, uint32_t product_id)
-  : vendor_id_(vendor_id),
-    product_id_(product_id) {}
-  virtual ~EcSlave() {}
+  EcSlave() {}
+  ~EcSlave() {}
   /** read or write data to the domain */
-  virtual void processData(size_t /*index*/, uint8_t * /*domain_address*/) {}
-  /** a pointer to syncs. return &syncs[0] */
-  virtual const ec_sync_info_t * syncs() {return NULL;}
-  virtual bool initialized() {return true;}
-  virtual void set_state_is_operational(bool value) {is_operational_ = value;}
+  virtual int process_data(size_t /*index*/, uint8_t * /*domain_address*/) {return 0;}
   /** Assign activate DC synchronization. return activate word*/
-  virtual int assign_activate_dc_sync() {return 0x00;}
-  /** number of elements in the syncs array. */
-  virtual size_t syncSize() {return 0;}
-  /** a pointer to all PDO entries */
-  virtual const ec_pdo_entry_info_t * channels() {return NULL;}
-  /** a map from domain index to pdo indices in that domain.
-  *  map<domain index, vector<channels_ indices> > */
-  typedef std::map<unsigned int, std::vector<unsigned int>> DomainMap;
-  virtual void domains(DomainMap & /*domains*/) const {}
+  virtual int dc_sync() {return 0x00;}
+  bool initialized() {return is_initialized_;}
   virtual bool setupSlave(
     std::unordered_map<std::string, std::string> slave_paramters,
     std::vector<double> * state_interface,
@@ -59,14 +46,12 @@ public:
     state_interface_ptr_ = state_interface;
     command_interface_ptr_ = command_interface;
     paramters_ = slave_paramters;
-    bus_position_ = std::stoi(slave_paramters["position"]);
-    bus_alias_ = std::stoi(slave_paramters["alias"]);
+    is_initialized_ = true;
     return true;
   }
-  uint32_t vendor_id_;
-  uint32_t product_id_;
-  int bus_position_;
-  int bus_alias_;
+
+  uint32_t vendor_id;
+  uint32_t product_id;
 
   std::vector<SdoConfigEntry> sdo_config;
 
@@ -74,7 +59,8 @@ protected:
   std::vector<double> * state_interface_ptr_;
   std::vector<double> * command_interface_ptr_;
   std::unordered_map<std::string, std::string> paramters_;
-  bool is_operational_ = false;
+  bool is_initialized_ = false;
 };
+
 }  // namespace ethercat_interface
 #endif  // ETHERCAT_INTERFACE__EC_SLAVE_HPP_
