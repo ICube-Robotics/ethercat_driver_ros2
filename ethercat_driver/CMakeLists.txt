@@ -51,7 +51,24 @@ install(
 )
 
 if(BUILD_TESTING)
-  find_package(ament_cmake_gtest REQUIRED)
+  find_package(ament_cmake_gmock REQUIRED)
+  find_package(ament_lint_auto REQUIRED)
+  find_package(pluginlib REQUIRED)
+  find_package(ethercat_interface REQUIRED)
+  find_package(ethercat_master_mock REQUIRED)
+  find_package(ros2_control_test_assets REQUIRED)
+  ament_lint_auto_find_test_dependencies()
+
+  ament_add_gmock(test_ethercat_driver
+    test/test_ethercat_driver.cpp)
+  target_include_directories(test_ethercat_driver PRIVATE include)
+  target_link_libraries(test_ethercat_driver ethercat_driver)
+  ament_target_dependencies(test_ethercat_driver
+    pluginlib
+    ros2_control_test_assets
+    ethercat_interface
+    ethercat_master_mock
+  )
 endif()
 
 ## EXPORTS
