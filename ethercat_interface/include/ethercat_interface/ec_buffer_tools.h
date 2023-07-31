@@ -27,7 +27,7 @@
  * \param DATA Buffer data pointer
  * \param POS bit position
  */
-#define EC_READ_BIT(DATA, POS) ((*((uint8_t *) (DATA)) >> (POS)) & 0x01)
+#define read_bit(DATA, POS) ((*((uint8_t *) (DATA)) >> (POS)) & 0x01)
 
 /** Write a certain bit of an Buffer data byte.
  *
@@ -35,10 +35,13 @@
  * \param POS bit position
  * \param VAL new bit value
  */
-#define write_BIT(DATA, POS, VAL) \
+#define write_bit(DATA, POS, VAL) \
   do { \
-    if (VAL) *((uint8_t *) (DATA)) |= (1 << (POS)); \
-    else * ((uint8_t *) (DATA)) &= ~(1 << (POS)); \
+    if (VAL) { \
+      *((uint8_t *) (DATA)) |= (1 << (POS)); \
+    } else { \
+      *((uint8_t *) (DATA)) &= ~(1 << (POS)); \
+    } \
   } while (0)
 
 /******************************************************************************
