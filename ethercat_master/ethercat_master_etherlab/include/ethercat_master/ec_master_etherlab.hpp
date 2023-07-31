@@ -22,8 +22,11 @@
 #include <vector>
 #include <map>
 #include <chrono>
-#include "ethercat_interface/ec_slave.hpp"
+#include <memory>
+
 #include "ethercat_interface/ec_master.hpp"
+#include "ethercat_interface/ec_slave.hpp"
+#include "ethercat_master/ec_slave_etherlab.hpp"
 
 namespace ethercat_master
 {
@@ -38,21 +41,21 @@ public:
 
   bool add_slave(ethercat_interface::EcSlave * slave);
 
-  int config_slave(ethercat_interface::EcSlave * slave, uint32_t * abort_code);
+  bool configure_slaves();
 
-  bool activate();
+  bool start();
 
-  virtual void update(uint32_t domain = 0);
+  void update(uint32_t domain = 0);
 
   bool spin_slaves_until_operational();
 
   /** run a control loop of update() and user_callback(), blocking.
    *  call activate and setThreadHighPriority/RealTime first. */
   typedef void (* SIMPLECAT_CONTRL_CALLBACK)(void);
-  virtual void run(SIMPLECAT_CONTRL_CALLBACK user_callback);
+  void run(SIMPLECAT_CONTRL_CALLBACK user_callback);
 
   /** stop the control loop. use within callback, or from a separate thread. */
-  virtual bool deactivate() {running_ = false;}
+  bool stop();
 
   /** time of last ethercat update, since calling run. stops if stop called.
    *  returns actual time. use elapsedCycles()/frequency for discrete time at last update. */
@@ -100,7 +103,7 @@ private:
     uint16_t alias, uint16_t position,
     std::vector<uint32_t> & channel_indices,
     DomainInfo * domain_info,
-    ethercat_interface::EcSlave * slave);
+    EtherlabSlave * slave);
 
   /** check for change in the domain state */
   void checkDomainState(uint32_t domain);
@@ -135,7 +138,7 @@ private:
     /** slave's pdo entries in the domain */
     struct Entry
     {
-      ethercat_interface::EcSlave * slave = NULL;
+      EtherlabSlave * slave = NULL;
       int num_pdos = 0;
       uint32_t * offset = NULL;
       uint32_t * bit_position = NULL;
@@ -150,7 +153,7 @@ private:
   /** data needed to check slave state */
   struct SlaveInfo
   {
-    ethercat_interface::EcSlave * slave = NULL;
+    EtherlabSlave * slave = NULL;
     ec_slave_config_t * config = NULL;
     ec_slave_config_state_t config_state = {0};
   };
@@ -165,6 +168,8 @@ private:
   uint32_t check_state_frequency_ = 10;
 
   uint32_t interval_;
+
+  std::vector<std::shared_ptr<EtherlabSlave>> slave_list_;
 };
 
 }  // namespace ethercat_master

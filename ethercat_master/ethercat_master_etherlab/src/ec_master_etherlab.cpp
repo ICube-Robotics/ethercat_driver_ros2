@@ -62,9 +62,6 @@ EtherlabMaster::EtherlabMaster()
 
 EtherlabMaster::~EtherlabMaster()
 {
-  for (SlaveInfo & slave : slave_info_) {
-    //
-  }
   for (auto & domain : domain_info_) {
     delete domain.second;
   }
@@ -85,11 +82,15 @@ bool EtherlabMaster::add_slave(ethercat_interface::EcSlave * slave)
   // configure slave in master
 
   SlaveInfo slave_info;
-  slave_info.slave = slave;
+  auto etherlab_slave_ptr = std::make_shared<EtherlabSlave>(slave);
+  slave_list_.push_back(etherlab_slave_ptr);
+  slave_info.slave = etherlab_slave_ptr.get();
   slave_info.config = ecrt_master_slave_config(
-    master_, slave->bus_alias_, slave->bus_position_,
-    slave->vendor_id_,
-    slave->product_id_);
+    master_,
+    etherlab_slave_ptr->bus_alias,
+    etherlab_slave_ptr->bus_position,
+    etherlab_slave_ptr->vendor_id,
+    etherlab_slave_ptr->product_id);
   if (slave_info.config == NULL) {
     printWarning("Add slave. Failed to get slave configuration.");
     return false;
@@ -97,13 +98,13 @@ bool EtherlabMaster::add_slave(ethercat_interface::EcSlave * slave)
 
   // check and setup dc
 
-  if (slave->assign_activate_dc_sync()) {
+  if (etherlab_slave_ptr->dc_sync()) {
     struct timespec t;
     clock_gettime(CLOCK_MONOTONIC, &t);
     ecrt_master_application_time(master_, EC_NEWTIMEVAL2NANO(t));
     ecrt_slave_config_dc(
       slave_info.config,
-      slave->assign_activate_dc_sync(),
+      etherlab_slave_ptr->dc_sync(),
       interval_,
       interval_ - (t.tv_nsec % (interval_)),
       0,
@@ -113,8 +114,8 @@ bool EtherlabMaster::add_slave(ethercat_interface::EcSlave * slave)
   slave_info_.push_back(slave_info);
 
   // check if slave has pdos
-  size_t num_syncs = slave->syncSize();
-  const ec_sync_info_t * syncs = slave->syncs();
+  size_t num_syncs = etherlab_slave_ptr->sync_size();
+  const ec_sync_info_t * syncs = etherlab_slave_ptr->syncs();
   if (num_syncs > 0) {
     // configure pdos in slave
     int pdos_status = ecrt_slave_config_pdos(slave_info.config, num_syncs, syncs);
@@ -125,12 +126,13 @@ bool EtherlabMaster::add_slave(ethercat_interface::EcSlave * slave)
   } else {
     printWarning(
       "Add slave. Sync size is zero for " +
-      std::to_string(slave->bus_alias_) + ":" + std::to_string(slave->bus_position_));
+      std::to_string(etherlab_slave_ptr->bus_alias) + ":" +
+      std::to_string(etherlab_slave_ptr->bus_position));
   }
 
   // check if slave registered any pdos for the domain
-  ethercat_interface::EcSlave::DomainMap domain_map;
-  slave->domains(domain_map);
+  EtherlabSlave::DomainMap domain_map;
+  etherlab_slave_ptr->domains(domain_map);
   for (auto & iter : domain_map) {
     // get the domain info, create if necessary
     uint32_t domain_index = iter.first;
@@ -141,39 +143,51 @@ bool EtherlabMaster::add_slave(ethercat_interface::EcSlave * slave)
     }
 
     registerPDOInDomain(
-      slave->bus_alias_, slave->bus_position_,
+      etherlab_slave_ptr->bus_alias, etherlab_slave_ptr->bus_position,
       iter.second, domain_info,
-      slave);
+      etherlab_slave_ptr.get());
   }
 
   return true;
 }
 
-int EtherlabMaster::config_slave(ethercat_interface::EcSlave * slave, uint32_t * abort_code)
+bool EtherlabMaster::configure_slaves()
 {
-  int ret = 0;
-  for (auto & sdo : slave->sdo_config) {
-    uint8_t buffer[8];
-    sdo.buffer_write(buffer);
-    ret += ecrt_master_sdo_download(
-      master_,
-      slave->bus_position_,
-      sdo.index,
-      sdo.sub_index,
-      buffer,
-      sdo.data_size(),
-      abort_code
-    );
+  for (auto i = 0ul; i < slave_list_.size(); i++) {
+    for (auto & sdo : slave_list_[i]->sdo_config) {
+      uint8_t buffer[8];
+      sdo.buffer_write(buffer);
+      uint32_t abort_code;
+      int ret = ecrt_master_sdo_download(
+        master_,
+        slave_list_[i]->bus_position,
+        sdo.index,
+        sdo.sub_index,
+        buffer,
+        sdo.data_size(),
+        &abort_code
+      );
+
+      if (ret) {
+        RCLCPP_FATAL(
+          rclcpp::get_logger("EtherlabMaster"),
+          "Failed to download config SDO for module at position %i with Error: %d",
+          slave_list_[i]->bus_position,
+          abort_code
+        );
+        return false;
+      }
+    }
   }
 
-  return ret;
+  return true;
 }
 
 void EtherlabMaster::registerPDOInDomain(
   uint16_t alias, uint16_t position,
   std::vector<uint32_t> & channel_indices,
   DomainInfo * domain_info,
-  ethercat_interface::EcSlave * slave)
+  EtherlabSlave * slave)
 {
   // expand the size of the domain
   uint32_t num_pdo_regs = channel_indices.size();
@@ -188,7 +202,7 @@ void EtherlabMaster::registerPDOInDomain(
   domain_entry.bit_position = new uint32_t[num_pdo_regs];
   domain_info->entries.push_back(domain_entry);
 
-  ethercat_interface::EcSlave::DomainMap domain_map;
+  EtherlabSlave::DomainMap domain_map;
   slave->domains(domain_map);
 
   // add to array of pdos registrations
@@ -198,8 +212,8 @@ void EtherlabMaster::registerPDOInDomain(
     ec_pdo_entry_reg_t & pdo_reg = domain_info->domain_regs[start_index + i];
     pdo_reg.alias = alias;
     pdo_reg.position = position;
-    pdo_reg.vendor_id = slave->vendor_id_;
-    pdo_reg.product_code = slave->product_id_;
+    pdo_reg.vendor_id = slave->vendor_id;
+    pdo_reg.product_code = slave->product_id;
     pdo_reg.index = pdo_regs[channel_indices[i]].index;
     pdo_reg.subindex = pdo_regs[channel_indices[i]].subindex;
     pdo_reg.offset = &(domain_entry.offset[i]);
@@ -220,7 +234,7 @@ void EtherlabMaster::registerPDOInDomain(
   domain_info->domain_regs.back() = empty;
 }
 
-bool EtherlabMaster::activate()
+bool EtherlabMaster::start()
 {
   // register domain
   for (auto & iter : domain_info_) {
@@ -254,6 +268,11 @@ bool EtherlabMaster::activate()
       return false;
     }
   }
+  return true;
+}
+
+bool EtherlabMaster::stop()
+{
   return true;
 }
 
@@ -311,7 +330,7 @@ void EtherlabMaster::update(uint32_t domain)
   // read and write process data
   for (DomainInfo::Entry & entry : domain_info->entries) {
     for (int i = 0; i < entry.num_pdos; ++i) {
-      (entry.slave)->processData(i, domain_info->domain_pd + entry.offset[i]);
+      (entry.slave)->process_data(i, domain_info->domain_pd + entry.offset[i]);
     }
   }
 
@@ -350,7 +369,7 @@ bool EtherlabMaster::read_process_data()
   // read and write process data
   for (DomainInfo::Entry & entry : domain_info->entries) {
     for (int i = 0; i < entry.num_pdos; ++i) {
-      (entry.slave)->processData(i, domain_info->domain_pd + entry.offset[i]);
+      (entry.slave)->process_data(i, domain_info->domain_pd + entry.offset[i]);
     }
   }
 
@@ -363,7 +382,7 @@ bool EtherlabMaster::write_process_data()
   // read and write process data
   for (DomainInfo::Entry & entry : domain_info->entries) {
     for (int i = 0; i < entry.num_pdos; ++i) {
-      (entry.slave)->processData(i, domain_info->domain_pd + entry.offset[i]);
+      (entry.slave)->process_data(i, domain_info->domain_pd + entry.offset[i]);
     }
   }
 
