@@ -206,10 +206,10 @@ TEST_F(GenericEcSlaveTest, EcWriteRPDOFromCommandInterface)
   plugin_->paramters_ = slave_paramters;
   plugin_->setup_from_config(YAML::Load(test_slave_config));
   plugin_->setup_interface_mapping();
-  ASSERT_EQ(plugin_->get_pdo_channels_config()[2].interface_index, 1);
+  ASSERT_EQ(plugin_->get_pdo_channel_config()[2].interface_index, 1);
   uint8_t domain_address[2];
   plugin_->process_data(2, domain_address);
-  ASSERT_EQ(plugin_->get_pdo_channels_config()[2].last_value, 2 * 42 + 10);
+  ASSERT_EQ(plugin_->get_pdo_channel_config()[2].last_value, 2 * 42 + 10);
   ASSERT_EQ(read_s16(domain_address), 2 * 42 + 10);
 }
 
@@ -220,7 +220,7 @@ TEST_F(GenericEcSlaveTest, EcWriteRPDODefaultValue)
   plugin_->setup_interface_mapping();
   uint8_t domain_address[2];
   plugin_->process_data(2, domain_address);
-  ASSERT_EQ(plugin_->get_pdo_channels_config()[2].last_value, -5);
+  ASSERT_EQ(plugin_->get_pdo_channel_config()[2].last_value, -5);
   ASSERT_EQ(read_s16(domain_address), -5);
 }
 

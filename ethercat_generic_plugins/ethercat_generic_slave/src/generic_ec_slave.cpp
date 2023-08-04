@@ -96,7 +96,7 @@ bool GenericEcSlave::setup_from_config(YAML::Node slave_config)
       for (const auto & sm : slave_config["sm"]) {
         ethercat_interface::SMConfig config;
         if (config.load_from_config(sm)) {
-          sm_configs_.push_back(config);
+          sm_config_.push_back(config);
         }
       }
     }
@@ -113,24 +113,37 @@ bool GenericEcSlave::setup_from_config(YAML::Node slave_config)
     if (slave_config["rpdo"]) {
       for (auto i = 0ul; i < slave_config["rpdo"].size(); i++) {
         auto rpdo_channels_size = slave_config["rpdo"][i]["channels"].size();
+        ethercat_interface::pdoc_vec_t rpdo_channels_info;
         for (auto c = 0ul; c < rpdo_channels_size; c++) {
           ethercat_interface::EcPdoChannelManager channel_info;
           channel_info.pdo_type = ethercat_interface::RPDO;
           channel_info.load_from_config(slave_config["rpdo"][i]["channels"][c]);
+          rpdo_channels_info.push_back(channel_info);
           pdo_channels_info_.push_back(channel_info);
         }
+        pdo_config_map_.emplace(
+          slave_config["rpdo"][i]["index"].as<uint16_t>(),
+          rpdo_channels_info
+        );
       }
     }
     // configure tpdo
     if (slave_config["tpdo"]) {
       for (auto i = 0ul; i < slave_config["tpdo"].size(); i++) {
         auto tpdo_channels_size = slave_config["tpdo"][i]["channels"].size();
+        ethercat_interface::pdoc_vec_t tpdo_channels_info;
         for (auto c = 0ul; c < tpdo_channels_size; c++) {
           ethercat_interface::EcPdoChannelManager channel_info;
           channel_info.pdo_type = ethercat_interface::TPDO;
+          channel_info.mapping_index = slave_config["tpdo"][i]["index"].as<uint16_t>(),
           channel_info.load_from_config(slave_config["tpdo"][i]["channels"][c]);
+          tpdo_channels_info.push_back(channel_info);
           pdo_channels_info_.push_back(channel_info);
         }
+        pdo_config_map_.emplace(
+          slave_config["tpdo"][i]["index"].as<uint16_t>(),
+          tpdo_channels_info
+        );
       }
     }
   } else {
