@@ -110,6 +110,8 @@ private:
       return 4;
     } else if (type == "int64" || type == "uint64") {
       return 8;
+    } else {
+      return 0;
     }
   }
 };
