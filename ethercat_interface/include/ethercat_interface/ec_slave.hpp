@@ -30,6 +30,12 @@
 namespace ethercat_interface
 {
 
+typedef std::unordered_map<uint16_t,
+    std::vector<ethercat_interface::EcPdoChannelManager>> pdoc_map_t;
+typedef std::vector<ethercat_interface::EcPdoChannelManager> pdoc_vec_t;
+typedef std::vector<ethercat_interface::SMConfig> smc_vec_t;
+typedef std::vector<ethercat_interface::SdoConfigEntry> sdoc_vec_t;
+
 class EcSlave
 {
 public:
@@ -55,15 +61,19 @@ public:
   uint32_t get_vendor_id() {return vendor_id_;}
   uint32_t get_product_id() {return product_id_;}
 
-  std::vector<ethercat_interface::EcPdoChannelManager> get_pdo_channels_config()
+  pdoc_map_t get_pdo_config_map()
+  {
+    return pdo_config_map_;
+  }
+  pdoc_vec_t get_pdo_channel_config()
   {
     return pdo_channels_info_;
   }
-  std::vector<ethercat_interface::SMConfig> get_sm_config()
+  smc_vec_t get_sm_config()
   {
-    return sm_configs_;
+    return sm_config_;
   }
-  std::vector<ethercat_interface::SdoConfigEntry> get_sdo_config()
+  sdoc_vec_t get_sdo_config()
   {
     return sdo_config_;
   }
@@ -77,9 +87,10 @@ protected:
   uint32_t product_id_ = 0;
   uint32_t assign_activate_ = 0x00;
 
-  std::vector<ethercat_interface::EcPdoChannelManager> pdo_channels_info_;
-  std::vector<ethercat_interface::SMConfig> sm_configs_;
-  std::vector<ethercat_interface::SdoConfigEntry> sdo_config_;
+  pdoc_map_t pdo_config_map_;
+  pdoc_vec_t pdo_channels_info_;
+  smc_vec_t sm_config_;
+  sdoc_vec_t sdo_config_;
 };
 
 }  // namespace ethercat_interface
