@@ -29,6 +29,8 @@ size_t type2bytes(std::string type)
     return 4;
   } else if (type == "int64" || type == "uint64") {
     return 8;
+  } else {
+    return 0;
   }
 }
 
@@ -36,54 +38,16 @@ namespace ethercat_generic_plugins
 {
 
 GenericEcSlave::GenericEcSlave()
-: EcSlave(0, 0) {}
+: EcSlave() {}
 GenericEcSlave::~GenericEcSlave() {}
-int GenericEcSlave::assign_activate_dc_sync() {return assign_activate_;}
 
-void GenericEcSlave::processData(size_t index, uint8_t * domain_address)
+int GenericEcSlave::process_data(size_t index, uint8_t * domain_address)
 {
-  pdo_channels_info_[domain_map_[index]].ec_update(domain_address);
-}
-
-const ec_sync_info_t * GenericEcSlave::syncs()
-{
-  return syncs_.data();
-}
-size_t GenericEcSlave::syncSize()
-{
-  return syncs_.size();
-}
-const ec_pdo_entry_info_t * GenericEcSlave::channels()
-{
-  return all_channels_.data();
-}
-void GenericEcSlave::domains(DomainMap & domains) const
-{
-  domains = {{0, domain_map_}};
+  pdo_channels_info_[index].ec_update(domain_address);
+  return 0;
 }
 
-void GenericEcSlave::setup_syncs()
-{
-  if (sm_configs_.size() == 0) {
-    syncs_.push_back({0, EC_DIR_OUTPUT, 0, NULL, EC_WD_DISABLE});
-    syncs_.push_back({1, EC_DIR_INPUT, 0, NULL, EC_WD_DISABLE});
-    syncs_.push_back({2, EC_DIR_OUTPUT, rpdos_.size(), rpdos_.data(), EC_WD_ENABLE});
-    syncs_.push_back({3, EC_DIR_INPUT, tpdos_.size(), tpdos_.data(), EC_WD_DISABLE});
-  } else {
-    for (auto & sm : sm_configs_) {
-      if (sm.pdo_name == "null") {
-        syncs_.push_back({sm.index, sm.type, 0, NULL, sm.watchdog});
-      } else if (sm.pdo_name == "rpdo") {
-        syncs_.push_back({sm.index, sm.type, rpdos_.size(), rpdos_.data(), sm.watchdog});
-      } else if (sm.pdo_name == "tpdo") {
-        syncs_.push_back({sm.index, sm.type, tpdos_.size(), tpdos_.data(), sm.watchdog});
-      }
-    }
-  }
-  syncs_.push_back({0xff});
-}
-
-bool GenericEcSlave::setupSlave(
+bool GenericEcSlave::setup_slave(
   std::unordered_map<std::string, std::string> slave_paramters,
   std::vector<double> * state_interface,
   std::vector<double> * command_interface)
@@ -102,7 +66,6 @@ bool GenericEcSlave::setupSlave(
   }
 
   setup_interface_mapping();
-  setup_syncs();
 
   return true;
 }
@@ -110,22 +73,25 @@ bool GenericEcSlave::setupSlave(
 bool GenericEcSlave::setup_from_config(YAML::Node slave_config)
 {
   if (slave_config.size() != 0) {
+    // configure slave vendor id
     if (slave_config["vendor_id"]) {
       vendor_id_ = slave_config["vendor_id"].as<uint32_t>();
     } else {
       std::cerr << "GenericEcSlave: failed to load drive vendor ID." << std::endl;
       return false;
     }
+    // configure slave product id
     if (slave_config["product_id"]) {
       product_id_ = slave_config["product_id"].as<uint32_t>();
     } else {
       std::cerr << "GenericEcSlave: failed to load drive product ID." << std::endl;
       return false;
     }
+    // configure sc sync
     if (slave_config["assign_activate"]) {
       assign_activate_ = slave_config["assign_activate"].as<uint32_t>();
     }
-
+    // configure sync manager
     if (slave_config["sm"]) {
       for (const auto & sm : slave_config["sm"]) {
         ethercat_interface::SMConfig config;
@@ -134,32 +100,16 @@ bool GenericEcSlave::setup_from_config(YAML::Node slave_config)
         }
       }
     }
-
+    // configure sdo
     if (slave_config["sdo"]) {
       for (const auto & sdo : slave_config["sdo"]) {
         ethercat_interface::SdoConfigEntry config;
         if (config.load_from_config(sdo)) {
-          sdo_config.push_back(config);
+          sdo_config_.push_back(config);
         }
       }
     }
-
-    auto channels_nbr = 0;
-
-    if (slave_config["rpdo"]) {
-      for (auto i = 0ul; i < slave_config["rpdo"].size(); i++) {
-        channels_nbr += slave_config["rpdo"][i]["channels"].size();
-      }
-    }
-    if (slave_config["tpdo"]) {
-      for (auto i = 0ul; i < slave_config["tpdo"].size(); i++) {
-        channels_nbr += slave_config["tpdo"][i]["channels"].size();
-      }
-    }
-
-    all_channels_.reserve(channels_nbr);
-    channels_nbr = 0;
-
+    // configure rpdo
     if (slave_config["rpdo"]) {
       for (auto i = 0ul; i < slave_config["rpdo"].size(); i++) {
         auto rpdo_channels_size = slave_config["rpdo"][i]["channels"].size();
@@ -168,54 +118,28 @@ bool GenericEcSlave::setup_from_config(YAML::Node slave_config)
           channel_info.pdo_type = ethercat_interface::RPDO;
           channel_info.load_from_config(slave_config["rpdo"][i]["channels"][c]);
           pdo_channels_info_.push_back(channel_info);
-          all_channels_.push_back(channel_info.get_pdo_entry_info());
         }
-        rpdos_.push_back(
-          {
-            slave_config["rpdo"][i]["index"].as<uint16_t>(),
-            rpdo_channels_size,
-            all_channels_.data() + channels_nbr
-          }
-        );
-        channels_nbr += rpdo_channels_size;
       }
     }
-
+    // configure tpdo
     if (slave_config["tpdo"]) {
       for (auto i = 0ul; i < slave_config["tpdo"].size(); i++) {
         auto tpdo_channels_size = slave_config["tpdo"][i]["channels"].size();
-
         for (auto c = 0ul; c < tpdo_channels_size; c++) {
           ethercat_interface::EcPdoChannelManager channel_info;
           channel_info.pdo_type = ethercat_interface::TPDO;
           channel_info.load_from_config(slave_config["tpdo"][i]["channels"][c]);
           pdo_channels_info_.push_back(channel_info);
-          all_channels_.push_back(channel_info.get_pdo_entry_info());
         }
-        tpdos_.push_back(
-          {
-            slave_config["tpdo"][i]["index"].as<uint16_t>(),
-            tpdo_channels_size,
-            all_channels_.data() + channels_nbr
-          }
-        );
-        channels_nbr += tpdo_channels_size;
       }
     }
-
-    // Remove gaps from domain mapping
-    for (auto i = 0ul; i < all_channels_.size(); i++) {
-      if (all_channels_[i].index != 0x0000) {
-        domain_map_.push_back(i);
-      }
-    }
-
-    return true;
   } else {
     std::cerr << "GenericEcSlave: failed to load slave configuration: empty configuration" <<
       std::endl;
     return false;
   }
+
+  return true;
 }
 
 bool GenericEcSlave::setup_from_config_file(std::string config_file)
@@ -256,6 +180,10 @@ void GenericEcSlave::setup_interface_mapping()
   }
 }
 
+YAML::Node GenericEcSlave::get_slave_config()
+{
+  return slave_config_;
+}
 }  // namespace ethercat_generic_plugins
 
 #include <pluginlib/class_list_macros.hpp>
