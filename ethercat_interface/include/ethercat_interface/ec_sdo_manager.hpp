@@ -32,6 +32,13 @@ class SdoConfigEntry
 {
 public:
   SdoConfigEntry() {}
+  SdoConfigEntry(uint16_t index, uint8_t sub_index, std::string data_type, int data)
+  : index(index),
+    sub_index(sub_index),
+    data_type(data_type),
+    data(data)
+  {
+  }
   ~SdoConfigEntry() {}
 
   void buffer_write(uint8_t * buffer)

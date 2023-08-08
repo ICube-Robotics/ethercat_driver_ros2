@@ -36,6 +36,26 @@ class EcPdoChannelManager
 {
 public:
   EcPdoChannelManager() {}
+  EcPdoChannelManager(
+    uint16_t index,
+    uint8_t sub_index,
+    PdoType pdo_type,
+    std::string data_type,
+    std::string interface_name = "",
+    uint8_t data_mask = 255,
+    double default_value = std::numeric_limits<double>::quiet_NaN(),
+    double factor = 1,
+    double offset = 0)
+  : index(index),
+    sub_index(sub_index),
+    pdo_type(pdo_type),
+    data_type(data_type),
+    interface_name(interface_name),
+    data_mask(data_mask),
+    default_value(default_value),
+    factor(factor),
+    offset(offset)
+  {}
   ~EcPdoChannelManager() {}
   void setup_interface_ptrs(
     std::vector<double> * state_interface,
@@ -44,8 +64,6 @@ public:
     command_interface_ptr_ = command_interface;
     state_interface_ptr_ = state_interface;
   }
-
-  // ec_pdo_entry_info_t get_pdo_entry_info() {return {index, sub_index, type2bits(data_type)};}
 
   double ec_read(uint8_t * domain_address)
   {
@@ -203,9 +221,11 @@ public:
     return -1;
   }
 
-  PdoType pdo_type;
+  uint8_t get_bits_size() {return type2bits(data_type);}
+
   uint16_t index;
   uint8_t sub_index;
+  PdoType pdo_type;
   std::string data_type;
   std::string interface_name;
   uint8_t data_mask = 255;

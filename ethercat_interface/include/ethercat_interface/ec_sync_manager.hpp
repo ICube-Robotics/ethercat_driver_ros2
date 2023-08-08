@@ -30,6 +30,13 @@ class SMConfig
 {
 public:
   SMConfig() {}
+  SMConfig(uint8_t index, int type, std::string pdo_name = "null", int watchdog = 0)
+  : index(index),
+    type(type),
+    pdo_name(pdo_name),
+    watchdog(watchdog)
+  {
+  }
   ~SMConfig() {}
 
   bool load_from_config(YAML::Node sm_config)
