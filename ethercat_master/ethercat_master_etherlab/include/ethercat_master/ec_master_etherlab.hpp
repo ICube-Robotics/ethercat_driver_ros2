@@ -39,7 +39,7 @@ public:
 
   bool init(std::string master_interface = "0");
 
-  bool add_slave(ethercat_interface::EcSlave * slave);
+  bool add_slave(std::shared_ptr<ethercat_interface::EcSlave> slave);
 
   bool configure_slaves();
 
@@ -49,34 +49,9 @@ public:
 
   bool spin_slaves_until_operational();
 
-  /** run a control loop of update() and user_callback(), blocking.
-   *  call activate and setThreadHighPriority/RealTime first. */
-  typedef void (* SIMPLECAT_CONTRL_CALLBACK)(void);
-  void run(SIMPLECAT_CONTRL_CALLBACK user_callback);
-
-  /** stop the control loop. use within callback, or from a separate thread. */
+  /** stop the control loop.
+   */
   bool stop();
-
-  /** time of last ethercat update, since calling run. stops if stop called.
-   *  returns actual time. use elapsedCycles()/frequency for discrete time at last update. */
-  virtual double elapsedTime();
-
-  /** number of EtherCAT updates since calling run. */
-  virtual uint64_t elapsedCycles();
-
-  /** add ctr-c exit callback.
-    * default exits the run loop and prints timing */
-  typedef void (* SIMPLECAT_EXIT_CALLBACK)(int);
-  static void setCtrlCHandler(SIMPLECAT_EXIT_CALLBACK user_callback = NULL);
-
-  /** set the thread to a priority of -19
-   *  priority range is -20 (highest) to 19 (lowest) */
-  static void setThreadHighPriority();
-
-  /** set the thread to real time (FIFO)
-   *  thread cannot be preempted.
-   *  set priority as 49 (kernel and interrupts are 50) */
-  static void setThreadRealTime();
 
   void set_ctrl_frequency(double frequency)
   {
@@ -89,12 +64,6 @@ public:
   bool write_process_data();
 
 private:
-  /** true if running */
-  volatile bool running_ = false;
-
-  /** start and current time */
-  std::chrono::time_point<std::chrono::system_clock> start_t_, curr_t_;
-
   // EtherCAT Control
 
   /** register a domain of the slave */
@@ -103,7 +72,7 @@ private:
     uint16_t alias, uint16_t position,
     std::vector<uint32_t> & channel_indices,
     DomainInfo * domain_info,
-    EtherlabSlave * slave);
+    std::shared_ptr<EtherlabSlave> slave);
 
   /** check for change in the domain state */
   void checkDomainState(uint32_t domain);
@@ -138,7 +107,7 @@ private:
     /** slave's pdo entries in the domain */
     struct Entry
     {
-      EtherlabSlave * slave = NULL;
+      std::shared_ptr<EtherlabSlave> slave = nullptr;
       int num_pdos = 0;
       uint32_t * offset = NULL;
       uint32_t * bit_position = NULL;
@@ -153,7 +122,7 @@ private:
   /** data needed to check slave state */
   struct SlaveInfo
   {
-    EtherlabSlave * slave = NULL;
+    std::shared_ptr<EtherlabSlave> slave = nullptr;
     ec_slave_config_t * config = NULL;
     ec_slave_config_state_t config_state = {0};
   };
@@ -168,8 +137,6 @@ private:
   uint32_t check_state_frequency_ = 10;
 
   uint32_t interval_;
-
-  std::vector<std::shared_ptr<EtherlabSlave>> slave_list_;
 };
 
 }  // namespace ethercat_master

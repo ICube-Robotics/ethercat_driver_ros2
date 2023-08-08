@@ -77,48 +77,45 @@ bool EtherlabMaster::init(std::string master_interface)
   return true;
 }
 
-bool EtherlabMaster::add_slave(ethercat_interface::EcSlave * slave)
+bool EtherlabMaster::add_slave(std::shared_ptr<ethercat_interface::EcSlave> slave)
 {
   // configure slave in master
 
-  SlaveInfo slave_info;
-  auto etherlab_slave_ptr = std::make_shared<EtherlabSlave>(slave);
-  slave_list_.push_back(etherlab_slave_ptr);
-  slave_info.slave = etherlab_slave_ptr.get();
-  slave_info.config = ecrt_master_slave_config(
+  slave_info_.emplace_back();
+
+  slave_info_.back().slave = std::make_shared<EtherlabSlave>(slave);
+  slave_info_.back().config = ecrt_master_slave_config(
     master_,
-    etherlab_slave_ptr->bus_alias,
-    etherlab_slave_ptr->bus_position,
-    etherlab_slave_ptr->vendor_id,
-    etherlab_slave_ptr->product_id);
-  if (slave_info.config == NULL) {
+    slave_info_.back().slave->get_bus_alias(),
+    slave_info_.back().slave->get_bus_position(),
+    slave_info_.back().slave->get_vendor_id(),
+    slave_info_.back().slave->get_product_id());
+  if (slave_info_.back().config == NULL) {
     printWarning("Add slave. Failed to get slave configuration.");
     return false;
   }
 
   // check and setup dc
 
-  if (etherlab_slave_ptr->dc_sync()) {
+  if (slave_info_.back().slave->dc_sync()) {
     struct timespec t;
     clock_gettime(CLOCK_MONOTONIC, &t);
     ecrt_master_application_time(master_, EC_NEWTIMEVAL2NANO(t));
     ecrt_slave_config_dc(
-      slave_info.config,
-      etherlab_slave_ptr->dc_sync(),
+      slave_info_.back().config,
+      slave_info_.back().slave->dc_sync(),
       interval_,
       interval_ - (t.tv_nsec % (interval_)),
       0,
       0);
   }
 
-  slave_info_.push_back(slave_info);
-
   // check if slave has pdos
-  size_t num_syncs = etherlab_slave_ptr->sync_size();
-  const ec_sync_info_t * syncs = etherlab_slave_ptr->syncs();
+  size_t num_syncs = slave_info_.back().slave->sync_size();
+  const ec_sync_info_t * syncs = slave_info_.back().slave->syncs();
   if (num_syncs > 0) {
     // configure pdos in slave
-    int pdos_status = ecrt_slave_config_pdos(slave_info.config, num_syncs, syncs);
+    int pdos_status = ecrt_slave_config_pdos(slave_info_.back().config, num_syncs, syncs);
     if (pdos_status) {
       printWarning("Add slave. Failed to configure PDOs");
       return false;
@@ -126,13 +123,13 @@ bool EtherlabMaster::add_slave(ethercat_interface::EcSlave * slave)
   } else {
     printWarning(
       "Add slave. Sync size is zero for " +
-      std::to_string(etherlab_slave_ptr->bus_alias) + ":" +
-      std::to_string(etherlab_slave_ptr->bus_position));
+      std::to_string(slave_info_.back().slave->get_bus_alias()) + ":" +
+      std::to_string(slave_info_.back().slave->get_bus_position()));
   }
 
   // check if slave registered any pdos for the domain
   EtherlabSlave::DomainMap domain_map;
-  etherlab_slave_ptr->domains(domain_map);
+  slave_info_.back().slave->domains(domain_map);
   for (auto & iter : domain_map) {
     // get the domain info, create if necessary
     uint32_t domain_index = iter.first;
@@ -143,9 +140,9 @@ bool EtherlabMaster::add_slave(ethercat_interface::EcSlave * slave)
     }
 
     registerPDOInDomain(
-      etherlab_slave_ptr->bus_alias, etherlab_slave_ptr->bus_position,
+      slave_info_.back().slave->get_bus_alias(), slave_info_.back().slave->get_bus_position(),
       iter.second, domain_info,
-      etherlab_slave_ptr.get());
+      slave_info_.back().slave);
   }
 
   return true;
@@ -153,14 +150,14 @@ bool EtherlabMaster::add_slave(ethercat_interface::EcSlave * slave)
 
 bool EtherlabMaster::configure_slaves()
 {
-  for (auto i = 0ul; i < slave_list_.size(); i++) {
-    for (auto & sdo : slave_list_[i]->sdo_config) {
+  for (auto i = 0ul; i < slave_info_.size(); i++) {
+    for (auto & sdo : slave_info_[i].slave->get_sdo_config()) {
       uint8_t buffer[8];
       sdo.buffer_write(buffer);
       uint32_t abort_code;
       int ret = ecrt_master_sdo_download(
         master_,
-        slave_list_[i]->bus_position,
+        slave_info_[i].slave->get_bus_position(),
         sdo.index,
         sdo.sub_index,
         buffer,
@@ -172,7 +169,7 @@ bool EtherlabMaster::configure_slaves()
         RCLCPP_FATAL(
           rclcpp::get_logger("EtherlabMaster"),
           "Failed to download config SDO for module at position %i with Error: %d",
-          slave_list_[i]->bus_position,
+          slave_info_[i].slave->get_bus_position(),
           abort_code
         );
         return false;
@@ -187,7 +184,7 @@ void EtherlabMaster::registerPDOInDomain(
   uint16_t alias, uint16_t position,
   std::vector<uint32_t> & channel_indices,
   DomainInfo * domain_info,
-  EtherlabSlave * slave)
+  std::shared_ptr<EtherlabSlave> slave)
 {
   // expand the size of the domain
   uint32_t num_pdo_regs = channel_indices.size();
@@ -212,8 +209,8 @@ void EtherlabMaster::registerPDOInDomain(
     ec_pdo_entry_reg_t & pdo_reg = domain_info->domain_regs[start_index + i];
     pdo_reg.alias = alias;
     pdo_reg.position = position;
-    pdo_reg.vendor_id = slave->vendor_id;
-    pdo_reg.product_code = slave->product_id;
+    pdo_reg.vendor_id = slave->get_vendor_id();
+    pdo_reg.product_code = slave->get_product_id();
     pdo_reg.index = pdo_regs[channel_indices[i]].index;
     pdo_reg.subindex = pdo_regs[channel_indices[i]].subindex;
     pdo_reg.offset = &(domain_entry.offset[i]);
@@ -279,34 +276,36 @@ bool EtherlabMaster::stop()
 bool EtherlabMaster::spin_slaves_until_operational()
 {
   // start after one second
-  // struct timespec t;
-  // clock_gettime(CLOCK_MONOTONIC, &t);
-  // t.tv_sec++;
+  struct timespec t;
+  clock_gettime(CLOCK_MONOTONIC, &t);
+  t.tv_sec++;
 
-  // bool running = true;
-  // while (running) {
-  //   // wait until next shot
-  //   clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &t, NULL);
-  //   // update EtherCAT bus
+  bool running = true;
+  while (running) {
+    // wait until next shot
+    clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &t, NULL);
+    // update EtherCAT bus
 
-  //   update();
-  //   RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"), "updated!");
+    update();
+    RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"), "updated!");
 
-  //   // check if operational
-  //   bool isAllInit = true;
-  //   for (auto & module : ec_modules_) {
-  //     isAllInit = isAllInit && module->initialized();
-  //   }
-  //   if (isAllInit) {
-  //     running = false;
-  //   }
-  //   // calculate next shot. carry over nanoseconds into microseconds.
-  //   t.tv_nsec += get_interval();
-  //   while (t.tv_nsec >= 1000000000) {
-  //     t.tv_nsec -= 1000000000;
-  //     t.tv_sec++;
-  //   }
-  // }
+    // check if operational
+    bool isAllInit = true;
+    for (auto & slave_info : slave_info_) {
+      isAllInit = isAllInit && slave_info.slave->initialized();
+    }
+    if (isAllInit) {
+      running = false;
+    }
+    // calculate next shot. carry over nanoseconds into microseconds.
+    t.tv_nsec += get_interval();
+    while (t.tv_nsec >= 1000000000) {
+      t.tv_nsec -= 1000000000;
+      t.tv_sec++;
+    }
+  }
+
+  return true;
 }
 
 void EtherlabMaster::update(uint32_t domain)
@@ -329,8 +328,14 @@ void EtherlabMaster::update(uint32_t domain)
 
   // read and write process data
   for (DomainInfo::Entry & entry : domain_info->entries) {
-    for (int i = 0; i < entry.num_pdos; ++i) {
-      (entry.slave)->process_data(i, domain_info->domain_pd + entry.offset[i]);
+    for (auto mi = 0ul; mi < (entry.slave)->get_pdo_config().size(); mi++) {
+      for (auto ci = 0ul; ci < (entry.slave)->get_pdo_config()[mi].pdo_channel_config.size();
+        ci++)
+      {
+        if ((entry.slave)->get_pdo_config()[mi].pdo_channel_config[ci].index != 0x0000) {
+          (entry.slave)->process_data(mi, ci, domain_info->domain_pd + entry.offset[mi + ci]);
+        }
+      }
     }
   }
 
@@ -368,12 +373,19 @@ bool EtherlabMaster::read_process_data()
 
   // read and write process data
   for (DomainInfo::Entry & entry : domain_info->entries) {
-    for (int i = 0; i < entry.num_pdos; ++i) {
-      (entry.slave)->process_data(i, domain_info->domain_pd + entry.offset[i]);
+    for (auto mi = 0ul; mi < (entry.slave)->get_pdo_config().size(); mi++) {
+      for (auto ci = 0ul; ci < (entry.slave)->get_pdo_config()[mi].pdo_channel_config.size();
+        ci++)
+      {
+        if ((entry.slave)->get_pdo_config()[mi].pdo_channel_config[ci].index != 0x0000) {
+          (entry.slave)->process_data(mi, ci, domain_info->domain_pd + entry.offset[mi + ci]);
+        }
+      }
     }
   }
 
   ++update_counter_;
+  return true;
 }
 
 bool EtherlabMaster::write_process_data()
@@ -381,8 +393,14 @@ bool EtherlabMaster::write_process_data()
   DomainInfo * domain_info = domain_info_[0];
   // read and write process data
   for (DomainInfo::Entry & entry : domain_info->entries) {
-    for (int i = 0; i < entry.num_pdos; ++i) {
-      (entry.slave)->process_data(i, domain_info->domain_pd + entry.offset[i]);
+    for (auto mi = 0ul; mi < (entry.slave)->get_pdo_config().size(); mi++) {
+      for (auto ci = 0ul; ci < (entry.slave)->get_pdo_config()[mi].pdo_channel_config.size();
+        ci++)
+      {
+        if ((entry.slave)->get_pdo_config()[mi].pdo_channel_config[ci].index != 0x0000) {
+          (entry.slave)->process_data(mi, ci, domain_info->domain_pd + entry.offset[mi + ci]);
+        }
+      }
     }
   }
 
@@ -396,95 +414,8 @@ bool EtherlabMaster::write_process_data()
   // send process data
   ecrt_domain_queue(domain_info->domain);
   ecrt_master_send(master_);
-}
 
-void EtherlabMaster::setCtrlCHandler(SIMPLECAT_EXIT_CALLBACK user_callback)
-{
-  // ctrl c handler
-  struct sigaction sigIntHandler;
-  sigIntHandler.sa_handler = user_callback;
-  sigemptyset(&sigIntHandler.sa_mask);
-  sigIntHandler.sa_flags = 0;
-  sigaction(SIGINT, &sigIntHandler, NULL);
-}
-
-void EtherlabMaster::run(SIMPLECAT_CONTRL_CALLBACK user_callback)
-{
-  // start after one second
-  struct timespec t;
-  clock_gettime(CLOCK_MONOTONIC, &t);
-  t.tv_sec++;
-
-  running_ = true;
-  start_t_ = std::chrono::system_clock::now();
-  while (running_) {
-    // wait until next shot
-    clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &t, NULL);
-
-    // update EtherCAT bus
-    this->update();
-
-    // get actual time
-    curr_t_ = std::chrono::system_clock::now();
-
-    // user callback
-    user_callback();
-
-    // calculate next shot. carry over nanoseconds into microseconds.
-    t.tv_nsec += interval_;
-    while (t.tv_nsec >= 1000000000) {
-      t.tv_nsec -= 1000000000;
-      t.tv_sec++;
-    }
-  }
-}
-
-double EtherlabMaster::elapsedTime()
-{
-  std::chrono::duration<double> elapsed_seconds = curr_t_ - start_t_;
-  return elapsed_seconds.count() - 1.0;  // started after 1 second
-}
-
-uint64_t EtherlabMaster::elapsedCycles()
-{
-  return update_counter_;
-}
-
-void EtherlabMaster::setThreadHighPriority()
-{
-  pid_t pid = getpid();
-  int priority_status = setpriority(PRIO_PROCESS, pid, -19);
-  if (priority_status) {
-    printWarning("setThreadHighPriority. Failed to set priority.");
-    return;
-  }
-}
-
-void EtherlabMaster::setThreadRealTime()
-{
-  /* Declare ourself as a real time task, priority 49.
-      PRREMPT_RT uses priority 50
-      for kernel tasklets and interrupt handler by default */
-  struct sched_param param;
-  param.sched_priority = 49;
-  // pthread_t this_thread = pthread_self();
-  if (sched_setscheduler(0, SCHED_FIFO, &param) == -1) {
-    perror("sched_setscheduler failed");
-    exit(-1);
-  }
-
-  /* Lock memory */
-  if (mlockall(MCL_CURRENT | MCL_FUTURE) == -1) {
-    perror("mlockall failed");
-    exit(-2);
-  }
-
-  /* Pre-fault our stack
-      8*1024 is the maximum stack size
-      which is guaranteed safe to access without faulting */
-  int MAX_SAFE_STACK = 8 * 1024;
-  unsigned char dummy[MAX_SAFE_STACK];
-  memset(dummy, 0, MAX_SAFE_STACK);
+  return true;
 }
 
 void EtherlabMaster::checkDomainState(uint32_t domain)
