@@ -37,7 +37,7 @@ public:
   explicit EtherlabSlave(ethercat_interface::EcSlave * slave);
   ~EtherlabSlave();
   /** read or write data to the domain */
-  int process_data(size_t index, uint8_t * domain_address);
+  int process_data(size_t pdo_mapping_index, size_t pdo_channel_index, uint8_t * domain_address);
   /** a pointer to syncs. return &syncs[0] */
   const ec_sync_info_t * syncs();
   bool initialized();
@@ -52,17 +52,19 @@ public:
   *  map<domain index, vector<channels_ indices> > */
   typedef std::map<unsigned int, std::vector<unsigned int>> DomainMap;
   void domains(DomainMap & /*domains*/) const;
-  bool setupSlave(
+  bool setup_slave(
     std::unordered_map<std::string, std::string> slave_paramters,
     std::vector<double> * state_interface,
     std::vector<double> * command_interface);
 
-  uint32_t vendor_id;
-  uint32_t product_id;
-  int bus_position;
-  int bus_alias;
+  uint32_t get_vendor_id();
+  uint32_t get_product_id();
+  int get_bus_position();
+  int get_bus_alias();
 
-  std::vector<ethercat_interface::SdoConfigEntry> sdo_config;
+  ethercat_interface::pdo_config_t get_pdo_config();
+  ethercat_interface::sm_config_t get_sm_config();
+  ethercat_interface::sdo_config_t get_sdo_config();
 
 protected:
   ethercat_interface::EcSlave * slave_;
@@ -70,6 +72,18 @@ protected:
   std::vector<double> * command_interface_ptr_;
   std::unordered_map<std::string, std::string> paramters_;
   bool is_operational_ = false;
+  int bus_position_;
+  int bus_alias_;
+
+  std::vector<ec_pdo_info_t> rpdos_;
+  std::vector<ec_pdo_info_t> tpdos_;
+  std::vector<ec_pdo_entry_info_t> all_channels_;
+  std::vector<ec_sync_info_t> syncs_;
+  std::vector<unsigned int> domain_map_;
+
+  void setup_syncs();
+  ec_direction_t set_sm_type(int type);
+  ec_watchdog_mode_t set_sm_watchdog(int watchdog);
 };
 }  // namespace ethercat_master
 #endif  // ETHERCAT_MASTER__EC_SLAVE_ETHERLAB_HPP_
