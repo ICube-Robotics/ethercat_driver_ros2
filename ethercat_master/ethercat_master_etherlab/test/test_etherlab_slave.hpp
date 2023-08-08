@@ -33,7 +33,7 @@
 class FriendEtherlabSlave : public ethercat_master::EtherlabSlave
 {
 public:
-  explicit FriendEtherlabSlave(ethercat_interface::EcSlave * slave)
+  explicit FriendEtherlabSlave(std::shared_ptr<ethercat_interface::EcSlave> slave)
   : EtherlabSlave(slave) {}
 
 private:
@@ -56,7 +56,6 @@ public:
 
 protected:
   std::unique_ptr<FriendEtherlabSlave> etherlab_slave_;
-  std::shared_ptr<ethercat_interface::EcSlave> test_slave_ptr_;
 };
 
 class TestSlave : public ethercat_interface::EcSlave

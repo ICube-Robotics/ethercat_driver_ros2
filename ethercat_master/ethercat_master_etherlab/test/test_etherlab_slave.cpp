@@ -19,8 +19,8 @@
 
 void EtherlabSlaveTest::SetUp()
 {
-  test_slave_ptr_ = std::make_shared<TestSlave>();
-  etherlab_slave_ = std::make_unique<FriendEtherlabSlave>(test_slave_ptr_.get());
+  auto test_slave_ptr = std::make_shared<TestSlave>();
+  etherlab_slave_ = std::make_unique<FriendEtherlabSlave>(test_slave_ptr);
 }
 
 void EtherlabSlaveTest::TearDown()
