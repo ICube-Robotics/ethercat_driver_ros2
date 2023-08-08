@@ -30,11 +30,16 @@
 namespace ethercat_interface
 {
 
-typedef std::unordered_map<uint16_t,
-    std::vector<ethercat_interface::EcPdoChannelManager>> pdoc_map_t;
-typedef std::vector<ethercat_interface::EcPdoChannelManager> pdoc_vec_t;
-typedef std::vector<ethercat_interface::SMConfig> smc_vec_t;
-typedef std::vector<ethercat_interface::SdoConfigEntry> sdoc_vec_t;
+typedef std::vector<ethercat_interface::EcPdoChannelManager> pdo_channels_t;
+typedef std::vector<ethercat_interface::SMConfig> sm_config_t;
+typedef std::vector<ethercat_interface::SdoConfigEntry> sdo_config_t;
+typedef struct
+{
+  uint16_t index;
+  ethercat_interface::PdoType pdo_type;
+  pdo_channels_t pdo_channel_config;
+} pdo_mapping_t;
+typedef std::vector<pdo_mapping_t> pdo_config_t;
 
 class EcSlave
 {
@@ -42,7 +47,12 @@ public:
   EcSlave() {}
   ~EcSlave() {}
   /** read or write data to the domain */
-  virtual int process_data(size_t /*index*/, uint8_t * /*domain_address*/) {return 0;}
+  virtual int process_data(
+    size_t pdo_mapping_index, size_t pdo_channel_index, uint8_t * domain_address)
+  {
+    pdo_config_[pdo_mapping_index].pdo_channel_config[pdo_channel_index].ec_update(domain_address);
+    return 0;
+  }
   /** Assign activate DC synchronization. return activate word*/
   virtual int dc_sync() {return assign_activate_;}
   bool initialized() {return is_initialized_;}
@@ -55,25 +65,24 @@ public:
     command_interface_ptr_ = command_interface;
     paramters_ = slave_paramters;
     is_initialized_ = true;
+    setup_interface_mapping();
     return true;
   }
 
   uint32_t get_vendor_id() {return vendor_id_;}
   uint32_t get_product_id() {return product_id_;}
 
-  pdoc_map_t get_pdo_config_map()
+  pdo_config_t get_pdo_config()
   {
-    return pdo_config_map_;
+    return pdo_config_;
   }
-  pdoc_vec_t get_pdo_channel_config()
-  {
-    return pdo_channels_info_;
-  }
-  smc_vec_t get_sm_config()
+
+  sm_config_t get_sm_config()
   {
     return sm_config_;
   }
-  sdoc_vec_t get_sdo_config()
+
+  sdo_config_t get_sdo_config()
   {
     return sdo_config_;
   }
@@ -85,12 +94,33 @@ protected:
   bool is_initialized_ = false;
   uint32_t vendor_id_ = 0;
   uint32_t product_id_ = 0;
-  uint32_t assign_activate_ = 0x00;
+  uint32_t assign_activate_ = 0;
 
-  pdoc_map_t pdo_config_map_;
-  pdoc_vec_t pdo_channels_info_;
-  smc_vec_t sm_config_;
-  sdoc_vec_t sdo_config_;
+  pdo_config_t pdo_config_;
+  sm_config_t sm_config_;
+  sdo_config_t sdo_config_;
+
+  void setup_interface_mapping()
+  {
+    for (auto & mapping : pdo_config_) {
+      for (auto & channel : mapping.pdo_channel_config) {
+        if (channel.pdo_type == ethercat_interface::TPDO) {
+          if (paramters_.find("state_interface/" + channel.interface_name) != paramters_.end()) {
+            channel.interface_index =
+              std::stoi(paramters_["state_interface/" + channel.interface_name]);
+          }
+        }
+        if (channel.pdo_type == ethercat_interface::RPDO) {
+          if (paramters_.find("command_interface/" + channel.interface_name) != paramters_.end()) {
+            channel.interface_index = std::stoi(
+              paramters_["command_interface/" + channel.interface_name]);
+          }
+        }
+
+        channel.setup_interface_ptrs(state_interface_ptr_, command_interface_ptr_);
+      }
+    }
+  }
 };
 
 }  // namespace ethercat_interface
