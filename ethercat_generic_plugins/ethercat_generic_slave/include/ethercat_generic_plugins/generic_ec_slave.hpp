@@ -33,8 +33,6 @@ public:
   GenericEcSlave();
   ~GenericEcSlave();
 
-  int process_data(size_t index, uint8_t * domain_address);
-
   bool setup_slave(
     std::unordered_map<std::string, std::string> slave_paramters,
     std::vector<double> * state_interface,
@@ -44,13 +42,12 @@ public:
 
 protected:
   YAML::Node slave_config_;
+  // ethercat_interface::pdo_channels_t pdo_channels_info_;
 
   /** set up of the drive configuration from yaml node*/
   bool setup_from_config(YAML::Node slave_config);
   /** set up of the drive configuration from yaml file*/
   bool setup_from_config_file(std::string config_file);
-
-  void setup_interface_mapping();
 };
 }  // namespace ethercat_generic_plugins
 
