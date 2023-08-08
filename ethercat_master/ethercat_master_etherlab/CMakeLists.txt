@@ -67,6 +67,19 @@ if(BUILD_TESTING)
     ethercat_interface
     rclcpp
   )
+  # Test Etherlab EtherCAT Slave
+  ament_add_gmock(
+    test_etherlab_slave
+    test/test_etherlab_slave.cpp
+  )
+  target_include_directories(test_etherlab_slave PRIVATE include ${ETHERLAB_DIR}/include)
+  target_link_libraries(test_etherlab_slave
+    ${PROJECT_NAME}
+  )
+  ament_target_dependencies(test_etherlab_slave
+    pluginlib
+    ethercat_interface
+  )
 endif()
 
 ament_export_include_directories(
