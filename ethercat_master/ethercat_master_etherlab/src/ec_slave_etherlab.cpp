@@ -18,7 +18,7 @@
 
 namespace ethercat_master
 {
-EtherlabSlave::EtherlabSlave(ethercat_interface::EcSlave * slave)
+EtherlabSlave::EtherlabSlave(std::shared_ptr<ethercat_interface::EcSlave> slave)
 {
   slave_ = slave;
 }

@@ -24,6 +24,7 @@
 #include <iostream>
 #include <cmath>
 #include <string>
+#include <memory>
 
 #include "ethercat_interface/ec_sdo_manager.hpp"
 #include "ethercat_interface/ec_slave.hpp"
@@ -34,7 +35,7 @@ namespace ethercat_master
 class EtherlabSlave
 {
 public:
-  explicit EtherlabSlave(ethercat_interface::EcSlave * slave);
+  explicit EtherlabSlave(std::shared_ptr<ethercat_interface::EcSlave> slave);
   ~EtherlabSlave();
   /** read or write data to the domain */
   int process_data(size_t pdo_mapping_index, size_t pdo_channel_index, uint8_t * domain_address);
@@ -67,7 +68,7 @@ public:
   ethercat_interface::sdo_config_t get_sdo_config();
 
 protected:
-  ethercat_interface::EcSlave * slave_;
+  std::shared_ptr<ethercat_interface::EcSlave> slave_;
   std::vector<double> * state_interface_ptr_;
   std::vector<double> * command_interface_ptr_;
   std::unordered_map<std::string, std::string> paramters_;
