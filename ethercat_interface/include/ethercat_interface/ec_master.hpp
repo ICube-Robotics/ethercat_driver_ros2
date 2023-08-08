@@ -18,6 +18,7 @@
 #define ETHERCAT_INTERFACE__EC_MASTER_HPP_
 
 #include <string>
+#include <memory>
 #include "ethercat_interface/ec_slave.hpp"
 
 namespace ethercat_interface
@@ -29,7 +30,7 @@ public:
   virtual ~EcMaster() {}
 
   /** \brief add a slave device to the master */
-  virtual bool add_slave(EcSlave * slave) = 0;
+  virtual bool add_slave(std::shared_ptr<EcSlave> slave) = 0;
 
   /** \brief configure slave using SDO */
   virtual bool configure_slaves() = 0;
