@@ -47,7 +47,7 @@ bool EtherlabSlave::initialized()
 
 void EtherlabSlave::set_state_is_operational(bool value)
 {
-  is_operational_ = value;
+  slave_->set_state_is_operational(value);
 }
 
 int EtherlabSlave::dc_sync()

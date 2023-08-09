@@ -65,7 +65,6 @@ public:
 
 protected:
   std::shared_ptr<ethercat_interface::EcSlave> slave_;
-  bool is_operational_ = false;
   int bus_position_;
   int bus_alias_;
 
