@@ -1,5 +1,0 @@
-<library path="ethercat_schneider_drives">
-  <class name="ethercat_plugins/Schneider_ATV320" type="ethercat_plugins::Schneider_ATV320" base_class_type="ethercat_interface::EcSlave">
-    <description>Schneider Electric ATV320</description>
-  </class>
-</library>
