@@ -50,10 +50,6 @@ private:
 
 class EtherlabSlaveTest : public ::testing::Test
 {
-public:
-  void SetUp();
-  void TearDown();
-
 protected:
   std::unique_ptr<FriendEtherlabSlave> etherlab_slave_;
 };

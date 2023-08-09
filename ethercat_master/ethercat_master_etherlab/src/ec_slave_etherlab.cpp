@@ -21,6 +21,7 @@ namespace ethercat_master
 EtherlabSlave::EtherlabSlave(std::shared_ptr<ethercat_interface::EcSlave> slave)
 {
   slave_ = slave;
+  setup_slave();
 }
 
 EtherlabSlave::~EtherlabSlave()
@@ -111,19 +112,8 @@ void EtherlabSlave::setup_syncs()
   syncs_.push_back({0xff});
 }
 
-bool EtherlabSlave::setup_slave(
-  std::unordered_map<std::string, std::string> slave_paramters,
-  std::vector<double> * state_interface,
-  std::vector<double> * command_interface)
+bool EtherlabSlave::setup_slave()
 {
-  state_interface_ptr_ = state_interface;
-  command_interface_ptr_ = command_interface;
-  paramters_ = slave_paramters;
-
-  if (!slave_->setup_slave(slave_paramters, state_interface, command_interface)) {
-    return false;
-  }
-
   auto channels_nbr = 0;
 
   for (auto & mapping : slave_->get_pdo_config()) {
@@ -171,14 +161,14 @@ bool EtherlabSlave::setup_slave(
     }
   }
 
-  if (slave_paramters.find("position") != slave_paramters.end()) {
-    bus_position_ = std::stoi(slave_paramters["position"]);
+  if (slave_->get_slave_parameters().find("position") != slave_->get_slave_parameters().end()) {
+    bus_position_ = std::stoi(slave_->get_slave_parameters()["position"]);
   } else {
     bus_position_ = 0;
   }
 
-  if (slave_paramters.find("alias") != slave_paramters.end()) {
-    bus_alias_ = std::stoi(slave_paramters["alias"]);
+  if (slave_->get_slave_parameters().find("alias") != slave_->get_slave_parameters().end()) {
+    bus_alias_ = std::stoi(slave_->get_slave_parameters()["alias"]);
   } else {
     bus_alias_ = 0;
   }

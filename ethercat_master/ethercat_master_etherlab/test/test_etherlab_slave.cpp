@@ -17,22 +17,23 @@
 #include "ethercat_interface/ec_slave.hpp"
 #include "test_etherlab_slave.hpp"
 
-void EtherlabSlaveTest::SetUp()
-{
-  auto test_slave_ptr = std::make_shared<TestSlave>();
-  etherlab_slave_ = std::make_unique<FriendEtherlabSlave>(test_slave_ptr);
-}
-
-void EtherlabSlaveTest::TearDown()
-{
-}
-
 TEST_F(EtherlabSlaveTest, SlaveSetup)
 {
-  SetUp();
+  auto test_slave_ptr = std::make_shared<TestSlave>();
   std::vector<double> state_interface = {0};
   std::vector<double> command_interface = {0};
   std::unordered_map<std::string, std::string> slave_paramters;
+
+  ASSERT_EQ(
+    test_slave_ptr->setup_slave(
+      slave_paramters,
+      &state_interface,
+      &command_interface
+    ),
+    true
+  );
+
+  etherlab_slave_ = std::make_unique<FriendEtherlabSlave>(test_slave_ptr);
 
   ASSERT_EQ(etherlab_slave_->get_vendor_id(), 0x00000011u);
   ASSERT_EQ(etherlab_slave_->get_product_id(), 0x07030924u);
@@ -52,15 +53,6 @@ TEST_F(EtherlabSlaveTest, SlaveSetup)
     etherlab_slave_->get_pdo_config()[2].pdo_channel_config[1].interface_name, "analog_input2");
   ASSERT_EQ(etherlab_slave_->get_pdo_config()[0].pdo_channel_config[4].data_type, "uint16");
 
-  ASSERT_EQ(
-    etherlab_slave_->setup_slave(
-      slave_paramters,
-      &state_interface,
-      &command_interface
-    ),
-    true
-  );
-
   ASSERT_EQ(etherlab_slave_->rpdos_.size(), 1u);
   ASSERT_EQ(etherlab_slave_->rpdos_[0].index, 0x1607u);
 
@@ -71,15 +63,16 @@ TEST_F(EtherlabSlaveTest, SlaveSetup)
 
 TEST_F(EtherlabSlaveTest, SlaveSetupPdoChannels)
 {
-  SetUp();
+  auto test_slave_ptr = std::make_shared<TestSlave>();
   std::vector<double> state_interface = {0};
   std::vector<double> command_interface = {0};
   std::unordered_map<std::string, std::string> slave_paramters;
-  etherlab_slave_->setup_slave(
+  test_slave_ptr->setup_slave(
     slave_paramters,
     &state_interface,
     &command_interface
   );
+  etherlab_slave_ = std::make_unique<FriendEtherlabSlave>(test_slave_ptr);
 
   std::vector<ec_pdo_entry_info_t> channels(
     etherlab_slave_->channels(),
@@ -94,15 +87,16 @@ TEST_F(EtherlabSlaveTest, SlaveSetupPdoChannels)
 
 TEST_F(EtherlabSlaveTest, SlaveSetupSyncs)
 {
-  SetUp();
+  auto test_slave_ptr = std::make_shared<TestSlave>();
   std::vector<double> state_interface = {0};
   std::vector<double> command_interface = {0};
   std::unordered_map<std::string, std::string> slave_paramters;
-  etherlab_slave_->setup_slave(
+  test_slave_ptr->setup_slave(
     slave_paramters,
     &state_interface,
     &command_interface
   );
+  etherlab_slave_ = std::make_unique<FriendEtherlabSlave>(test_slave_ptr);
 
   std::vector<ec_sync_info_t> syncs(
     etherlab_slave_->syncs(),
@@ -124,15 +118,16 @@ TEST_F(EtherlabSlaveTest, SlaveSetupSyncs)
 
 TEST_F(EtherlabSlaveTest, SlaveSetupDomains)
 {
-  SetUp();
+  auto test_slave_ptr = std::make_shared<TestSlave>();
   std::vector<double> state_interface = {0};
   std::vector<double> command_interface = {0};
   std::unordered_map<std::string, std::string> slave_paramters;
-  etherlab_slave_->setup_slave(
+  test_slave_ptr->setup_slave(
     slave_paramters,
     &state_interface,
     &command_interface
   );
+  etherlab_slave_ = std::make_unique<FriendEtherlabSlave>(test_slave_ptr);
 
   std::map<unsigned int, std::vector<unsigned int>> domains;
   etherlab_slave_->domains(domains);
@@ -144,38 +139,39 @@ TEST_F(EtherlabSlaveTest, SlaveSetupDomains)
 
 TEST_F(EtherlabSlaveTest, EcReadTPDOToStateInterface)
 {
-  SetUp();
+  auto test_slave_ptr = std::make_shared<TestSlave>();
   std::vector<double> state_interface = {0, 0};
   std::vector<double> command_interface = {0};
   std::unordered_map<std::string, std::string> slave_paramters;
   slave_paramters["state_interface/effort"] = "1";
-
-  etherlab_slave_->setup_slave(
+  test_slave_ptr->setup_slave(
     slave_paramters,
     &state_interface,
     &command_interface
   );
+  etherlab_slave_ = std::make_unique<FriendEtherlabSlave>(test_slave_ptr);
 
   ASSERT_EQ(etherlab_slave_->get_pdo_config()[1].pdo_channel_config[2].interface_index, 1);
   uint8_t domain_address[2];
   write_s16(domain_address, 42);
   etherlab_slave_->process_data(1, 2, domain_address);
-  ASSERT_EQ(etherlab_slave_->state_interface_ptr_->at(1), 5 * 42 + 15);
+  ASSERT_EQ(etherlab_slave_->slave_->get_state_interface_ptr()->at(1), 5 * 42 + 15);
 }
 
 TEST_F(EtherlabSlaveTest, EcWriteRPDOFromCommandInterface)
 {
-  SetUp();
+  auto test_slave_ptr = std::make_shared<TestSlave>();
   std::vector<double> state_interface = {0, 0};
   std::vector<double> command_interface = {0, 42};
   std::unordered_map<std::string, std::string> slave_paramters;
   slave_paramters["command_interface/effort"] = "1";
 
-  etherlab_slave_->setup_slave(
+  test_slave_ptr->setup_slave(
     slave_paramters,
     &state_interface,
     &command_interface
   );
+  etherlab_slave_ = std::make_unique<FriendEtherlabSlave>(test_slave_ptr);
 
   ASSERT_EQ(etherlab_slave_->get_pdo_config()[0].pdo_channel_config[2].interface_index, 1);
   uint8_t domain_address[2];
@@ -186,16 +182,16 @@ TEST_F(EtherlabSlaveTest, EcWriteRPDOFromCommandInterface)
 
 TEST_F(EtherlabSlaveTest, EcWriteRPDODefaultValue)
 {
-  SetUp();
+  auto test_slave_ptr = std::make_shared<TestSlave>();
   std::vector<double> state_interface = {0};
   std::vector<double> command_interface = {0};
   std::unordered_map<std::string, std::string> slave_paramters;
-
-  etherlab_slave_->setup_slave(
+  test_slave_ptr->setup_slave(
     slave_paramters,
     &state_interface,
     &command_interface
   );
+  etherlab_slave_ = std::make_unique<FriendEtherlabSlave>(test_slave_ptr);
 
   uint8_t domain_address[2];
   etherlab_slave_->process_data(0, 2, domain_address);
@@ -205,7 +201,9 @@ TEST_F(EtherlabSlaveTest, EcWriteRPDODefaultValue)
 
 TEST_F(EtherlabSlaveTest, SlaveSetupSDOConfig)
 {
-  SetUp();
+  auto test_slave_ptr = std::make_shared<TestSlave>();
+  etherlab_slave_ = std::make_unique<FriendEtherlabSlave>(test_slave_ptr);
+
   ASSERT_EQ(etherlab_slave_->get_sdo_config()[0].index, 0x60C2);
   ASSERT_EQ(etherlab_slave_->get_sdo_config()[0].sub_index, 1);
   ASSERT_EQ(etherlab_slave_->get_sdo_config()[1].sub_index, 2);
@@ -218,7 +216,9 @@ TEST_F(EtherlabSlaveTest, SlaveSetupSDOConfig)
 
 TEST_F(EtherlabSlaveTest, SlaveSetupSyncManagerConfig)
 {
-  SetUp();
+  auto test_slave_ptr = std::make_shared<TestSlave>();
+  etherlab_slave_ = std::make_unique<FriendEtherlabSlave>(test_slave_ptr);
+
   ASSERT_EQ(etherlab_slave_->get_sm_config().size(), 4ul);
   ASSERT_EQ(etherlab_slave_->get_sm_config()[0].index, 0);
   ASSERT_EQ(etherlab_slave_->get_sm_config()[0].type, 0);

@@ -53,10 +53,6 @@ public:
   *  map<domain index, vector<channels_ indices> > */
   typedef std::map<unsigned int, std::vector<unsigned int>> DomainMap;
   void domains(DomainMap & /*domains*/) const;
-  bool setup_slave(
-    std::unordered_map<std::string, std::string> slave_paramters,
-    std::vector<double> * state_interface,
-    std::vector<double> * command_interface);
 
   uint32_t get_vendor_id();
   uint32_t get_product_id();
@@ -69,9 +65,6 @@ public:
 
 protected:
   std::shared_ptr<ethercat_interface::EcSlave> slave_;
-  std::vector<double> * state_interface_ptr_;
-  std::vector<double> * command_interface_ptr_;
-  std::unordered_map<std::string, std::string> paramters_;
   bool is_operational_ = false;
   int bus_position_;
   int bus_alias_;
@@ -82,6 +75,7 @@ protected:
   std::vector<ec_sync_info_t> syncs_;
   std::vector<unsigned int> domain_map_;
 
+  bool setup_slave();
   void setup_syncs();
   ec_direction_t set_sm_type(int type);
   ec_watchdog_mode_t set_sm_watchdog(int watchdog);
