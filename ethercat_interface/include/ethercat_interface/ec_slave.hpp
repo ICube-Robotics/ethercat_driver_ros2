@@ -87,6 +87,11 @@ public:
     return sdo_config_;
   }
 
+  std::unordered_map<std::string, std::string> get_slave_parameters()
+  {
+    return paramters_;
+  }
+
 protected:
   std::vector<double> * state_interface_ptr_;
   std::vector<double> * command_interface_ptr_;
