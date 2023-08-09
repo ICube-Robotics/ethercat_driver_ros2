@@ -91,7 +91,7 @@ protected:
   std::vector<double> * state_interface_ptr_;
   std::vector<double> * command_interface_ptr_;
   std::unordered_map<std::string, std::string> paramters_;
-  bool is_initialized_ = false;
+  bool is_initialized_ = true;
   uint32_t vendor_id_ = 0;
   uint32_t product_id_ = 0;
   uint32_t assign_activate_ = 0;
