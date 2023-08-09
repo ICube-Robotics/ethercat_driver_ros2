@@ -84,7 +84,7 @@ CallbackReturn EthercatDriver::on_init(
       }
       try {
         auto module = ec_slave_loader_.createSharedInstance(module_params[i].at("plugin"));
-        if (!module->setupSlave(
+        if (!module->setup_slave(
             module_params[i], &hw_joint_states_[j], &hw_joint_commands_[j]))
         {
           RCLCPP_FATAL(
@@ -118,7 +118,7 @@ CallbackReturn EthercatDriver::on_init(
       }
       try {
         auto module = ec_slave_loader_.createSharedInstance(module_params[i].at("plugin"));
-        if (!module->setupSlave(
+        if (!module->setup_slave(
             module_params[i], &hw_gpio_states_[g], &hw_gpio_commands_[g]))
         {
           RCLCPP_FATAL(
@@ -152,7 +152,7 @@ CallbackReturn EthercatDriver::on_init(
       }
       try {
         auto module = ec_slave_loader_.createSharedInstance(module_params[i].at("plugin"));
-        if (!module->setupSlave(
+        if (!module->setup_slave(
             module_params[i], &hw_sensor_states_[s], &hw_sensor_commands_[s]))
         {
           RCLCPP_FATAL(
@@ -308,7 +308,7 @@ CallbackReturn EthercatDriver::on_activate(
 
   // Add slaves to master
   for (auto i = 0ul; i < ec_modules_.size(); i++) {
-    if (!master_->add_slave(ec_modules_[i].get())) {
+    if (!master_->add_slave(ec_modules_[i])) {
       RCLCPP_FATAL(
         rclcpp::get_logger("EthercatDriver"),
         "Failed to add Slave %li to Master. Aborting.", i);
