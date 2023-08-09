@@ -92,6 +92,16 @@ public:
     return paramters_;
   }
 
+  std::vector<double> * get_state_interface_ptr()
+  {
+    return state_interface_ptr_;
+  }
+
+  std::vector<double> * get_command_interface_ptr()
+  {
+    return command_interface_ptr_;
+  }
+
 protected:
   std::vector<double> * state_interface_ptr_;
   std::vector<double> * command_interface_ptr_;
