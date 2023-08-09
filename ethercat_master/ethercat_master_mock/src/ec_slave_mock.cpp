@@ -18,21 +18,21 @@
 
 namespace ethercat_master
 {
-MockSlave::MockSlave(ethercat_interface::EcSlave * slave)
+MockSlave::MockSlave(std::shared_ptr<ethercat_interface::EcSlave> slave)
 {
   slave_ = slave;
-  vendor_id = slave->vendor_id;
-  product_id = slave->product_id;
-  sdo_config = slave->sdo_config;
+  setup_slave();
 }
 
 MockSlave::~MockSlave()
 {
 }
 
-int MockSlave::process_data(size_t index, uint8_t * domain_address)
+int MockSlave::process_data(
+  size_t pdo_mapping_index, size_t pdo_channel_index, uint8_t * domain_address)
 {
-  return slave_->process_data(index, domain_address);
+  slave_->process_data(pdo_mapping_index, pdo_channel_index, domain_address);
+  return 0;
 }
 
 bool MockSlave::initialized()
@@ -42,7 +42,7 @@ bool MockSlave::initialized()
 
 void MockSlave::set_state_is_operational(bool value)
 {
-  is_operational_ = value;
+  slave_->set_state_is_operational(value);
 }
 
 int MockSlave::dc_sync()
@@ -50,16 +50,13 @@ int MockSlave::dc_sync()
   return slave_->dc_sync();
 }
 
-bool MockSlave::setupSlave(
-  std::unordered_map<std::string, std::string> slave_paramters,
-  std::vector<double> * state_interface,
-  std::vector<double> * command_interface)
+bool MockSlave::setup_slave()
 {
-  state_interface_ptr_ = state_interface;
-  command_interface_ptr_ = command_interface;
-  paramters_ = slave_paramters;
-  bus_position = std::stoi(slave_paramters["position"]);
-  bus_alias = std::stoi(slave_paramters["alias"]);
+  if (slave_->get_slave_parameters().find("position") != slave_->get_slave_parameters().end()) {
+    bus_position_ = std::stoi(slave_->get_slave_parameters()["position"]);
+  } else {
+    bus_position_ = 0;
+  }
   return true;
 }
 }  // namespace ethercat_master

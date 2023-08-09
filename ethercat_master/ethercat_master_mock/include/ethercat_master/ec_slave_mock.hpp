@@ -21,6 +21,7 @@
 #include <vector>
 #include <unordered_map>
 #include <string>
+#include <memory>
 
 #include "ethercat_interface/ec_sdo_manager.hpp"
 #include "ethercat_interface/ec_slave.hpp"
@@ -31,33 +32,30 @@ namespace ethercat_master
 class MockSlave
 {
 public:
-  explicit MockSlave(ethercat_interface::EcSlave * slave);
+  explicit MockSlave(std::shared_ptr<ethercat_interface::EcSlave> slave);
   ~MockSlave();
   /** read or write data to the domain */
-  int process_data(size_t index, uint8_t * domain_address);
+  int process_data(size_t pdo_mapping_index, size_t pdo_channel_index, uint8_t * domain_address);
   bool initialized();
   void set_state_is_operational(bool value);
   /** Assign activate DC synchronization. return activate word*/
   int dc_sync();
 
-  bool setupSlave(
-    std::unordered_map<std::string, std::string> slave_paramters,
-    std::vector<double> * state_interface,
-    std::vector<double> * command_interface);
+  uint32_t get_vendor_id();
+  uint32_t get_product_id();
+  int get_bus_position();
 
-  uint32_t vendor_id;
-  uint32_t product_id;
-  int bus_position;
-  int bus_alias;
+  ethercat_interface::pdo_config_t get_pdo_config();
+  ethercat_interface::sm_config_t get_sm_config();
+  ethercat_interface::sdo_config_t get_sdo_config();
 
   std::vector<ethercat_interface::SdoConfigEntry> sdo_config;
 
 protected:
-  ethercat_interface::EcSlave * slave_;
-  std::vector<double> * state_interface_ptr_;
-  std::vector<double> * command_interface_ptr_;
-  std::unordered_map<std::string, std::string> paramters_;
-  bool is_operational_ = false;
+  std::shared_ptr<ethercat_interface::EcSlave> slave_;
+  int bus_position_;
+
+  bool setup_slave();
 };
 }  // namespace ethercat_master
 #endif  // ETHERCAT_MASTER__EC_SLAVE_MOCK_HPP_

@@ -33,11 +33,11 @@ bool MockMaster::init(std::string master_interface)
   return true;
 }
 
-bool MockMaster::add_slave(ethercat_interface::EcSlave * slave)
+bool MockMaster::add_slave(std::shared_ptr<ethercat_interface::EcSlave> slave)
 {
   // configure slave in master
-  auto mock_slave_ptr = std::make_shared<MockSlave>(slave);
-  slave_list_.push_back(mock_slave_ptr);
+  slave_list_.emplace_back();
+  slave_list_.back() = std::make_shared<MockSlave>(slave);
   return true;
 }
 

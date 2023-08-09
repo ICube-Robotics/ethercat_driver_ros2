@@ -37,7 +37,7 @@ public:
 
   bool init(std::string master_interface = "0");
 
-  bool add_slave(ethercat_interface::EcSlave * slave);
+  bool add_slave(std::shared_ptr<ethercat_interface::EcSlave> slave);
 
   bool configure_slaves();
 
