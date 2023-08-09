@@ -53,6 +53,7 @@ public:
     pdo_config_[pdo_mapping_index].pdo_channel_config[pdo_channel_index].ec_update(domain_address);
     return 0;
   }
+  virtual void set_state_is_operational(bool value) {is_operational_ = value;}
   /** Assign activate DC synchronization. return activate word*/
   virtual int dc_sync() {return assign_activate_;}
   bool initialized() {return is_initialized_;}
@@ -107,6 +108,7 @@ protected:
   std::vector<double> * command_interface_ptr_;
   std::unordered_map<std::string, std::string> paramters_;
   bool is_initialized_ = true;
+  bool is_operational_ = false;
   uint32_t vendor_id_ = 0;
   uint32_t product_id_ = 0;
   uint32_t assign_activate_ = 0;
