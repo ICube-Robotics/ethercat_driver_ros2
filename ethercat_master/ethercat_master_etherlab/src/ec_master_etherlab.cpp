@@ -328,12 +328,16 @@ void EtherlabMaster::update(uint32_t domain)
 
   // read and write process data
   for (DomainInfo::Entry & entry : domain_info->entries) {
+    int channel_counter = 0;
     for (auto mi = 0ul; mi < (entry.slave)->get_pdo_config().size(); mi++) {
       for (auto ci = 0ul; ci < (entry.slave)->get_pdo_config()[mi].pdo_channel_config.size();
         ci++)
       {
         if ((entry.slave)->get_pdo_config()[mi].pdo_channel_config[ci].index != 0x0000) {
-          (entry.slave)->process_data(mi, ci, domain_info->domain_pd + entry.offset[mi + ci]);
+          (entry.slave)->process_data(
+            mi, ci,
+            domain_info->domain_pd + entry.offset[channel_counter]);
+          channel_counter++;
         }
       }
     }
@@ -373,12 +377,16 @@ bool EtherlabMaster::read_process_data()
 
   // read and write process data
   for (DomainInfo::Entry & entry : domain_info->entries) {
+    int channel_counter = 0;
     for (auto mi = 0ul; mi < (entry.slave)->get_pdo_config().size(); mi++) {
       for (auto ci = 0ul; ci < (entry.slave)->get_pdo_config()[mi].pdo_channel_config.size();
         ci++)
       {
         if ((entry.slave)->get_pdo_config()[mi].pdo_channel_config[ci].index != 0x0000) {
-          (entry.slave)->process_data(mi, ci, domain_info->domain_pd + entry.offset[mi + ci]);
+          (entry.slave)->process_data(
+            mi, ci,
+            domain_info->domain_pd + entry.offset[channel_counter]);
+          channel_counter++;
         }
       }
     }
@@ -393,12 +401,16 @@ bool EtherlabMaster::write_process_data()
   DomainInfo * domain_info = domain_info_[0];
   // read and write process data
   for (DomainInfo::Entry & entry : domain_info->entries) {
+    int channel_counter = 0;
     for (auto mi = 0ul; mi < (entry.slave)->get_pdo_config().size(); mi++) {
       for (auto ci = 0ul; ci < (entry.slave)->get_pdo_config()[mi].pdo_channel_config.size();
         ci++)
       {
         if ((entry.slave)->get_pdo_config()[mi].pdo_channel_config[ci].index != 0x0000) {
-          (entry.slave)->process_data(mi, ci, domain_info->domain_pd + entry.offset[mi + ci]);
+          (entry.slave)->process_data(
+            mi, ci,
+            domain_info->domain_pd + entry.offset[channel_counter]);
+          channel_counter++;
         }
       }
     }
