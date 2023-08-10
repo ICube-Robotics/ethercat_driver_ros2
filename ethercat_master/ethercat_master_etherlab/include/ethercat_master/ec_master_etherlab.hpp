@@ -53,11 +53,6 @@ public:
    */
   bool stop();
 
-  void set_ctrl_frequency(double frequency)
-  {
-    interval_ = 1000000000.0 / frequency;
-  }
-
   uint32_t get_interval() {return interval_;}
 
   bool read_process_data();
@@ -135,8 +130,6 @@ private:
   /** frequency to check for master or slave state change.
    *  state checked every frequency_ control loops */
   uint32_t check_state_frequency_ = 10;
-
-  uint32_t interval_;
 };
 
 }  // namespace ethercat_master
