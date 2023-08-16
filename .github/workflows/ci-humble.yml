@@ -1,4 +1,4 @@
-name: CI
+name: CI-Humble
 on:
   push:
     branches: [ main ]
@@ -21,6 +21,7 @@ jobs:
           tags: ethercat_driver_ros2:humble
           file: .docker/Dockerfile
           push: false
+          build-args: ROS_DISTRO=humble
 
       - name: Build
         uses: addnab/docker-run-action@v3
