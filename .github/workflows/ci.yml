@@ -11,7 +11,7 @@ jobs:
       - name: Prepare
         run: |
           mkdir -p ${{github.workspace}}/src
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: src/ethercat_driver_ros2
 
