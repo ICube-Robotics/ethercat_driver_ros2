@@ -16,7 +16,7 @@ jobs:
           path: src/ethercat_driver_ros2
 
       - name: Build Docker Image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           tags: ethercat_driver_ros2:humble
           file: .docker/Dockerfile
