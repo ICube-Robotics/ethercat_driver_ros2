@@ -95,8 +95,8 @@ public:
     } else {
       buffer_ = EC_READ_U8(domain_address);
       if (popcount(data_mask) == 1) {
-        buffer_ &= (data_mask - 1);
-        if (value) {buffer_ += data_mask;}
+        buffer_ &= ~(data_mask);
+        if (value) {buffer_ |= data_mask;}
       } else if (data_mask != 0) {
         buffer_ = 0;
         buffer_ |= (static_cast<uint8_t>(value) & data_mask);
