@@ -20,7 +20,9 @@ Please try to include as much information as you can. Details like these are inc
 ## Contributing via Pull Requests
 Contributions via pull requests are much appreciated. Before sending us a pull request, please ensure that:
 
-1. You are working against the latest source on the *main* branch.
+1. You are working against the latest source:
+    1. on the *main* branch if you are contributing to the code (e.g. fixing a bug, adding a new feature)
+    2. on the *gh-pages* branch if you are contributing to the documentation
 2. You check existing open, and recently merged, pull requests to make sure someone else hasn't addressed the problem already.
 3. You open an issue to discuss any significant work - we would hate for your time to be wasted.
 
