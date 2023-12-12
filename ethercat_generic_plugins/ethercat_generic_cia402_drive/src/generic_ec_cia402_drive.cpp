@@ -48,7 +48,27 @@ void EcCiA402Drive::processData(size_t index, uint8_t * domain_address)
       if (auto_state_transitions_) {
         pdo_channels_info_[index].default_value = transition(
           state_,
-          pdo_channels_info_[index].ec_read(domain_address));
+          pdo_channels_info_[index].ec_read(domain_address)
+        );
+        if(mode_of_operation_ == ModeOfOperation::MODE_PROFILED_POSITION) {
+          // Send New Target triggers if target position changes
+          if(state_ == STATE_OPERATION_ENABLED && position_command_interface_index_ >= 0) {
+            uint16_t control_word = pdo_channels_info_[index].default_value;
+            double target_position = command_interface_ptr_->at(position_command_interface_index_);
+            if(!std::isnan(target_position) && target_position == previous_target_ && (control_word & 0b00010000) == 0b00000000) {
+              pdo_channels_info_[index].default_value = transition(
+                STATE_NEW_TARGET,
+                pdo_channels_info_[index].ec_read(domain_address)
+              );
+            } else if((!std::isnan(target_position) || !std::isnan(previous_target_)) && previous_target_ != target_position) {
+              previous_target_ = target_position;
+              pdo_channels_info_[index].default_value = transition(
+                STATE_NEW_TARGET_RESET,
+                pdo_channels_info_[index].ec_read(domain_address)
+              );
+            }
+          }
+        }
       }
     }
   }
@@ -61,7 +81,7 @@ void EcCiA402Drive::processData(size_t index, uint8_t * domain_address)
         pdo_channels_info_[index].offset;
     }
     pdo_channels_info_[index].override_command =
-      (mode_of_operation_display_ != ModeOfOperation::MODE_CYCLIC_SYNC_POSITION) ? true : false;
+      (mode_of_operation_display_ != ModeOfOperation::MODE_CYCLIC_SYNC_POSITION && mode_of_operation_display_ != ModeOfOperation::MODE_PROFILED_POSITION) ? true : false;
   }
 
   // setup mode of operation
@@ -92,10 +112,10 @@ void EcCiA402Drive::processData(size_t index, uint8_t * domain_address)
   if (index == all_channels_.size() - 1) {  // if last entry  in domain
     if (status_word_ != last_status_word_) {
       state_ = deviceState(status_word_);
-      if (state_ != last_state_) {
-        std::cout << "STATE: " << DEVICE_STATE_STR.at(state_)
-                  << " with status word :" << status_word_ << std::endl;
-      }
+      // if (state_ != last_state_) {
+      //   std::cout << "STATE CIA: " << DEVICE_STATE_STR.at(state_)
+      //             << " with status word :" << status_word_ << std::endl;
+      // }
     }
     initialized_ = ((state_ == STATE_OPERATION_ENABLED) &&
       (last_state_ == STATE_OPERATION_ENABLED)) ? true : false;
@@ -133,6 +153,10 @@ bool EcCiA402Drive::setupSlave(
 
   if (paramters_.find("command_interface/reset_fault") != paramters_.end()) {
     fault_reset_command_interface_index_ = std::stoi(paramters_["command_interface/reset_fault"]);
+  }
+
+  if (paramters_.find("command_interface/position") != paramters_.end()) {
+    position_command_interface_index_ = std::stoi(paramters_["command_interface/position"]);
   }
 
   return true;
@@ -206,6 +230,10 @@ uint16_t EcCiA402Drive::transition(DeviceState state, uint16_t control_word)
       return (control_word & 0b01110111) | 0b00000111;
     case STATE_SWITCH_ON:                 // -> STATE_OPERATION_ENABLED
       return (control_word & 0b01111111) | 0b00001111;
+    case STATE_NEW_TARGET:
+      return control_word | 0b00010000;
+    case STATE_NEW_TARGET_RESET:
+      return control_word & 0b11101111;
     case STATE_OPERATION_ENABLED:         // -> GOOD
       return control_word;
     case STATE_QUICK_STOP_ACTIVE:         // -> STATE_OPERATION_ENABLED

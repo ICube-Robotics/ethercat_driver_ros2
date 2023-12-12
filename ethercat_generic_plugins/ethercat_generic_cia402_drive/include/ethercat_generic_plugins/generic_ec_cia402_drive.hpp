@@ -62,7 +62,9 @@ protected:
   bool auto_state_transitions_ = true;
   bool fault_reset_ = false;
   int fault_reset_command_interface_index_ = -1;
+  int position_command_interface_index_ = -1;
   bool last_fault_reset_command_ = false;
+  double previous_target_ = -1;
   double last_position_ = std::numeric_limits<double>::quiet_NaN();
 
   /** returns device state based upon the status_word */
