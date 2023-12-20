@@ -1,5 +1,0 @@
-<library path="ethercat_ati_modules">
-  <class name="ethercat_plugins/ATI_FTSensor" type="ethercat_plugins::ATI_FTSensor" base_class_type="ethercat_interface::EcSlave">
-    <description>ATI EtherCAT F/T Sensor.</description>
-  </class>
-</library>

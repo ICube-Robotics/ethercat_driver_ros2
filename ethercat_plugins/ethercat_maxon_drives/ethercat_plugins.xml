@@ -1,5 +1,0 @@
-<library path="ethercat_maxon_drives">
-  <class name="ethercat_plugins/Maxon_EPOS3" type="ethercat_plugins::Maxon_EPOS3" base_class_type="ethercat_interface::EcSlave">
-    <description>Maxon EPOS3 motor driver.</description>
-  </class>
-</library>

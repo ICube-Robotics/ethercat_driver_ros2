@@ -1,8 +1,0 @@
-<library path="ethercat_advantech_modules">
-  <class name="ethercat_plugins/Advantech_AMAX5051" type="ethercat_plugins::Advantech_AMAX5051" base_class_type="ethercat_interface::EcSlave">
-    <description>EtherCAT Terminal, 8-channel digital input, 24 V DC</description>
-  </class>
-  <class name="ethercat_plugins/Advantech_AMAX5056" type="ethercat_plugins::Advantech_AMAX5056" base_class_type="ethercat_interface::EcSlave">
-    <description>EtherCAT Terminal, 8-channel digital output, 24 V DC</description>
-  </class>
-</library>
