@@ -1,22 +1,25 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Configuration &mdash; ethercat_driver_ros2 1.0.0 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=efd85694" />
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/doctools.js"></script>
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=8d563738"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -94,9 +97,9 @@
            <div itemprop="articleBody">
              
   <section id="configuration">
-<h1>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline"></a></h1>
+<h1>Configuration<a class="headerlink" href="#configuration" title="Link to this heading"></a></h1>
 <section id="hardware-interfaces-and-ethercat-master">
-<h2>Hardware Interfaces and EtherCAT Master<a class="headerlink" href="#hardware-interfaces-and-ethercat-master" title="Permalink to this headline"></a></h2>
+<h2>Hardware Interfaces and EtherCAT Master<a class="headerlink" href="#hardware-interfaces-and-ethercat-master" title="Link to this heading"></a></h2>
 <p>The EtherCAT Driver is designed in such a way that each EtherCAT Master is defined in <code class="code docutils literal notranslate"><span class="pre">ros2_control</span></code> as a specific Hardware Interface. This is done in the <code class="code docutils literal notranslate"><span class="pre">ros2_control</span></code> description file, where the EtherCAT driver is loaded as Hardware Interface and linked to an EtherCAT Master by its ID:</p>
 <div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;ros2_control</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;mySystem&quot;</span><span class="w"> </span><span class="na">type=</span><span class="s">&quot;system&quot;</span><span class="nt">&gt;</span>
 <span class="w">  </span><span class="nt">&lt;hardware&gt;</span>
@@ -113,7 +116,7 @@
 </div>
 </section>
 <section id="ethercat-slave-modules-as-plugins">
-<h2>EtherCAT Slave modules as Plugins<a class="headerlink" href="#ethercat-slave-modules-as-plugins" title="Permalink to this headline"></a></h2>
+<h2>EtherCAT Slave modules as Plugins<a class="headerlink" href="#ethercat-slave-modules-as-plugins" title="Link to this heading"></a></h2>
 <p>In this driver, the EtherCAT Slave modules are defined as <a class="reference external" href="https://docs.ros.org/en/foxy/Tutorials/Pluginlib.html">Plugins</a> and can be parametrized in the <code class="code docutils literal notranslate"><span class="pre">ros2_control</span></code> description file :</p>
 <div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;ec_module</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;ECModule&quot;</span><span class="nt">&gt;</span>
 <span class="w">  </span><span class="nt">&lt;plugin&gt;</span>ethercat_plugins/ECModule<span class="nt">&lt;/plugin&gt;</span>
@@ -133,7 +136,7 @@
 </ul>
 </section>
 <section id="creating-components-with-ethercat-slave-modules">
-<h2>Creating components with EtherCAT Slave modules<a class="headerlink" href="#creating-components-with-ethercat-slave-modules" title="Permalink to this headline"></a></h2>
+<h2>Creating components with EtherCAT Slave modules<a class="headerlink" href="#creating-components-with-ethercat-slave-modules" title="Link to this heading"></a></h2>
 <p>In <code class="code docutils literal notranslate"><span class="pre">ros2_control</span></code> the access to resources within a system from a controller is done by means of <a class="reference external" href="https://github.com/ros-controls/roadmap/blob/master/design_drafts/hardware_access.md">Hardware Resources</a>. For this purpose <code class="code docutils literal notranslate"><span class="pre">state_interface</span></code> and <code class="code docutils literal notranslate"><span class="pre">command_interface</span></code> tags need to be defined and associated with the module functionalities.
 Also, for better understanding of the overall system, the purpose of the used modules need to be clearly identified and sorted into the following types:</p>
 <ul class="simple">

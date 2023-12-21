@@ -1,22 +1,25 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Creating a new device driver &mdash; ethercat_driver_ros2 1.0.0 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=efd85694" />
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/doctools.js"></script>
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=8d563738"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -97,16 +100,16 @@
            <div itemprop="articleBody">
              
   <section id="creating-a-new-device-driver">
-<h1>Creating a new device driver<a class="headerlink" href="#creating-a-new-device-driver" title="Permalink to this headline"></a></h1>
+<h1>Creating a new device driver<a class="headerlink" href="#creating-a-new-device-driver" title="Link to this heading"></a></h1>
 <p>Creating a new device driver to work with the <code class="code docutils literal notranslate"><span class="pre">ethercat_driver_ros2</span></code> is fairly easy. You should do this if you need to create a driver for a specific device or a specific device profile that is not yet supported. If you create a driver for a device profile we are happy to integrate the package into this repository - simply create a PR.</p>
 <section id="what-you-need-to-do">
-<h2>What you need to do<a class="headerlink" href="#what-you-need-to-do" title="Permalink to this headline"></a></h2>
+<h2>What you need to do<a class="headerlink" href="#what-you-need-to-do" title="Link to this heading"></a></h2>
 <p>To create a dedicated driver for an EtherCAT module, you need to create a new package containing the module driver plugin and register it so that it can be called by the <code class="code docutils literal notranslate"><span class="pre">ethercat_driver_ros2</span></code>.</p>
 </section>
 <section id="how-to-do-it">
-<h2>How to do it<a class="headerlink" href="#how-to-do-it" title="Permalink to this headline"></a></h2>
+<h2>How to do it<a class="headerlink" href="#how-to-do-it" title="Link to this heading"></a></h2>
 <section id="create-a-package">
-<h3>Create a package<a class="headerlink" href="#create-a-package" title="Permalink to this headline"></a></h3>
+<h3>Create a package<a class="headerlink" href="#create-a-package" title="Link to this heading"></a></h3>
 <p>Create a new package using the standard ros2 pkg commands. Make sure you add the following dependencies:</p>
 <ul class="simple">
 <li><p><code class="code docutils literal notranslate"><span class="pre">ethercat_interface</span></code></p></li>
@@ -114,7 +117,7 @@
 </ul>
 </section>
 <section id="create-your-plugin-class">
-<h3>Create your plugin class<a class="headerlink" href="#create-your-plugin-class" title="Permalink to this headline"></a></h3>
+<h3>Create your plugin class<a class="headerlink" href="#create-your-plugin-class" title="Link to this heading"></a></h3>
 <p>To be loaded by the <code class="code docutils literal notranslate"><span class="pre">ethercat_driver_ros2</span></code>, the new module plugin needs to inherit from the <code class="code docutils literal notranslate"><span class="pre">EcSlave</span></code> class and implement some of its virtual functions. To do so create in your package <code class="code docutils literal notranslate"><span class="pre">src</span></code> folder a new file <code class="code docutils literal notranslate"><span class="pre">my_ec_device_driver.cpp</span></code>:</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;ethercat_interface/ec_slave.hpp&quot;</span>
 
@@ -191,7 +194,7 @@
 </div>
 </section>
 <section id="export-your-plugin">
-<h3>Export your plugin<a class="headerlink" href="#export-your-plugin" title="Permalink to this headline"></a></h3>
+<h3>Export your plugin<a class="headerlink" href="#export-your-plugin" title="Link to this heading"></a></h3>
 <p>In the package root directory create a plugin description file <code class="code docutils literal notranslate"><span class="pre">ethercat_plugins.xml</span></code> :</p>
 <div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;library</span><span class="w"> </span><span class="na">path=</span><span class="s">&quot;ethercat_plugins&quot;</span><span class="nt">&gt;</span>
 <span class="w">  </span><span class="nt">&lt;class</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;ethercat_plugins/MyEcDeviceDriver&quot;</span>

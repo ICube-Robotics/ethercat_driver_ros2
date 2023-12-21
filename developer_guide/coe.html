@@ -1,22 +1,25 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CANopen over EtherCAT &mdash; ethercat_driver_ros2 1.0.0 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=efd85694" />
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/doctools.js"></script>
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=8d563738"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -94,10 +97,10 @@
            <div itemprop="articleBody">
              
   <section id="canopen-over-ethercat">
-<h1>CANopen over EtherCAT<a class="headerlink" href="#canopen-over-ethercat" title="Permalink to this headline"></a></h1>
+<h1>CANopen over EtherCAT<a class="headerlink" href="#canopen-over-ethercat" title="Link to this heading"></a></h1>
 <p>The CANopen over EtherCAT (CoE) protocol allows devices equipped with CANopen to be used on EtherCAT-based Industrial Ethernet networks.</p>
 <section id="canopen">
-<h2>CANopen<a class="headerlink" href="#canopen" title="Permalink to this headline"></a></h2>
+<h2>CANopen<a class="headerlink" href="#canopen" title="Link to this heading"></a></h2>
 <p>CANopen is a communication protocol based on the <a class="reference external" href="https://www.ni.com/en-us/innovations/white-papers/06/controller-area-network--can--overview.html">CAN (Controller Area Network)</a> physical communication standard. In the <a class="reference external" href="https://www.motioncontroltips.com/what-is-industrial-ethernet-and-how-does-it-differ-from-standard-ethernet/">OSI communication model</a>, CAN specifies the physical and data link layers, while CANopen addresses the higher layers — network, transport, session, presentation, and application.</p>
 <p>The CANopen protocol defines how automation devices are configured and accessed, and how messages are exchanged between them. CANopen is object-based, meaning that each node (drives, controllers, encoders, I/O, and other devices) in the network has an Object Dictionary (OD), which contains communication objects. These communication objects cover network management data; special functions; acyclic configuration data, which is handled by Service Data Objects (SDOs); cyclic real-time data, which is handled by Process Data Objects (PDOs):</p>
 <ul class="simple">
@@ -109,11 +112,11 @@
 <p>CANopen is widely used thanks to its low hardware cost, wide range of device and application profiles, and simple implementation. It’s also extremely reliable and provides real-time communication, making it suitable for industrial applications.</p>
 </section>
 <section id="ethercat">
-<h2>EtherCAT<a class="headerlink" href="#ethercat" title="Permalink to this headline"></a></h2>
+<h2>EtherCAT<a class="headerlink" href="#ethercat" title="Link to this heading"></a></h2>
 <p>EtherCAT is an Industrial Ethernet network. It’s based on standard Ethernet hardware but uses a “processing-on-the-fly” method for transporting and routing messages. In addition to being a real-time networking protocol, EtherCAT is deterministic, meaning it guarantees that a message will be transmitted (or an event will occur) in a specified, predictable period of time — not slower or faster. EtherCAT allows up to 100 meters between nodes (devices) and can provide data transmission rates up to 100 Mbps, with cycle times of less than 100 μs and extremely low jitter, thanks to distributed synchronized clocks.</p>
 </section>
 <section id="canopen-over-ethercat-coe-protocol">
-<h2>CANopen over EtherCAT (CoE) protocol<a class="headerlink" href="#canopen-over-ethercat-coe-protocol" title="Permalink to this headline"></a></h2>
+<h2>CANopen over EtherCAT (CoE) protocol<a class="headerlink" href="#canopen-over-ethercat-coe-protocol" title="Link to this heading"></a></h2>
 <p>CANopen over EtherCAT (CoE) allows the CANopen communication protocol to be implemented over an EtherCAT network, providing a user-friendly, cost-effective solution that provides deterministic data delivery along with faster transmission speeds over longer network lengths.</p>
 <p>The use of CANopen over EtherCAT is possible in significant part because EtherCAT implements the same communication system, including object dictionaries, SDOs (the SDO protocol is implemented directly from CANopen, without changes) and PDOs. And on an EtherCAT network, PDO frames are sent deterministically and without the 8-byte limit imposed by CANopen. CANopen over EtherCAT also supports the CANopen device profiles, which specify the parameters and behavior of the device, as well as the device class-specific state machines.</p>
 <a class="reference internal image-reference" href="https://b2600047.smushcdn.com/2600047/wp-content/uploads/2021/12/Applied-Motion-CANopen-over-EtherCAT.png"><img alt="coe" class="align-center" src="https://b2600047.smushcdn.com/2600047/wp-content/uploads/2021/12/Applied-Motion-CANopen-over-EtherCAT.png" style="width: 400px;" /></a>
