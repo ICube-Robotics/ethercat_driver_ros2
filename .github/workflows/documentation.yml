@@ -24,12 +24,9 @@ jobs:
       - name: Install dependencies
         run: |
             sudo apt-get update -qq
-            sudo apt-get install -y -qq doxygen graphviz plantuml
-            pip install sphinx-rtd-theme
-            pip install sphinxcontrib-plantuml
-            pip install sphinx-mdinclude
-            pip install breathe
-            pip install exhale
+            sudo apt-get install -y -qq python3-sphinx doxygen graphviz plantuml
+            cd ./ethercat_driver_ros2/
+            pip install -r requirements.txt
       - name: Build doxygen
         run: |
             cd ./ethercat_driver_ros2/doxygen/
