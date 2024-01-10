@@ -72,11 +72,11 @@ Each PDO Channel has the following configuration flags:
   * - :code:`type`
     - Channel data type. Possible types: :code:`bool`, :code:`uint8`, :code:`int8`, :code:`uint16`, :code:`int16`, :code:`uint32`, :code:`uint32`, :code:`uint64`, :code:`uint64`, :code:`bitN` with N the number of bits required.
   * - :code:`command_interface`
-    - **Only for** :code:`tpdo`. Name of the command interface to be used inside :code:`ros2_control`.
+    - **Only for** :code:`rpdo`. Name of the command interface to be used inside :code:`ros2_control`.
   * - :code:`state_interface`
-    - **Only for** :code:`rpdo`. Name of the state interface to be used inside :code:`ros2_control`.
+    - **Only for** :code:`tpdo`. Name of the state interface to be used inside :code:`ros2_control`.
   * - :code:`default`
-    - **Only for** :code:`tpdo`. Default value to be send to the drive if data received on the command interface is :code:`NaN`.
+    - **Only for** :code:`rpdo`. Default value to be send to the drive if data received on the command interface is :code:`NaN`.
   * - :code:`mask`
     - Data mask, to be used with :code:`type` = :code:`bool`.
   * - :code:`factor`

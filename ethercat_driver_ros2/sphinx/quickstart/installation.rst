@@ -8,6 +8,34 @@ Installing EtherLab
 The proposed development builds upon the `IgH EtherCAT Master <https://etherlab.org/en/ethercat/>`_.
 Installation steps are summarized here:
 
+* Verify that you can run unsigned kernel modules
+
+Etherlab is a kernel module that is not signed by default.
+To allow the kernel to load unsigned modules, you need to disable secure boot.
+
+Verify if secure boot is enabled (you need to install ''mokutil'' first):
+  .. code-block:: console
+
+    $ sudo apt-get install mokutil
+    $ mokutil --sb-state
+
+it should print:
+  .. code-block:: console
+
+    SecureBoot disabled
+
+if it prints:
+  .. code-block:: console
+
+    SecureBoot enabled
+
+Then you need to disable secure boot.
+To do so:
+
+  1. reboot your computer and enter the BIOS settings.
+  2. In the security tab, disable secure boot.
+  3. Save and exit.
+
 * Install required tools:
 
   .. code-block:: console
