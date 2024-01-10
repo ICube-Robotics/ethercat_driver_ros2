@@ -102,6 +102,35 @@
 <h2>Installing EtherLab<a class="headerlink" href="#installing-etherlab" title="Link to this heading"></a></h2>
 <p>The proposed development builds upon the <a class="reference external" href="https://etherlab.org/en/ethercat/">IgH EtherCAT Master</a>.
 Installation steps are summarized here:</p>
+<ul class="simple">
+<li><p>Verify that you can run unsigned kernel modules</p></li>
+</ul>
+<p>Etherlab is a kernel module that is not signed by default.
+To allow the kernel to load unsigned modules, you need to disable secure boot.</p>
+<dl>
+<dt>Verify if secure boot is enabled (you need to install ‘’mokutil’’ first):</dt><dd><div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>mokutil
+<span class="gp">$ </span>mokutil<span class="w"> </span>--sb-state
+</pre></div>
+</div>
+</dd>
+<dt>it should print:</dt><dd><div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">SecureBoot disabled</span>
+</pre></div>
+</div>
+</dd>
+<dt>if it prints:</dt><dd><div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">SecureBoot enabled</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<p>Then you need to disable secure boot.
+To do so:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>reboot your computer and enter the BIOS settings.</p></li>
+<li><p>In the security tab, disable secure boot.</p></li>
+<li><p>Save and exit.</p></li>
+</ol>
+</div></blockquote>
 <ul>
 <li><p>Install required tools:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>sudo<span class="w"> </span>apt-get<span class="w"> </span>update
