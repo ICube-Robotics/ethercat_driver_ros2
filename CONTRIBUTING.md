@@ -16,13 +16,26 @@ Please try to include as much information as you can. Details like these are inc
 * Any modifications you've made relevant to the bug
 * Anything unusual about your environment or deployment
 
+## Installation of pre-commit checks and hooks
+To accelerate the rate of development and to ensure that the code is formatted correctly, we use pre-commit checks and hooks. To install these, please follow the instructions below:
+  1. Install packages used to check the code:
+```bash
+$ sudo apt-get -y install clang-format-10 python3-autopep8 ament-cmake-uncrustify python3-ament-cpplint python3-ament-lint-cmake python3-ament-copyright
+$ pip install doc8
+```
+  2. Install pre-commit: `pip install pre-commit`
+  3. Configure hook such that it runs on every commit: `pre-commit install`
+
+You can run pre-commit manually on the repository to check if the code is formatted correctly.
+To do so, run `pre-commit run --all-files` in the root of the repository.
 
 ## Contributing via Pull Requests
 Contributions via pull requests are much appreciated. Before sending us a pull request, please ensure that:
 
 1. You are working against the latest source on the *main* branch.
 2. You check existing open, and recently merged, pull requests to make sure someone else hasn't addressed the problem already.
-3. You open an issue to discuss any significant work - we would hate for your time to be wasted.
+3. You have used pre-commit checks to correct any formatting issues.
+4. You open an issue to discuss any significant work - we would hate for your time to be wasted.
 
 **NOTE:** For contributing to the documentation, contribute to the sphinx pages placed in the ethercat_driver_ros2/sphinx folder.
 
