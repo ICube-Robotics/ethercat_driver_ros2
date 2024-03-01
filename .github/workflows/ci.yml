@@ -6,6 +6,12 @@ on:
     branches: [ main ]
 jobs:
   CI:
+    permissions:
+      contents: read
+      packages: write
+      issues: read
+      checks: write
+      pull-requests: write
     runs-on: ubuntu-latest
     steps:
       - name: Prepare
