@@ -19,7 +19,9 @@ Parts of the driver are based on the implementation of [`SimplECAT`](https://bit
 [ICube Laboratory](https://icube.unistra.fr), [University of Strasbourg](https://www.unistra.fr/), France
 
 __Manuel Yguel:__ [yguel@unistra.fr](mailto:yguel@unistra.fr)
+
 __Laurent Barbé:__ [laurent.barbe@unistra.fr](mailto:laurent.barbe@unistra.fr)
+
 __Philippe Zanne:__ [philippe.zanne@unistra.fr](mailto:philippe.zanne@unistra.fr)
 
 __Maciej Bednarczyk:__ [m.bednarczyk@unistra.fr](mailto:m.bednarczyk@unistra.fr), @github: [mcbed](https://github.com/mcbed)
