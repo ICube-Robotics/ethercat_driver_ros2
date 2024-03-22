@@ -79,11 +79,12 @@ private:
   std::vector<std::vector<double>> hw_sensor_states_;
   std::vector<std::vector<double>> hw_gpio_states_;
 
-  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{
+  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_slave_loader_{
     "ethercat_interface", "ethercat_interface::EcSlave"};
+  pluginlib::ClassLoader<ethercat_interface::EcMaster> ec_master_loader_{
+    "ethercat_interface", "ethercat_interface::EcMaster"};
 
-  int control_frequency_;
-  ethercat_interface::EcMaster master_;
+  std::shared_ptr<ethercat_interface::EcMaster> master_;
 };
 }  // namespace ethercat_driver
 

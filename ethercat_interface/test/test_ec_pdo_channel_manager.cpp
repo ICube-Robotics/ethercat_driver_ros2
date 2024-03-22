@@ -50,7 +50,7 @@ TEST(TestEcPdoChannelManager, EcReadS16)
   pdo_manager.load_from_config(config);
 
   uint8_t buffer[16];
-  EC_WRITE_S16(buffer, 42);
+  write_s16(buffer, 42);
   ASSERT_EQ(pdo_manager.ec_read(buffer), 2 * 42 + 10);
 }
 
@@ -70,19 +70,19 @@ TEST(TestEcPdoChannelManager, EcReadWriteBit2)
   ASSERT_EQ(pdo_manager.type2bits(pdo_manager.data_type), 2);
 
   uint8_t buffer[1];
-  EC_WRITE_U8(buffer, 0);
+  write_u8(buffer, 0);
   ASSERT_EQ(pdo_manager.ec_read(buffer), 0);
-  EC_WRITE_U8(buffer, 3);
+  write_u8(buffer, 3);
   ASSERT_EQ(pdo_manager.ec_read(buffer), 3);
-  EC_WRITE_U8(buffer, 5);
+  write_u8(buffer, 5);
   ASSERT_EQ(pdo_manager.ec_read(buffer), 1);
 
   pdo_manager.ec_write(buffer, 0);
-  ASSERT_EQ(EC_READ_U8(buffer), 0);
+  ASSERT_EQ(read_u8(buffer), 0);
   pdo_manager.ec_write(buffer, 2);
-  ASSERT_EQ(EC_READ_U8(buffer), 2);
+  ASSERT_EQ(read_u8(buffer), 2);
   pdo_manager.ec_write(buffer, 5);
-  ASSERT_EQ(EC_READ_U8(buffer), 1);
+  ASSERT_EQ(read_u8(buffer), 1);
 }
 
 TEST(TestEcPdoChannelManager, EcReadWriteBoolMask1)
@@ -101,15 +101,15 @@ TEST(TestEcPdoChannelManager, EcReadWriteBoolMask1)
   ASSERT_EQ(pdo_manager.type2bits(pdo_manager.data_type), 1);
 
   uint8_t buffer[1];
-  EC_WRITE_U8(buffer, 3);
+  write_u8(buffer, 3);
   ASSERT_EQ(pdo_manager.ec_read(buffer), 1);
-  EC_WRITE_U8(buffer, 0);
+  write_u8(buffer, 0);
   ASSERT_EQ(pdo_manager.ec_read(buffer), 0);
 
   pdo_manager.ec_write(buffer, 0);
-  ASSERT_EQ(EC_READ_U8(buffer), 0);
+  ASSERT_EQ(read_u8(buffer), 0);
   pdo_manager.ec_write(buffer, 5);
-  ASSERT_EQ(EC_READ_U8(buffer), 1);
+  ASSERT_EQ(read_u8(buffer), 1);
 }
 
 TEST(TestEcPdoChannelManager, EcReadWriteBoolMask5)
@@ -128,17 +128,17 @@ TEST(TestEcPdoChannelManager, EcReadWriteBoolMask5)
   ASSERT_EQ(pdo_manager.type2bits(pdo_manager.data_type), 1);
 
   uint8_t buffer[1];
-  EC_WRITE_U8(buffer, 7);
+  write_u8(buffer, 7);
   ASSERT_EQ(pdo_manager.ec_read(buffer), 1);
-  EC_WRITE_U8(buffer, 0);
+  write_u8(buffer, 0);
   ASSERT_EQ(pdo_manager.ec_read(buffer), 0);
 
   pdo_manager.ec_write(buffer, 0);
-  ASSERT_EQ(EC_READ_U8(buffer), 0);
+  ASSERT_EQ(read_u8(buffer), 0);
   pdo_manager.ec_write(buffer, 3);
-  ASSERT_EQ(EC_READ_U8(buffer), 1);
+  ASSERT_EQ(read_u8(buffer), 1);
   pdo_manager.ec_write(buffer, 7);
-  ASSERT_EQ(EC_READ_U8(buffer), 5);
+  ASSERT_EQ(read_u8(buffer), 5);
   pdo_manager.ec_write(buffer, 5);
-  ASSERT_EQ(EC_READ_U8(buffer), 5);
+  ASSERT_EQ(read_u8(buffer), 5);
 }

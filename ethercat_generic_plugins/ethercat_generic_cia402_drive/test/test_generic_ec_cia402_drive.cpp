@@ -70,7 +70,7 @@ TEST_F(EcCiA402DriveTest, SlaveSetupNoDriveConfig)
   std::unordered_map<std::string, std::string> slave_paramters;
   // setup failed, 'drive_config' parameter not set
   ASSERT_EQ(
-    plugin_->setupSlave(
+    plugin_->setup_slave(
       slave_paramters,
       &state_interface,
       &command_interface
@@ -88,7 +88,7 @@ TEST_F(EcCiA402DriveTest, SlaveSetupMissingFileDriveConfig)
   slave_paramters["drive_config"] = "drive_config.yaml";
   // setup failed, 'drive_config.yaml' file not set
   ASSERT_EQ(
-    plugin_->setupSlave(
+    plugin_->setup_slave(
       slave_paramters,
       &state_interface,
       &command_interface
@@ -104,109 +104,57 @@ TEST_F(EcCiA402DriveTest, SlaveSetupDriveFromConfig)
     plugin_->setup_from_config(YAML::Load(test_drive_config)),
     true
   );
-  ASSERT_EQ(plugin_->vendor_id_, 0x00000011);
-  ASSERT_EQ(plugin_->product_id_, 0x07030924);
-  ASSERT_EQ(plugin_->assign_activate_, 0x0321);
+  ASSERT_EQ(plugin_->vendor_id_, 0x00000011u);
+  ASSERT_EQ(plugin_->product_id_, 0x07030924u);
+  ASSERT_EQ(plugin_->assign_activate_, 0x0321u);
   ASSERT_EQ(plugin_->auto_fault_reset_, false);
 
-  ASSERT_EQ(plugin_->rpdos_.size(), 1);
-  ASSERT_EQ(plugin_->rpdos_[0].index, 0x1607);
-
-  ASSERT_EQ(plugin_->tpdos_.size(), 2);
-  ASSERT_EQ(plugin_->tpdos_[0].index, 0x1a07);
-  ASSERT_EQ(plugin_->tpdos_[1].index, 0x1a45);
-
-  ASSERT_EQ(plugin_->pdo_channels_info_[1].interface_name, "velocity");
-  ASSERT_EQ(plugin_->pdo_channels_info_[3].default_value, 1000);
-  ASSERT_TRUE(std::isnan(plugin_->pdo_channels_info_[0].default_value));
-  ASSERT_EQ(plugin_->pdo_channels_info_[4].interface_name, "null");
-  ASSERT_EQ(plugin_->pdo_channels_info_[12].interface_name, "analog_input2");
-  ASSERT_EQ(plugin_->pdo_channels_info_[4].data_type, "uint16");
-}
-
-TEST_F(EcCiA402DriveTest, SlaveSetupPdoChannels)
-{
-  SetUp();
-  plugin_->setup_from_config(YAML::Load(test_drive_config));
-  std::vector<ec_pdo_entry_info_t> channels(
-    plugin_->channels(),
-    plugin_->channels() + plugin_->all_channels_.size()
-  );
-
-  ASSERT_EQ(channels.size(), 13);
-  ASSERT_EQ(channels[0].index, 0x607a);
-  ASSERT_EQ(channels[11].index, 0x2205);
-  ASSERT_EQ(channels[11].subindex, 0x01);
-}
-
-TEST_F(EcCiA402DriveTest, SlaveSetupSyncs)
-{
-  SetUp();
-  plugin_->setup_from_config(YAML::Load(test_drive_config));
-  plugin_->setup_syncs();
-  std::vector<ec_sync_info_t> syncs(
-    plugin_->syncs(),
-    plugin_->syncs() + plugin_->syncSize()
-  );
-
-  ASSERT_EQ(syncs.size(), 5);
-  ASSERT_EQ(syncs[1].index, 1);
-  ASSERT_EQ(syncs[1].dir, EC_DIR_INPUT);
-  ASSERT_EQ(syncs[1].n_pdos, 0);
-  ASSERT_EQ(syncs[1].watchdog_mode, EC_WD_DISABLE);
-  ASSERT_EQ(syncs[2].dir, EC_DIR_OUTPUT);
-  ASSERT_EQ(syncs[2].n_pdos, 1);
-  ASSERT_EQ(syncs[3].index, 3);
-  ASSERT_EQ(syncs[3].dir, EC_DIR_INPUT);
-  ASSERT_EQ(syncs[3].n_pdos, 2);
-  ASSERT_EQ(syncs[3].watchdog_mode, EC_WD_DISABLE);
-}
-
-TEST_F(EcCiA402DriveTest, SlaveSetupDomains)
-{
-  SetUp();
-  plugin_->setup_from_config(YAML::Load(test_drive_config));
-  std::map<unsigned int, std::vector<unsigned int>> domains;
-  plugin_->domains(domains);
-
-  ASSERT_EQ(domains[0].size(), 13);
-  ASSERT_EQ(domains[0][0], 0);
-  ASSERT_EQ(domains[0][12], 12);
+  ASSERT_EQ(plugin_->get_pdo_config()[0].pdo_channel_config[1].interface_name, "velocity");
+  ASSERT_EQ(plugin_->get_pdo_config()[0].pdo_channel_config[3].default_value, 1000);
+  ASSERT_TRUE(std::isnan(plugin_->get_pdo_config()[0].pdo_channel_config[0].default_value));
+  ASSERT_EQ(plugin_->get_pdo_config()[0].pdo_channel_config[4].interface_name, "null");
+  ASSERT_EQ(plugin_->get_pdo_config()[2].pdo_channel_config[1].interface_name, "analog_input2");
+  ASSERT_EQ(plugin_->get_pdo_config()[0].pdo_channel_config[4].data_type, "uint16");
 }
 
 TEST_F(EcCiA402DriveTest, EcReadTPDOToStateInterface)
 {
   SetUp();
-  std::unordered_map<std::string, std::string> slave_paramters;
   std::vector<double> state_interface = {0, 0};
-  plugin_->state_interface_ptr_ = &state_interface;
+  std::unordered_map<std::string, std::string> slave_paramters;
   slave_paramters["state_interface/effort"] = "1";
+
+  plugin_->state_interface_ptr_ = &state_interface;
   plugin_->paramters_ = slave_paramters;
   plugin_->setup_from_config(YAML::Load(test_drive_config));
   plugin_->setup_interface_mapping();
-  ASSERT_EQ(plugin_->pdo_channels_info_[8].interface_index, 1);
+
+  ASSERT_EQ(plugin_->get_pdo_config().size(), 3u);
+  ASSERT_EQ(plugin_->get_pdo_config()[1].pdo_channel_config[2].interface_index, 1);
   uint8_t domain_address[2];
-  EC_WRITE_S16(domain_address, 42);
-  plugin_->processData(8, domain_address);
+  write_s16(domain_address, 42);
+  plugin_->process_data(1, 2, domain_address);
   ASSERT_EQ(plugin_->state_interface_ptr_->at(1), 42);
 }
 
 TEST_F(EcCiA402DriveTest, EcWriteRPDOFromCommandInterface)
 {
   SetUp();
-  std::unordered_map<std::string, std::string> slave_paramters;
   std::vector<double> command_interface = {0, 42};
-  plugin_->command_interface_ptr_ = &command_interface;
+  std::unordered_map<std::string, std::string> slave_paramters;
   slave_paramters["command_interface/effort"] = "1";
+
+  plugin_->command_interface_ptr_ = &command_interface;
   plugin_->paramters_ = slave_paramters;
   plugin_->setup_from_config(YAML::Load(test_drive_config));
   plugin_->setup_interface_mapping();
-  ASSERT_EQ(plugin_->pdo_channels_info_[2].interface_index, 1);
+
+  ASSERT_EQ(plugin_->get_pdo_config()[0].pdo_channel_config[2].interface_index, 1);
   plugin_->mode_of_operation_display_ = 10;
   uint8_t domain_address[2];
-  plugin_->processData(2, domain_address);
-  ASSERT_EQ(plugin_->pdo_channels_info_[2].last_value, 42);
-  ASSERT_EQ(EC_READ_S16(domain_address), 42);
+  plugin_->process_data(0, 2, domain_address);
+  ASSERT_EQ(plugin_->get_pdo_config()[0].pdo_channel_config[2].last_value, 42);
+  ASSERT_EQ(read_s16(domain_address), 42);
 }
 
 TEST_F(EcCiA402DriveTest, EcWriteRPDODefaultValue)
@@ -214,11 +162,12 @@ TEST_F(EcCiA402DriveTest, EcWriteRPDODefaultValue)
   SetUp();
   plugin_->setup_from_config(YAML::Load(test_drive_config));
   plugin_->setup_interface_mapping();
+
   plugin_->mode_of_operation_display_ = 10;
   uint8_t domain_address[2];
-  plugin_->processData(2, domain_address);
-  ASSERT_EQ(plugin_->pdo_channels_info_[2].last_value, -5);
-  ASSERT_EQ(EC_READ_S16(domain_address), -5);
+  plugin_->process_data(0, 2, domain_address);
+  ASSERT_EQ(plugin_->get_pdo_config()[0].pdo_channel_config[2].last_value, -5);
+  ASSERT_EQ(read_s16(domain_address), -5);
 }
 
 // TEST_F(EcCiA402DriveTest, FaultReset)
@@ -237,15 +186,15 @@ TEST_F(EcCiA402DriveTest, EcWriteRPDODefaultValue)
 //   ASSERT_FALSE(plugin_->fault_reset_);
 //   ASSERT_EQ(plugin_->command_interface_ptr_->at(
 //     plugin_->fault_reset_command_interface_index_), 1);
-//   plugin_->processData(4, &domain_address);
+//   plugin_->process_data(4, &domain_address);
 //   ASSERT_EQ(plugin_->pdo_channels_info_[4].default_value, 0b10000000);
 //   plugin_->pdo_channels_info_[4].last_value = 0;
-//   plugin_->processData(4, &domain_address);
+//   plugin_->process_data(4, &domain_address);
 //   ASSERT_EQ(plugin_->pdo_channels_info_[4].default_value, 0b00000000);
 //   command_interface[1] = 0;
-//   plugin_->processData(4, &domain_address);
+//   plugin_->process_data(4, &domain_address);
 //   ASSERT_EQ(plugin_->pdo_channels_info_[4].default_value, 0b00000000);
-//   command_interface[1] = 2;  plugin_->processData(4, &domain_address);
+//   command_interface[1] = 2;  plugin_->process_data(4, &domain_address);
 //   ASSERT_EQ(plugin_->pdo_channels_info_[4].default_value, 0b10000000);
 // }
 
@@ -256,18 +205,20 @@ TEST_F(EcCiA402DriveTest, SwitchModeOfOperation)
     std::numeric_limits<double>::quiet_NaN(),
     std::numeric_limits<double>::quiet_NaN()};
   slave_paramters["command_interface/mode_of_operation"] = "1";
+
   plugin_->paramters_ = slave_paramters;
   plugin_->command_interface_ptr_ = &command_interface;
   plugin_->setup_from_config(YAML::Load(test_drive_config));
   plugin_->setup_interface_mapping();
+
   plugin_->is_operational_ = true;
   uint8_t domain_address[2];
-  plugin_->processData(5, domain_address);
-  ASSERT_EQ(EC_READ_S8(domain_address), 8);
+  plugin_->process_data(0, 5, domain_address);
+  ASSERT_EQ(read_s8(domain_address), 8);
   command_interface[1] = 9;
-  plugin_->processData(5, domain_address);
-  plugin_->processData(10, domain_address);
-  ASSERT_EQ(EC_READ_S8(domain_address), 9);
+  plugin_->process_data(0, 5, domain_address);
+  plugin_->process_data(1, 4, domain_address);
+  ASSERT_EQ(read_s8(domain_address), 9);
   ASSERT_EQ(plugin_->mode_of_operation_display_, 9);
 }
 
@@ -278,41 +229,42 @@ TEST_F(EcCiA402DriveTest, EcWriteDefaultTargetPosition)
     std::numeric_limits<double>::quiet_NaN(),
     std::numeric_limits<double>::quiet_NaN()};
   slave_paramters["command_interface/mode_of_operation"] = "1";
+
   plugin_->paramters_ = slave_paramters;
   plugin_->command_interface_ptr_ = &command_interface;
   plugin_->setup_from_config(YAML::Load(test_drive_config));
   plugin_->setup_interface_mapping();
+
   plugin_->is_operational_ = true;
   plugin_->mode_of_operation_display_ = 8;
   uint8_t domain_address[4];
   uint8_t domain_address_moo[2];
-
-  plugin_->processData(5, domain_address_moo);
-  plugin_->processData(10, domain_address_moo);
+  plugin_->process_data(0, 5, domain_address_moo);
+  plugin_->process_data(1, 4, domain_address_moo);
   ASSERT_EQ(plugin_->mode_of_operation_display_, 8);
 
-  EC_WRITE_S32(domain_address, 123456);
-  plugin_->processData(6, domain_address);
+  write_s32(domain_address, 123456);
+  plugin_->process_data(1, 0, domain_address);
   ASSERT_EQ(plugin_->last_position_, 123456);
 
-  EC_WRITE_S32(domain_address, 0);
-  plugin_->processData(0, domain_address);
-  ASSERT_EQ(EC_READ_S32(domain_address), 123456);
+  write_s32(domain_address, 0);
+  plugin_->process_data(0, 0, domain_address);
+  ASSERT_EQ(read_s32(domain_address), 123456);
 
   command_interface[1] = 9;
-  plugin_->processData(5, domain_address_moo);
-  plugin_->processData(10, domain_address_moo);
+  plugin_->process_data(0, 5, domain_address_moo);
+  plugin_->process_data(1, 4, domain_address_moo);
   ASSERT_EQ(plugin_->mode_of_operation_display_, 9);
 
-  EC_WRITE_S32(domain_address, 0);
-  plugin_->processData(0, domain_address);
-  ASSERT_EQ(EC_READ_S32(domain_address), 123456);
+  write_s32(domain_address, 0);
+  plugin_->process_data(0, 0, domain_address);
+  ASSERT_EQ(read_s32(domain_address), 123456);
 
-  EC_WRITE_S32(domain_address, 654321);
-  plugin_->processData(6, domain_address);
+  write_s32(domain_address, 654321);
+  plugin_->process_data(1, 0, domain_address);
   ASSERT_EQ(plugin_->last_position_, 654321);
 
-  EC_WRITE_S32(domain_address, 0);
-  plugin_->processData(0, domain_address);
-  ASSERT_EQ(EC_READ_S32(domain_address), 654321);
+  write_s32(domain_address, 0);
+  plugin_->process_data(0, 0, domain_address);
+  ASSERT_EQ(read_s32(domain_address), 654321);
 }

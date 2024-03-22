@@ -27,10 +27,13 @@ EcCiA402Drive::~EcCiA402Drive() {}
 
 bool EcCiA402Drive::initialized() const {return initialized_;}
 
-void EcCiA402Drive::processData(size_t index, uint8_t * domain_address)
+int EcCiA402Drive::process_data(
+  size_t pdo_mapping_index, size_t pdo_channel_index, uint8_t * domain_address)
 {
   // Special case: ControlWord
-  if (pdo_channels_info_[index].index == CiA402D_RPDO_CONTROLWORD) {
+  if (pdo_config_[pdo_mapping_index].pdo_channel_config[pdo_channel_index].index ==
+    CiA402D_RPDO_CONTROLWORD)
+  {
     if (is_operational_) {
       if (fault_reset_command_interface_index_ >= 0) {
         if (command_interface_ptr_->at(fault_reset_command_interface_index_) == 0) {
@@ -46,50 +49,62 @@ void EcCiA402Drive::processData(size_t index, uint8_t * domain_address)
       }
 
       if (auto_state_transitions_) {
-        pdo_channels_info_[index].default_value = transition(
+        pdo_config_[pdo_mapping_index].pdo_channel_config[pdo_channel_index].default_value =
+          transition(
           state_,
-          pdo_channels_info_[index].ec_read(domain_address));
+          pdo_config_[pdo_mapping_index].pdo_channel_config[pdo_channel_index].ec_read(
+            domain_address));
       }
     }
   }
 
   // setup current position as default position
-  if (pdo_channels_info_[index].index == CiA402D_RPDO_POSITION) {
+  if (pdo_config_[pdo_mapping_index].pdo_channel_config[pdo_channel_index].index ==
+    CiA402D_RPDO_POSITION)
+  {
     if (mode_of_operation_display_ != ModeOfOperation::MODE_NO_MODE) {
-      pdo_channels_info_[index].default_value =
-        pdo_channels_info_[index].factor * last_position_ +
-        pdo_channels_info_[index].offset;
+      pdo_config_[pdo_mapping_index].pdo_channel_config[pdo_channel_index].default_value =
+        pdo_config_[pdo_mapping_index].pdo_channel_config[pdo_channel_index].factor *
+        last_position_ +
+        pdo_config_[pdo_mapping_index].pdo_channel_config[pdo_channel_index].offset;
     }
-    pdo_channels_info_[index].override_command =
+    pdo_config_[pdo_mapping_index].pdo_channel_config[pdo_channel_index].override_command =
       (mode_of_operation_display_ != ModeOfOperation::MODE_CYCLIC_SYNC_POSITION) ? true : false;
   }
 
   // setup mode of operation
-  if (pdo_channels_info_[index].index == CiA402D_RPDO_MODE_OF_OPERATION) {
+  if (pdo_config_[pdo_mapping_index].pdo_channel_config[pdo_channel_index].index ==
+    CiA402D_RPDO_MODE_OF_OPERATION)
+  {
     if (mode_of_operation_ >= 0 && mode_of_operation_ <= 10) {
-      pdo_channels_info_[index].default_value = mode_of_operation_;
+      pdo_config_[pdo_mapping_index].pdo_channel_config[pdo_channel_index].default_value =
+        mode_of_operation_;
     }
   }
 
-  pdo_channels_info_[index].ec_update(domain_address);
+  pdo_config_[pdo_mapping_index].pdo_channel_config[pdo_channel_index].ec_update(domain_address);
 
   // get mode_of_operation_display_
-  if (pdo_channels_info_[index].index == CiA402D_TPDO_MODE_OF_OPERATION_DISPLAY) {
-    mode_of_operation_display_ = pdo_channels_info_[index].last_value;
+  if (pdo_config_[pdo_mapping_index].pdo_channel_config[pdo_channel_index].index ==
+    CiA402D_TPDO_MODE_OF_OPERATION_DISPLAY)
+  {
+    mode_of_operation_display_ =
+      pdo_config_[pdo_mapping_index].pdo_channel_config[pdo_channel_index].last_value;
   }
 
-  if (pdo_channels_info_[index].index == CiA402D_TPDO_POSITION) {
-    last_position_ = pdo_channels_info_[index].last_value;
+  if (pdo_config_[pdo_mapping_index].pdo_channel_config[pdo_channel_index].index ==
+    CiA402D_TPDO_POSITION)
+  {
+    last_position_ =
+      pdo_config_[pdo_mapping_index].pdo_channel_config[pdo_channel_index].last_value;
   }
 
   // Special case: StatusWord
-  if (pdo_channels_info_[index].index == CiA402D_TPDO_STATUSWORD) {
-    status_word_ = pdo_channels_info_[index].last_value;
-  }
-
-
-  // CHECK FOR STATE CHANGE
-  if (index == all_channels_.size() - 1) {  // if last entry  in domain
+  if (pdo_config_[pdo_mapping_index].pdo_channel_config[pdo_channel_index].index ==
+    CiA402D_TPDO_STATUSWORD)
+  {
+    status_word_ = pdo_config_[pdo_mapping_index].pdo_channel_config[pdo_channel_index].last_value;
+    // Check for state changes
     if (status_word_ != last_status_word_) {
       state_ = deviceState(status_word_);
       if (state_ != last_state_) {
@@ -104,9 +119,10 @@ void EcCiA402Drive::processData(size_t index, uint8_t * domain_address)
     last_state_ = state_;
     counter_++;
   }
+  return 0;
 }
 
-bool EcCiA402Drive::setupSlave(
+bool EcCiA402Drive::setup_slave(
   std::unordered_map<std::string, std::string> slave_paramters,
   std::vector<double> * state_interface,
   std::vector<double> * command_interface)
@@ -125,7 +141,6 @@ bool EcCiA402Drive::setupSlave(
   }
 
   setup_interface_mapping();
-  setup_syncs();
 
   if (paramters_.find("mode_of_operation") != paramters_.end()) {
     mode_of_operation_ = std::stod(paramters_["mode_of_operation"]);

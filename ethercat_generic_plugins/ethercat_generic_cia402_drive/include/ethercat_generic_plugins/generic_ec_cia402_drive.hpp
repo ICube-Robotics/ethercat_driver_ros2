@@ -40,9 +40,10 @@ public:
    *  The transition through the state machine is handled automatically. */
   bool initialized() const;
 
-  virtual void processData(size_t index, uint8_t * domain_address);
+  virtual int process_data(
+    size_t pdo_mapping_index, size_t pdo_channel_index, uint8_t * domain_address);
 
-  virtual bool setupSlave(
+  virtual bool setup_slave(
     std::unordered_map<std::string, std::string> slave_paramters,
     std::vector<double> * state_interface,
     std::vector<double> * command_interface);

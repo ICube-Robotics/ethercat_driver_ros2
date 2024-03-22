@@ -1,0 +1,7 @@
+<library path="ethercat_master_mock">
+  <class  name="ethercat_master/MockMaster"
+          type="ethercat_master::MockMaster"
+          base_class_type="ethercat_interface::EcMaster">
+    <description>Mock Master interface for testing.</description>
+  </class>
+</library>

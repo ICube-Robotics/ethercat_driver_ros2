@@ -14,46 +14,56 @@
 //
 // Author: Maciej Bednarczyk (mcbed.robotics@gmail.com)
 
-#ifndef ETHERCAT_INTERFACE__EC_MASTER_HPP_
-#define ETHERCAT_INTERFACE__EC_MASTER_HPP_
+#ifndef ETHERCAT_MASTER__EC_MASTER_MOCK_HPP_
+#define ETHERCAT_MASTER__EC_MASTER_MOCK_HPP_
 
 #include <string>
+#include <vector>
+#include <map>
 #include <memory>
-#include "ethercat_interface/ec_slave.hpp"
 
-namespace ethercat_interface
+#include "ethercat_interface/ec_master.hpp"
+#include "ethercat_interface/ec_slave.hpp"
+#include "ethercat_master/ec_slave_mock.hpp"
+
+namespace ethercat_master
 {
-class EcMaster
+
+class MockMaster : public ethercat_interface::EcMaster
 {
 public:
-  EcMaster() {}
-  virtual ~EcMaster() {}
+  MockMaster();
+  ~MockMaster();
 
-  /** \brief add a slave device to the master */
-  virtual bool add_slave(std::shared_ptr<EcSlave> slave) = 0;
+  bool init(std::string master_interface = "0");
 
-  /** \brief configure slave using SDO */
-  virtual bool configure_slaves() = 0;
+  bool add_slave(std::shared_ptr<ethercat_interface::EcSlave> slave);
 
-  virtual bool init(std::string iface) = 0;
+  bool configure_slaves();
 
-  virtual bool start() = 0;
+  bool start();
 
-  virtual bool stop() = 0;
+  void update(uint32_t domain = 0);
 
-  virtual bool spin_slaves_until_operational() = 0;
+  bool spin_slaves_until_operational();
 
-  virtual bool read_process_data() = 0;
-
-  virtual bool write_process_data() = 0;
+  bool stop();
 
   void set_ctrl_frequency(double frequency)
   {
     interval_ = 1000000000.0 / frequency;
   }
 
-protected:
+  uint32_t get_interval() {return interval_;}
+
+  bool read_process_data();
+  bool write_process_data();
+
+private:
   uint32_t interval_;
+  std::vector<std::shared_ptr<MockSlave>> slave_list_;
 };
-}  // namespace ethercat_interface
-#endif  // ETHERCAT_INTERFACE__EC_MASTER_HPP_
+
+}  // namespace ethercat_master
+
+#endif  // ETHERCAT_MASTER__EC_MASTER_MOCK_HPP_

@@ -1,0 +1,7 @@
+<library path="ethercat_master_etherlab">
+  <class  name="ethercat_master/EtherlabMaster"
+          type="ethercat_master::EtherlabMaster"
+          base_class_type="ethercat_interface::EcMaster">
+    <description>Etherlab Master interface.</description>
+  </class>
+</library>

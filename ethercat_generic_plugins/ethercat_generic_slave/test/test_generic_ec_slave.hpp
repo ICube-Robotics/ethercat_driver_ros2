@@ -21,6 +21,7 @@
 #include <unordered_map>
 
 #include "gmock/gmock.h"
+#include "ethercat_interface/ec_buffer_tools.h"
 
 #include "ethercat_generic_plugins/generic_ec_slave.hpp"
 
@@ -28,9 +29,9 @@
 class FriendGenericEcSlave : public ethercat_generic_plugins::GenericEcSlave
 {
   FRIEND_TEST(GenericEcSlaveTest, SlaveSetupSlaveFromConfig);
-  FRIEND_TEST(GenericEcSlaveTest, SlaveSetupPdoChannels);
-  FRIEND_TEST(GenericEcSlaveTest, SlaveSetupSyncs);
-  FRIEND_TEST(GenericEcSlaveTest, SlaveSetupDomains);
+  // FRIEND_TEST(GenericEcSlaveTest, SlaveSetupPdoChannels);
+  // FRIEND_TEST(GenericEcSlaveTest, SlaveSetupSyncs);
+  // FRIEND_TEST(GenericEcSlaveTest, SlaveSetupDomains);
   FRIEND_TEST(GenericEcSlaveTest, EcReadTPDOToStateInterface);
   FRIEND_TEST(GenericEcSlaveTest, EcWriteRPDOFromCommandInterface);
   FRIEND_TEST(GenericEcSlaveTest, EcWriteRPDODefaultValue);
