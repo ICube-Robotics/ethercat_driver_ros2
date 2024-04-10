@@ -37,6 +37,7 @@ rpdo: # RxPDO = receive PDO 4 Mapping, master (out) to slave (in) (MOSI), comman
           sub_index: 0,
           type: int16,
           command_interface: effort,
+          factor: 4.321249499153383e-05,
           default: 0,
         } # Target torque
       - { index: 0x60b0, sub_index: 0, type: int32, default: 0 } # Offset position
@@ -48,7 +49,7 @@ rpdo: # RxPDO = receive PDO 4 Mapping, master (out) to slave (in) (MOSI), comman
           type: int8,
           command_interface: mode_of_operation,
           default: 9,
-        } # Mode of operation. Modes are: position (8), velocity (9), effort (10) and homing (6)
+        } # Mode of operation. Available modes are: position (8), velocity (9), effort (10) and homing (6)
 tpdo: # TxPDO = transmit PDO 4 Mapping, slave (out) to master (in) (MISO), state values transmitted by the drive to ROS2 control
   - index: 0x1a03
     channels:
@@ -72,7 +73,13 @@ tpdo: # TxPDO = transmit PDO 4 Mapping, slave (out) to master (in) (MISO), state
           state_interface: velocity,
           factor: 3.8011695906432747e-6,
         } # Velocity actual value
-      - { index: 0x6077, sub_index: 0, type: int16, state_interface: effort } # Torque actual value
+      - {
+          index: 0x6077,
+          sub_index: 0,
+          type: int16,
+          state_interface: effort,
+          factor: 23141.45480828912,
+        } # Force actual value
       - {
           index: 0x6061,
           sub_index: 0,

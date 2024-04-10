@@ -1,5 +1,5 @@
-Case study: motor coupled to a gearbox and a transmission screw with encoder
-============================================================================
+Case study: motor coupled to a gearbox and a transmission screw with an encoder
+===============================================================================
 
 This case study is a simple example to show how to set up the config of the :code:`EcCiA402Drive` generic plugin to take into account transmission parameters and encoder parameters.
 
@@ -12,10 +12,11 @@ The system is composed of a motor coupled to a transmission line (a gearbox and 
 Transmission configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The transmission is composed of a motor, a gearbox and a transmission screw with the following characteristics:
+The transmission is composed of a motor, a gearbox and a transmission screw (lead screw with ball bearing for zero friction) with the following characteristics:
 
 - gearbox with gear ratio, reduction absolute: 57/13 (:math:`r \triangleq \frac{13}{57}`)
-- transmission screw with lead: 1 mm (:math:`l \triangleq 1 mm`)
+- gearbox maximum efficiency: 0.84 (:math:`\eta_g \triangleq 0.84`)
+- lead screw with lead: 1 mm (:math:`l \triangleq 1 mm`)
 
 Encoder configuration
 ~~~~~~~~~~~~~~~~~~~~~
@@ -26,18 +27,20 @@ The encoder has the following characteristics:
 - Encoder type: quadrature encoder
 - Digital resolution (number of counts/revolution): :math:`\text{C} \triangleq 500\times 4 = 2000`
 
-Convert state values to physical values
----------------------------------------
+Convert state values
+--------------------
 
 The drive will transmit the following state values:
 
 - :code:`position` in :math:`\text{counts}` or :math:`c`
 - :code:`velocity` in :math:`\theta` (revolutions per minute)
+- :code:`torque` (:math:`T_i`) in :math:`\text{mNm}` (torque of the motor at the input of the gearbox)
 
 We would  like to have the following state values:
 
 - :code:`position` (:math:`d`) in :math:`\text{m}`
 - :code:`velocity` (:math:`v`) in :math:`\text{m/s}`
+- :code:`force` (:math:`F_o`) in :math:`\text{mN}` (Force of the lead screw)
 
 This is the configuration part of the tpdo of the :code:`EcCiA402Drive` plugin and corresponding to the :code:`state_interface` in ROS2 control terminology.
 
@@ -115,11 +118,73 @@ The tpdo part of the configuration of the :code:`EcCiA402Drive` plugin will then
             offset: 0
           }  # Velocity actual value
 
+Transform torque
+~~~~~~~~~~~~~~~~
 
-Convert physical values to commands
------------------------------------
+The output torque (:math:`T_o`) of the gearbox given the input torque of the motor (:math:`T_i`) is given by the formula:
+
+.. math::
+
+  \begin{eqnarray}
+    T_i \longrightarrow T_o & = & \frac{57}{13} \times \eta_g \times T_i \\
+    & \approx & 3.683076923076923 \times T_i
+  \end{eqnarray}
+
+Torque to Force conversion
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The force :math:`F_o` of the lead screw is given by the formula:
+
+.. math::
+
+  \begin{eqnarray}
+    T_o \longrightarrow F_o & = & \frac{2\pi}{l}T_o \\
+  \end{eqnarray}
+
+
+Thus the force :math:`F_o` in :math:`\text{mN}` given the input torque of the motor (:math:`T_i` in :math:`\text{mNm}`) is provided by the formula:
+
+.. math::
+
+  \begin{eqnarray}
+    T_i \longrightarrow F_o & = & \frac{2\pi}{l} \times \frac{57}{13} \times \eta_g \times T_i \\
+    & \approx & 23141.45480828912 \times T_i
+  \end{eqnarray}
+
+
+The tpdo part of the configuration of the :code:`EcCiA402Drive` plugin will then be set up with the following values:
+
+..  code-block:: yaml
+
+  tpdo: # TxPDO = transmit PDO Mapping, slave (out) to master (in) (MISO), state values transmitted by the drive to ROS2 control
+    - index: 0x1a03
+      channels:
+        - {
+            index: 0x6077,
+            sub_index: 0,
+            type: int32,
+            state_interface: effort,
+            factor: 23141.45480828912,
+            offset: 0
+          }  # Force actual value in mN
+
+
+Convert command values
+----------------------
 
 This is the configuration part of the rpdo of the :code:`EcCiA402Drive` plugin and corresponding to the :code:`command_interface` in ROS2 control terminology.
+
+The drive will take the following command values:
+
+- :code:`position` in :math:`\text{counts}` or :math:`c`
+- :code:`velocity` in :math:`\theta` (revolutions per minute)
+- :code:`torque` (:math:`T_i`) in :math:`\text{mNm}` (torque of the motor at the input of the gearbox)
+
+We would  like to send the following command values:
+
+- :code:`position` (:math:`d`) in :math:`\text{m}`
+- :code:`velocity` (:math:`v`) in :math:`\text{m/s}`
+- :code:`force` (:math:`F_o`) in :math:`\text{mN}` (Force of the lead screw)
 
 Command in counts to move by a certain distance in m
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -179,6 +244,35 @@ The 'rpdo' part of the configuration of the :code:`EcCiA402Drive` plugin will th
             factor: 263076.92307692306,
             offset: 0
           }  # Target velocity
+
+Force to torque conversion
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The input torque of the motor (:math:`T_i` in :math:`\text{mNm}`) given the target command force :math:`F_o` in :math:`\text{mN}` is provided by the formula:
+
+.. math::
+
+  \begin{eqnarray}
+    F_o \longrightarrow T_i & = & \frac{l}{2\pi} \times \frac{13}{57} \times \frac{1}{\eta_g} \times F_o \\
+    & \approx & 23141.45480828912 \times F_o
+  \end{eqnarray}
+
+
+The tpdo part of the configuration of the :code:`EcCiA402Drive` plugin will then be set up with the following values:
+
+..  code-block:: yaml
+
+  rpdo: # RxPDO = receive PDO Mapping, master (out) to slave (in) (MOSI), command values received by the drive from ROS2 control
+    - index: 0x1603
+      channels:
+        - {
+            index: 0x6071,
+            sub_index: 0,
+            type: int32,
+            state_interface: effort,
+            factor: 4.321249499153383e-05,
+            offset: 0
+          }  # Target force
 
 
 Complete configuration example for an EPOS4 drive
