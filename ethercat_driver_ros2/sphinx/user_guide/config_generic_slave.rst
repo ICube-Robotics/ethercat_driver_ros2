@@ -76,18 +76,27 @@ Each PDO Channel has the following configuration flags:
   * - :code:`state_interface`
     - **Only for** :code:`tpdo`. Name of the state interface to be used inside :code:`ros2_control`.
   * - :code:`default`
-    - **Only for** :code:`rpdo`. Default value to be send to the drive if data received on the command interface is :code:`NaN`.
+    - **Only for** :code:`rpdo`. Default value to be sent if data received on the command interface is :code:`NaN`.
   * - :code:`mask`
     - Data mask, to be used with :code:`type` = :code:`bool`.
   * - :code:`factor`
-    - Data conversion factor.
+    - Data conversion factor/scale (:code:`type` : :code:`double`).
   * - :code:`offset`
-    - Data offset term.
+    - Data offset term (:code:`type` : :code:`double`).
 
 
 .. warning:: For each channel, tags :code:`index`, :code:`sub_index` and :code:`type` are **mandatory** even if the channel is not used in order to fill the data layout expected by the module. All other tags can remain unset.
 .. note:: Data type :code:`bitN` is used for gaps in the config. Refer to module manual if required.
 .. note:: Data type :code:`bool` requires the use of the :code:`mask` option as the registers can only be read as a multiple of 8 bits.
+
+.. note::
+
+   Data (d) can be modified using the optional :code:`factor` (f) and :code:`offset` (o) parameters following a linear relation: :math:`d \longrightarrow f\times d + o`. Default value are :math:`f=1` and :math:`o=0`. It is particularly useful for:
+
+  - scaling analog values to physical units,
+  - take into account calibration offsets,
+  - convert between different units,
+  - take into account transmission parameters like gear reduction or screw lead for motor control.
 
 Sync Manager Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -134,11 +143,23 @@ Example configuration for the Beckhoff EL3104 analog input module:
     - index: 0x1a00
       channels:
         - {index: 0x3101, sub_index: 1, type: uint8}
-        - {index: 0x3101, sub_index: 2, type: int16, state_interface: analog_input.1, factor: 0.000305185}
+        - {
+            index: 0x3101,
+            sub_index: 2,
+            type: int16,
+            state_interface: analog_input.1,
+            factor: 0.000305185
+          }
     - index: 0x1a01
       channels:
         - {index: 0x3102, sub_index: 1, type: uint8}
-        - {index: 0x3102, sub_index: 2, type: int16, state_interface: analog_input.2, factor: 0.000305185}
+        - {
+            index: 0x3102,
+            sub_index: 2,
+            type: int16,
+            state_interface: analog_input.2,
+            factor: 0.000305185
+          }
   sm:  # Sync Manager
     - {index: 0, type: output, pdo: ~, watchdog: disable}
     - {index: 1, type: input, pdo: ~, watchdog: disable}

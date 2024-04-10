@@ -21,6 +21,7 @@ EtherCAT Driver ROS2 Stack
 
   user_guide/config_generic_slave
   user_guide/config_cia402_drive
+  user_guide/config_use_case_motor_with_gear_box
   user_guide/sdo_async_com
 
 .. toctree::
