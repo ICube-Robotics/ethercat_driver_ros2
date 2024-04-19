@@ -7,7 +7,7 @@
   <title>Installation &mdash; ethercat_driver_ros2 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
-      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
       <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=efd85694" />
 
   
@@ -18,7 +18,7 @@
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="../_static/documentation_options.js?v=8d563738"></script>
-        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -157,10 +157,6 @@ To do so:</p>
 <span class="gp">$ </span>sudo<span class="w"> </span>depmod
 </pre></div>
 </div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This step is needed every time the Linux kernel is updated.</p>
-</div>
 </li>
 <li><p>Configure system:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>sudo<span class="w"> </span>ln<span class="w"> </span>-s<span class="w"> </span>/usr/local/etherlab/bin/ethercat<span class="w"> </span>/usr/bin/
@@ -168,6 +164,23 @@ To do so:</p>
 <span class="gp">$ </span>sudo<span class="w"> </span>mkdir<span class="w"> </span>-p<span class="w"> </span>/etc/sysconfig
 <span class="gp">$ </span>sudo<span class="w"> </span>cp<span class="w"> </span>/usr/local/etherlab/etc/sysconfig/ethercat<span class="w"> </span>/etc/sysconfig/ethercat
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>These 4 steps may be needed every time the Linux kernel is updated.
+Before re-doing the 4 steps, you can try the following lighter steps:</p>
+<p>Go in the folder where the ethercat project was cloned, from step 2 (Setup sources) do:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">cd ethercat</span>
+<span class="go">sudo rm /usr/bin/ethercat /etc/init.d/ethercat</span>
+<span class="go">./bootstrap</span>
+</pre></div>
+</div>
+<p>Do integrally step 3 (Configure, build and install …)
+From Step 4 (Configure system)</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">sudo ln -s /usr/local/etherlab/bin/ethercat /usr/bin/</span>
+<span class="go">sudo ln -s /usr/local/etherlab/etc/init.d/ethercat /etc/init.d/ethercat</span>
+</pre></div>
+</div>
 </div>
 </li>
 <li><p>Create a new <code class="code docutils literal notranslate"><span class="pre">udev</span></code> rule:</p>
