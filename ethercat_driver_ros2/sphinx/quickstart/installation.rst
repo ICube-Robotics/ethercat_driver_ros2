@@ -65,7 +65,6 @@ To do so:
     $ sudo make modules_install install
     $ sudo depmod
 
-  .. note:: This step is needed every time the Linux kernel is updated.
 * Configure system:
 
   .. code-block:: console
@@ -74,6 +73,28 @@ To do so:
     $ sudo ln -s /usr/local/etherlab/etc/init.d/ethercat /etc/init.d/ethercat
     $ sudo mkdir -p /etc/sysconfig
     $ sudo cp /usr/local/etherlab/etc/sysconfig/ethercat /etc/sysconfig/ethercat
+
+  .. note::
+
+    These 4 steps may be needed every time the Linux kernel is updated.
+    Before re-doing the 4 steps, you can try the following lighter steps:
+
+    Go in the folder where the ethercat project was cloned, from step 2 (Setup sources) do:
+
+    .. code-block:: console
+
+      cd ethercat
+      sudo rm /usr/bin/ethercat /etc/init.d/ethercat
+      ./bootstrap
+
+    Do integrally step 3 (Configure, build and install ...)
+    From Step 4 (Configure system)
+
+    .. code-block:: console
+
+     sudo ln -s /usr/local/etherlab/bin/ethercat /usr/bin/
+     sudo ln -s /usr/local/etherlab/etc/init.d/ethercat /etc/init.d/ethercat
+
 
 * Create a new :code:`udev` rule:
 
