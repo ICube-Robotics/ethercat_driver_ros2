@@ -41,6 +41,7 @@ Usage
 Example configuration for the Maxon EPOS3 motor dive:
 
 ..  code-block:: yaml
+  :linenos:
 
   # Configuration file for Maxon EPOS3 drive
   vendor_id: 0x000000fb
@@ -54,7 +55,12 @@ Example configuration for the Maxon EPOS3 motor dive:
     - index: 0x1603
       channels:
         - {index: 0x6040, sub_index: 0, type: uint16, default: 0}  # Control word
-        - {index: 0x607a, sub_index: 0, type: int32, command_interface: position, default: .nan}  # Target position
+        - {
+            index: 0x607a,
+            sub_index: 0,
+            type: int32,
+            command_interface: position,
+            default: .nan}  # Target position
         - {index: 0x60ff, sub_index: 0, type: int32, default: 0}  # Target velocity
         - {index: 0x6071, sub_index: 0, type: int16, default: 0}  # Target torque
         - {index: 0x60b0, sub_index: 0, type: int32, default: 0}  # Offset position
@@ -67,9 +73,24 @@ Example configuration for the Maxon EPOS3 motor dive:
     - index: 0x1a03
       channels:
         - {index: 0x6041, sub_index: 0, type: uint16}  # Status word
-        - {index: 0x6064, sub_index: 0, type: int32, state_interface: position}  # Position actual value
-        - {index: 0x606c, sub_index: 0, type: int32, state_interface: velocity}  # Velocity actual value
-        - {index: 0x6077, sub_index: 0, type: int16, state_interface: effort}  # Torque actual value
+        - {
+            index: 0x6064,
+            sub_index: 0,
+            type: int32,
+            state_interface: position
+          }  # Position actual value
+        - {
+            index: 0x606c,
+            sub_index: 0,
+            type: int32,
+            state_interface: velocity
+          }  # Velocity actual value
+        - {
+            index: 0x6077,
+            sub_index: 0,
+            type: int16,
+            state_interface: effort
+          }  # Torque actual value
         - {index: 0x6061, sub_index: 0, type: int8}  # Mode of operation display
         - {index: 0x2071, sub_index: 1, type: int16}  # Digital Input Functionalities State
         - {index: 0x60b9, sub_index: 0, type: int16}  # Touch Probe Status

@@ -8,7 +8,9 @@
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=efd85694" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=a5c4661c" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=687e9a7b" />
 
   
   <!--[if lt IE 9]>
@@ -20,6 +22,9 @@
         <script src="../_static/documentation_options.js?v=8d563738"></script>
         <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="../_static/copybutton.js?v=f281be69"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -67,6 +72,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="config_cia402_drive.html">CiA402 EtherCAT Motor Drive configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config_use_case_motor_with_gear_box.html">Case study: motor coupled to a gearbox and a transmission screw with an encoder</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sdo_async_com.html">SDO acyclic exchange using ROS2 services</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Developer Guide</span></p>
@@ -205,16 +211,16 @@ Each PDO mapping requires to specify its register <code class="code docutils lit
 <td><p><strong>Only for</strong> <code class="code docutils literal notranslate"><span class="pre">tpdo</span></code>. Name of the state interface to be used inside <code class="code docutils literal notranslate"><span class="pre">ros2_control</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">default</span></code></p></td>
-<td><p><strong>Only for</strong> <code class="code docutils literal notranslate"><span class="pre">rpdo</span></code>. Default value to be send to the drive if data received on the command interface is <code class="code docutils literal notranslate"><span class="pre">NaN</span></code>.</p></td>
+<td><p><strong>Only for</strong> <code class="code docutils literal notranslate"><span class="pre">rpdo</span></code>. Default value to be sent if data received on the command interface is <code class="code docutils literal notranslate"><span class="pre">NaN</span></code>.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">mask</span></code></p></td>
 <td><p>Data mask, to be used with <code class="code docutils literal notranslate"><span class="pre">type</span></code> = <code class="code docutils literal notranslate"><span class="pre">bool</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">factor</span></code></p></td>
-<td><p>Data conversion factor.</p></td>
+<td><p>Data conversion factor/scale (<code class="code docutils literal notranslate"><span class="pre">type</span></code> : <code class="code docutils literal notranslate"><span class="pre">double</span></code>).</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">offset</span></code></p></td>
-<td><p>Data offset term.</p></td>
+<td><p>Data offset term (<code class="code docutils literal notranslate"><span class="pre">type</span></code> : <code class="code docutils literal notranslate"><span class="pre">double</span></code>).</p></td>
 </tr>
 </tbody>
 </table>
@@ -229,6 +235,18 @@ Each PDO mapping requires to specify its register <code class="code docutils lit
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Data type <code class="code docutils literal notranslate"><span class="pre">bool</span></code> requires the use of the <code class="code docutils literal notranslate"><span class="pre">mask</span></code> option as the registers can only be read as a multiple of 8 bits.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<blockquote>
+<div><p>Data (d) can be modified using the optional <code class="code docutils literal notranslate"><span class="pre">factor</span></code> (f) and <code class="code docutils literal notranslate"><span class="pre">offset</span></code> (o) parameters following a linear relation: <span class="math notranslate nohighlight">\(d \longrightarrow f\times d + o\)</span>. Default value are <span class="math notranslate nohighlight">\(f=1\)</span> and <span class="math notranslate nohighlight">\(o=0\)</span>. It is particularly useful for:</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>scaling analog values to physical units,</p></li>
+<li><p>take into account calibration offsets,</p></li>
+<li><p>convert between different units,</p></li>
+<li><p>take into account transmission parameters like gear reduction or screw lead for motor control.</p></li>
+</ul>
 </div>
 </section>
 <section id="sync-manager-configuration">
@@ -283,11 +301,23 @@ Sync Manager can be configured with the following options:</p>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">index</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0x1a00</span>
 <span class="w">    </span><span class="nt">channels</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x3101</span><span class="p p-Indicator">,</span><span class="nt"> sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">1</span><span class="p p-Indicator">,</span><span class="nt"> type</span><span class="p">:</span><span class="w"> </span><span class="nv">uint8</span><span class="p p-Indicator">}</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x3101</span><span class="p p-Indicator">,</span><span class="nt"> sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">2</span><span class="p p-Indicator">,</span><span class="nt"> type</span><span class="p">:</span><span class="w"> </span><span class="nv">int16</span><span class="p p-Indicator">,</span><span class="nt"> state_interface</span><span class="p">:</span><span class="w"> </span><span class="nv">analog_input.1</span><span class="p p-Indicator">,</span><span class="nt"> factor</span><span class="p">:</span><span class="w"> </span><span class="nv">0.000305185</span><span class="p p-Indicator">}</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span>
+<span class="nt">          index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x3101</span><span class="p p-Indicator">,</span>
+<span class="nt">          sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">2</span><span class="p p-Indicator">,</span>
+<span class="nt">          type</span><span class="p">:</span><span class="w"> </span><span class="nv">int16</span><span class="p p-Indicator">,</span>
+<span class="nt">          state_interface</span><span class="p">:</span><span class="w"> </span><span class="nv">analog_input.1</span><span class="p p-Indicator">,</span>
+<span class="nt">          factor</span><span class="p">:</span><span class="w"> </span><span class="nv">0.000305185</span>
+<span class="w">        </span><span class="p p-Indicator">}</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">index</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0x1a01</span>
 <span class="w">    </span><span class="nt">channels</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x3102</span><span class="p p-Indicator">,</span><span class="nt"> sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">1</span><span class="p p-Indicator">,</span><span class="nt"> type</span><span class="p">:</span><span class="w"> </span><span class="nv">uint8</span><span class="p p-Indicator">}</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x3102</span><span class="p p-Indicator">,</span><span class="nt"> sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">2</span><span class="p p-Indicator">,</span><span class="nt"> type</span><span class="p">:</span><span class="w"> </span><span class="nv">int16</span><span class="p p-Indicator">,</span><span class="nt"> state_interface</span><span class="p">:</span><span class="w"> </span><span class="nv">analog_input.2</span><span class="p p-Indicator">,</span><span class="nt"> factor</span><span class="p">:</span><span class="w"> </span><span class="nv">0.000305185</span><span class="p p-Indicator">}</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span>
+<span class="nt">          index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x3102</span><span class="p p-Indicator">,</span>
+<span class="nt">          sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">2</span><span class="p p-Indicator">,</span>
+<span class="nt">          type</span><span class="p">:</span><span class="w"> </span><span class="nv">int16</span><span class="p p-Indicator">,</span>
+<span class="nt">          state_interface</span><span class="p">:</span><span class="w"> </span><span class="nv">analog_input.2</span><span class="p p-Indicator">,</span>
+<span class="nt">          factor</span><span class="p">:</span><span class="w"> </span><span class="nv">0.000305185</span>
+<span class="w">        </span><span class="p p-Indicator">}</span>
 <span class="nt">sm</span><span class="p">:</span><span class="w">  </span><span class="c1"># Sync Manager</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">index</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span><span class="nt"> type</span><span class="p">:</span><span class="w"> </span><span class="nv">output</span><span class="p p-Indicator">,</span><span class="nt"> pdo</span><span class="p">:</span><span class="w"> </span><span class="nv">~</span><span class="p p-Indicator">,</span><span class="nt"> watchdog</span><span class="p">:</span><span class="w"> </span><span class="nv">disable</span><span class="p p-Indicator">}</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">index</span><span class="p">:</span><span class="w"> </span><span class="nv">1</span><span class="p p-Indicator">,</span><span class="nt"> type</span><span class="p">:</span><span class="w"> </span><span class="nv">input</span><span class="p p-Indicator">,</span><span class="nt"> pdo</span><span class="p">:</span><span class="w"> </span><span class="nv">~</span><span class="p p-Indicator">,</span><span class="nt"> watchdog</span><span class="p">:</span><span class="w"> </span><span class="nv">disable</span><span class="p p-Indicator">}</span>

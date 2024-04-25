@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Case study: motor coupled to a gearbox and a transmission screw with an encoder &mdash; ethercat_driver_ros2 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=a5c4661c" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=687e9a7b" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=8d563738"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="../_static/copybutton.js?v=f281be69"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="SDO acyclic exchange using ROS2 services" href="sdo_async_com.html" />
+    <link rel="prev" title="CiA402 EtherCAT Motor Drive configuration" href="config_cia402_drive.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ethercat_driver_ros2
+              <img src="../_static/logo-icube.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quickstart</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart/configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart/usage.html">Usage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="config_generic_slave.html">Generic EtherCAT Slave configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config_cia402_drive.html">CiA402 EtherCAT Motor Drive configuration</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Case study: motor coupled to a gearbox and a transmission screw with an encoder</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#system-configuration">System configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#transmission-configuration">Transmission configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#encoder-configuration">Encoder configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#convert-state-values">Convert state values</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#linear-displacement-per-count-of-the-encoder">Linear displacement per count of the encoder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#convert-velocity-in-text-m-s-from-text-rpm">Convert velocity in <span class="math notranslate nohighlight">\(\text{m/s}\)</span> from <span class="math notranslate nohighlight">\(\text{rpm}\)</span></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#transform-torque">Transform torque</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#torque-to-force-conversion">Torque to Force conversion</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#convert-command-values">Convert command values</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#command-in-counts-to-move-by-a-certain-distance-in-m">Command in counts to move by a certain distance in m</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#command-in-rpm-to-move-at-a-certain-velocity-given-in-m-s">Command in rpm to move at a certain velocity given in m/s</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#force-to-torque-conversion">Force to torque conversion</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#complete-configuration-example-for-an-epos4-drive">Complete configuration example for an EPOS4 drive</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sdo_async_com.html">SDO acyclic exchange using ROS2 services</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developer_guide/coe.html">CANopen over EtherCAT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_guide/cia402_drive.html">CANopen over EtherCAT for electrical drives</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_guide/new_plugin.html">Creating a new device driver</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://ICube-Robotics.github.io/ethercat_driver_ros2/api/">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ethercat_driver_ros2</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Case study: motor coupled to a gearbox and a transmission screw with an encoder</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/user_guide/config_use_case_motor_with_gear_box.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="case-study-motor-coupled-to-a-gearbox-and-a-transmission-screw-with-an-encoder">
+<h1>Case study: motor coupled to a gearbox and a transmission screw with an encoder<a class="headerlink" href="#case-study-motor-coupled-to-a-gearbox-and-a-transmission-screw-with-an-encoder" title="Link to this heading"></a></h1>
+<p>This case study is a simple example to show how to set up the config of the <code class="code docutils literal notranslate"><span class="pre">EcCiA402Drive</span></code> generic plugin to take into account transmission parameters and encoder parameters.</p>
+<section id="system-configuration">
+<h2>System configuration<a class="headerlink" href="#system-configuration" title="Link to this heading"></a></h2>
+<p>The system is composed of a motor coupled to a transmission line (a gearbox and a transmission screw) whose rotation is measured by an encoder.</p>
+<section id="transmission-configuration">
+<h3>Transmission configuration<a class="headerlink" href="#transmission-configuration" title="Link to this heading"></a></h3>
+<p>The transmission is composed of a motor, a gearbox, and a transmission screw (lead screw with ball bearing for zero friction) with the following characteristics:</p>
+<ul class="simple">
+<li><p>gearbox with gear ratio, reduction absolute value: 57/13 (<span class="math notranslate nohighlight">\(r \triangleq \frac{13}{57}\)</span>)</p></li>
+<li><p>gearbox maximum efficiency: 0.84 (<span class="math notranslate nohighlight">\(\eta_g \triangleq 0.84\)</span>)</p></li>
+<li><p>lead screw with lead: 1 mm (<span class="math notranslate nohighlight">\(l \triangleq 1 mm\)</span>)</p></li>
+</ul>
+</section>
+<section id="encoder-configuration">
+<h3>Encoder configuration<a class="headerlink" href="#encoder-configuration" title="Link to this heading"></a></h3>
+<p>The encoder has the following characteristics:</p>
+<ul class="simple">
+<li><p>Resolution (number of pulses/revolution):     500 CPR</p></li>
+<li><p>Encoder type: quadrature encoder</p></li>
+<li><p>Digital resolution (number of counts/revolution): <span class="math notranslate nohighlight">\(\text{C} \triangleq 500\times 4 = 2000\)</span></p></li>
+</ul>
+</section>
+</section>
+<section id="convert-state-values">
+<h2>Convert state values<a class="headerlink" href="#convert-state-values" title="Link to this heading"></a></h2>
+<p>The drive will transmit the following state values:</p>
+<ul class="simple">
+<li><p><code class="code docutils literal notranslate"><span class="pre">position</span></code> in <span class="math notranslate nohighlight">\(\text{counts}\)</span> or <span class="math notranslate nohighlight">\(c\)</span></p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">velocity</span></code> in <span class="math notranslate nohighlight">\(\theta\)</span> (revolutions per minute)</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">torque</span></code> (<span class="math notranslate nohighlight">\(T_i\)</span>) in <span class="math notranslate nohighlight">\(\text{mNm}\)</span> (torque of the motor at the input of the gearbox)</p></li>
+</ul>
+<p>We would  like to have the following state values:</p>
+<ul class="simple">
+<li><p><code class="code docutils literal notranslate"><span class="pre">position</span></code> (<span class="math notranslate nohighlight">\(d\)</span>) in <span class="math notranslate nohighlight">\(\text{m}\)</span></p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">velocity</span></code> (<span class="math notranslate nohighlight">\(v\)</span>) in <span class="math notranslate nohighlight">\(\text{m/s}\)</span></p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">force</span></code> (<span class="math notranslate nohighlight">\(F_o\)</span>) in <span class="math notranslate nohighlight">\(\text{mN}\)</span> (Force of the lead screw)</p></li>
+</ul>
+<p>This is the configuration part of the tpdo of the <code class="code docutils literal notranslate"><span class="pre">EcCiA402Drive</span></code> plugin and corresponding to the <code class="code docutils literal notranslate"><span class="pre">state_interface</span></code> in ROS2 control terminology.</p>
+<section id="linear-displacement-per-count-of-the-encoder">
+<h3>Linear displacement per count of the encoder<a class="headerlink" href="#linear-displacement-per-count-of-the-encoder" title="Link to this heading"></a></h3>
+<p>The motor has a reductor so each revolution of the motor does not correspond to a revolution of the system.
+It is necessary to first compute the rotation of the shaft at the output of the gearbox.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>reduction absolute value is <span class="math notranslate nohighlight">\(r \triangleq \frac{13}{57}\)</span></p></li>
+</ul>
+</div></blockquote>
+<p>So for 57 revolutions of the motor, the shaft will only turn 13 times. So the motor has to turn approximately 4.4 times to make the system turn once.</p>
+<p>The lead of the screw is defined as the linear distance traveled per rotation of the screw and in this case is <span class="math notranslate nohighlight">\(1mm\)</span>.</p>
+<p>The encoder reports <span class="math notranslate nohighlight">\(C \triangleq 2000\)</span> counts per revolution (CPR) so 2000 counts per revolution of the shaft, so an angular resolution of <span class="math notranslate nohighlight">\(\frac{360}{2000} = 0.18^{\circ}\)</span>.</p>
+<p>Let <span class="math notranslate nohighlight">\(d\)</span> be the linear displacement in meters, <span class="math notranslate nohighlight">\(r\)</span> the reduction absolute value, <span class="math notranslate nohighlight">\(l\)</span> the lead of the screw in meters and <span class="math notranslate nohighlight">\(C\)</span> the counts per revolution of the encoder and <span class="math notranslate nohighlight">\(c\)</span> the value of the encoder.
+Then, a count <span class="math notranslate nohighlight">\(c\)</span> of the encoder corresponds to a linear displacement <span class="math notranslate nohighlight">\(d\)</span> of</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{eqnarray}
+  c ~~\text{(in counts)} \longrightarrow d &amp; = &amp; r \times l \times \frac{c}{C} ~~\text{m}\\
+  &amp; = &amp; \frac{13}{57} \times 10^{-3} \frac{c}{2000} ~~\text{m}\\
+  &amp; \approx &amp; 0.000000114 \times c ~~\text{m}
+\end{eqnarray}\end{split}\]</div>
+<p>The conversion factor is more precisely <span class="math notranslate nohighlight">\(0.11403508771929824 \times 10^{-6}\)</span>.
+So the displacement resolution, the displacement corresponding to one count of the encoder, is approximately <span class="math notranslate nohighlight">\(0.114 µm\)</span>.</p>
+<p>The tpdo part of the configuration of the <code class="code docutils literal notranslate"><span class="pre">EcCiA402Drive</span></code> plugin will then be set up with the following values:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">tpdo</span><span class="p">:</span><span class="w"> </span><span class="c1"># TxPDO = transmit PDO Mapping, slave (out) to master (in) (MISO), state values transmitted by the drive to ROS2 control</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">index</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0x1a03</span>
+<span class="w">    </span><span class="nt">channels</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span>
+<span class="nt">          index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x6064</span><span class="p p-Indicator">,</span>
+<span class="nt">          sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span>
+<span class="nt">          type</span><span class="p">:</span><span class="w"> </span><span class="nv">int32</span><span class="p p-Indicator">,</span>
+<span class="nt">          state_interface</span><span class="p">:</span><span class="w"> </span><span class="nv">position</span><span class="p p-Indicator">,</span>
+<span class="nt">          factor</span><span class="p">:</span><span class="w"> </span><span class="nv">0.11403508771929824e-6</span><span class="p p-Indicator">,</span>
+<span class="nt">          offset</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span>
+<span class="w">        </span><span class="p p-Indicator">}</span><span class="w">  </span><span class="c1"># Position actual value</span>
+</pre></div>
+</div>
+</section>
+<section id="convert-velocity-in-text-m-s-from-text-rpm">
+<h3>Convert velocity in <span class="math notranslate nohighlight">\(\text{m/s}\)</span> from <span class="math notranslate nohighlight">\(\text{rpm}\)</span><a class="headerlink" href="#convert-velocity-in-text-m-s-from-text-rpm" title="Link to this heading"></a></h3>
+<p>If the motor moves at a velocity of <span class="math notranslate nohighlight">\(\theta\)</span> RPM, then the linear velocity <span class="math notranslate nohighlight">\(v\)</span> in <span class="math notranslate nohighlight">\(\text{m/s}\)</span> of the system is given by:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{eqnarray}
+  \theta ~~\text{(in rpm)} \longrightarrow v &amp; = &amp; \frac{13}{57} \times 10^{-3} \times \frac{1}{60} \times \theta ~~ \text{m/s} \\
+  &amp; \approx &amp; 3.8011695906432747 \times 10^{-6} \times \theta ~~\text{m/s}
+\end{eqnarray}\end{split}\]</div>
+<p>The tpdo part of the configuration of the <code class="code docutils literal notranslate"><span class="pre">EcCiA402Drive</span></code> plugin will then be set up with the following values:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">tpdo</span><span class="p">:</span><span class="w"> </span><span class="c1"># TxPDO = transmit PDO Mapping, slave (out) to master (in) (MISO), state values transmitted by the drive to ROS2 control</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">index</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0x1a03</span>
+<span class="w">    </span><span class="nt">channels</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span>
+<span class="nt">          index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x606c</span><span class="p p-Indicator">,</span>
+<span class="nt">          sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span>
+<span class="nt">          type</span><span class="p">:</span><span class="w"> </span><span class="nv">int32</span><span class="p p-Indicator">,</span>
+<span class="nt">          state_interface</span><span class="p">:</span><span class="w"> </span><span class="nv">velocity</span><span class="p p-Indicator">,</span>
+<span class="nt">          factor</span><span class="p">:</span><span class="w"> </span><span class="nv">3.8011695906432747e-6</span><span class="p p-Indicator">,</span>
+<span class="nt">          offset</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span>
+<span class="w">        </span><span class="p p-Indicator">}</span><span class="w">  </span><span class="c1"># Velocity actual value</span>
+</pre></div>
+</div>
+</section>
+<section id="transform-torque">
+<h3>Transform torque<a class="headerlink" href="#transform-torque" title="Link to this heading"></a></h3>
+<p>The output torque (<span class="math notranslate nohighlight">\(T_o\)</span>) of the gearbox given the input torque of the motor (<span class="math notranslate nohighlight">\(T_i\)</span>) is given by the formula:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{eqnarray}
+  T_i \longrightarrow T_o &amp; = &amp; \frac{57}{13} \times \eta_g \times T_i \\
+  &amp; \approx &amp; 3.683076923076923 \times T_i
+\end{eqnarray}\end{split}\]</div>
+</section>
+<section id="torque-to-force-conversion">
+<h3>Torque to Force conversion<a class="headerlink" href="#torque-to-force-conversion" title="Link to this heading"></a></h3>
+<p>The force <span class="math notranslate nohighlight">\(F_o\)</span> of the lead screw is given by the formula:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{eqnarray}
+  T_o \longrightarrow F_o &amp; = &amp; \frac{2\pi}{l}T_o \\
+\end{eqnarray}\end{split}\]</div>
+<p>Thus the force <span class="math notranslate nohighlight">\(F_o\)</span> in <span class="math notranslate nohighlight">\(\text{mN}\)</span> given the input torque of the motor (<span class="math notranslate nohighlight">\(T_i\)</span> in <span class="math notranslate nohighlight">\(\text{mNm}\)</span>) is provided by the formula:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{eqnarray}
+  T_i \longrightarrow F_o &amp; = &amp; \frac{2\pi}{l} \times \frac{57}{13} \times \eta_g \times T_i \\
+  &amp; \approx &amp; 23141.45480828912 \times T_i
+\end{eqnarray}\end{split}\]</div>
+<p>The tpdo part of the configuration of the <code class="code docutils literal notranslate"><span class="pre">EcCiA402Drive</span></code> plugin will then be set up with the following values:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">tpdo</span><span class="p">:</span><span class="w"> </span><span class="c1"># TxPDO = transmit PDO Mapping, slave (out) to master (in) (MISO), state values transmitted by the drive to ROS2 control</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">index</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0x1a03</span>
+<span class="w">    </span><span class="nt">channels</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span>
+<span class="nt">          index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x6077</span><span class="p p-Indicator">,</span>
+<span class="nt">          sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span>
+<span class="nt">          type</span><span class="p">:</span><span class="w"> </span><span class="nv">int32</span><span class="p p-Indicator">,</span>
+<span class="nt">          state_interface</span><span class="p">:</span><span class="w"> </span><span class="nv">effort</span><span class="p p-Indicator">,</span>
+<span class="nt">          factor</span><span class="p">:</span><span class="w"> </span><span class="nv">23141.45480828912</span><span class="p p-Indicator">,</span>
+<span class="nt">          offset</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span>
+<span class="w">        </span><span class="p p-Indicator">}</span><span class="w">  </span><span class="c1"># Force actual value in mN</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="convert-command-values">
+<h2>Convert command values<a class="headerlink" href="#convert-command-values" title="Link to this heading"></a></h2>
+<p>This is the configuration part of the rpdo of the <code class="code docutils literal notranslate"><span class="pre">EcCiA402Drive</span></code> plugin and corresponding to the <code class="code docutils literal notranslate"><span class="pre">command_interface</span></code> in ROS2 control terminology.</p>
+<p>The drive will take the following command values:</p>
+<ul class="simple">
+<li><p><code class="code docutils literal notranslate"><span class="pre">position</span></code> in <span class="math notranslate nohighlight">\(\text{counts}\)</span> or <span class="math notranslate nohighlight">\(c\)</span></p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">velocity</span></code> in <span class="math notranslate nohighlight">\(\theta\)</span> (revolutions per minute)</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">torque</span></code> (<span class="math notranslate nohighlight">\(T_i\)</span>) in <span class="math notranslate nohighlight">\(\text{mNm}\)</span> (torque of the motor at the input of the gearbox)</p></li>
+</ul>
+<p>We would  like to send the following command values:</p>
+<ul class="simple">
+<li><p><code class="code docutils literal notranslate"><span class="pre">position</span></code> (<span class="math notranslate nohighlight">\(d\)</span>) in <span class="math notranslate nohighlight">\(\text{m}\)</span></p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">velocity</span></code> (<span class="math notranslate nohighlight">\(v\)</span>) in <span class="math notranslate nohighlight">\(\text{m/s}\)</span></p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">force</span></code> (<span class="math notranslate nohighlight">\(F_o\)</span>) in <span class="math notranslate nohighlight">\(\text{mN}\)</span> (Force of the lead screw)</p></li>
+</ul>
+<section id="command-in-counts-to-move-by-a-certain-distance-in-m">
+<h3>Command in counts to move by a certain distance in m<a class="headerlink" href="#command-in-counts-to-move-by-a-certain-distance-in-m" title="Link to this heading"></a></h3>
+<p>To command the motor to move by a certain distance <span class="math notranslate nohighlight">\(d\)</span> in meters, the number of counts <span class="math notranslate nohighlight">\(c\)</span> to send to the motor is given by the formula:</p>
+<div class="math notranslate nohighlight">
+\[\begin{equation}
+  d \longrightarrow \text{c} = \frac{C}{rl} \times d \approx 8769.23076923077 \times d
+\end{equation}\]</div>
+<p>The ‘rpdo’ part of the configuration of the <code class="code docutils literal notranslate"><span class="pre">EcCiA402Drive</span></code> plugin will then be set up with the following values:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">rpdo</span><span class="p">:</span><span class="w"> </span><span class="c1"># RxPDO = receive PDO Mapping, master (out) to slave (in) (MOSI), command values received by the drive from ROS2 control</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">index</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0x1603</span>
+<span class="w">    </span><span class="nt">channels</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span>
+<span class="nt">          index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x607a</span><span class="p p-Indicator">,</span>
+<span class="nt">          sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span>
+<span class="nt">          type</span><span class="p">:</span><span class="w"> </span><span class="nv">int32</span><span class="p p-Indicator">,</span>
+<span class="nt">          command_interface</span><span class="p">:</span><span class="w"> </span><span class="nv">position</span><span class="p p-Indicator">,</span>
+<span class="nt">          factor</span><span class="p">:</span><span class="w"> </span><span class="nv">8769.23076923077</span><span class="p p-Indicator">,</span>
+<span class="nt">          offset</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span>
+<span class="w">        </span><span class="p p-Indicator">}</span><span class="w">  </span><span class="c1"># Target position</span>
+</pre></div>
+</div>
+</section>
+<section id="command-in-rpm-to-move-at-a-certain-velocity-given-in-m-s">
+<h3>Command in rpm to move at a certain velocity given in m/s<a class="headerlink" href="#command-in-rpm-to-move-at-a-certain-velocity-given-in-m-s" title="Link to this heading"></a></h3>
+<p>To command the motor to move at a certain velocity in m/s, the number of rpm to send to the motor is given by the formula:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{eqnarray}
+  v ~~\text{(in m/s)}\longrightarrow \theta &amp; = &amp; \frac{60}{rl} \times v ~~\text{(in counts)}\\
+             &amp; \approx  &amp; 263076.92307692306 \times v ~~\text{(in counts)}
+\end{eqnarray}\end{split}\]</div>
+<p>The ‘rpdo’ part of the configuration of the <code class="code docutils literal notranslate"><span class="pre">EcCiA402Drive</span></code> plugin will then be set up with the following values:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">rpdo</span><span class="p">:</span><span class="w"> </span><span class="c1"># RxPDO = receive PDO Mapping, master (out) to slave (in) (MOSI), command values received by the drive from ROS2 control</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">index</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0x1603</span>
+<span class="w">    </span><span class="nt">channels</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span>
+<span class="nt">          index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x60ff</span><span class="p p-Indicator">,</span>
+<span class="nt">          sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span>
+<span class="nt">          type</span><span class="p">:</span><span class="w"> </span><span class="nv">int32</span><span class="p p-Indicator">,</span>
+<span class="nt">          command_interface</span><span class="p">:</span><span class="w"> </span><span class="nv">velocity</span><span class="p p-Indicator">,</span>
+<span class="nt">          factor</span><span class="p">:</span><span class="w"> </span><span class="nv">263076.92307692306</span><span class="p p-Indicator">,</span>
+<span class="nt">          offset</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span>
+<span class="w">        </span><span class="p p-Indicator">}</span><span class="w">  </span><span class="c1"># Target velocity</span>
+</pre></div>
+</div>
+</section>
+<section id="force-to-torque-conversion">
+<h3>Force to torque conversion<a class="headerlink" href="#force-to-torque-conversion" title="Link to this heading"></a></h3>
+<p>The input torque of the motor (<span class="math notranslate nohighlight">\(T_i\)</span> in <span class="math notranslate nohighlight">\(\text{mNm}\)</span>) given the target command force <span class="math notranslate nohighlight">\(F_o\)</span> in <span class="math notranslate nohighlight">\(\text{mN}\)</span> is provided by the formula:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{eqnarray}
+  F_o \longrightarrow T_i &amp; = &amp; \frac{l}{2\pi} \times \frac{13}{57} \times \frac{1}{\eta_g} \times F_o \\
+  &amp; \approx &amp; 23141.45480828912 \times F_o
+\end{eqnarray}\end{split}\]</div>
+<p>The tpdo part of the configuration of the <code class="code docutils literal notranslate"><span class="pre">EcCiA402Drive</span></code> plugin will then be set up with the following values:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">rpdo</span><span class="p">:</span><span class="w"> </span><span class="c1"># RxPDO = receive PDO Mapping, master (out) to slave (in) (MOSI), command values received by the drive from ROS2 control</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">index</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0x1603</span>
+<span class="w">    </span><span class="nt">channels</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span>
+<span class="nt">          index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x6071</span><span class="p p-Indicator">,</span>
+<span class="nt">          sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span>
+<span class="nt">          type</span><span class="p">:</span><span class="w"> </span><span class="nv">int32</span><span class="p p-Indicator">,</span>
+<span class="nt">          state_interface</span><span class="p">:</span><span class="w"> </span><span class="nv">effort</span><span class="p p-Indicator">,</span>
+<span class="nt">          factor</span><span class="p">:</span><span class="w"> </span><span class="nv">4.321249499153383e-05</span><span class="p p-Indicator">,</span>
+<span class="nt">          offset</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span>
+<span class="w">        </span><span class="p p-Indicator">}</span><span class="w">  </span><span class="c1"># Target force</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="complete-configuration-example-for-an-epos4-drive">
+<h2>Complete configuration example for an EPOS4 drive<a class="headerlink" href="#complete-configuration-example-for-an-epos4-drive" title="Link to this heading"></a></h2>
+<p>Note that we omit the <code class="docutils literal notranslate"><span class="pre">offset</span></code> parameter since their default value is equal to zero.</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">Example of a complete configuration for an EPOS4 drive with a gearbox and a transmission screw</span><a class="headerlink" href="#id1" title="Link to this code"></a></div>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="c1"># Configuration file for Maxon EPOS4 50/5 drive</span>
+<span class="linenos"> 2</span><span class="nt">vendor_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0x000000fb</span>
+<span class="linenos"> 3</span><span class="nt">product_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0x63500000</span><span class="w"> </span><span class="c1"># Product code</span>
+<span class="linenos"> 4</span><span class="nt">assign_activate</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0x0300</span><span class="w"> </span><span class="c1"># DC Synch register</span>
+<span class="linenos"> 5</span><span class="nt">auto_fault_reset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"> </span><span class="c1"># true = automatic fault reset, false = fault reset on rising edge command interface &quot;reset_fault&quot;</span>
+<span class="linenos"> 6</span><span class="nt">sdo</span><span class="p">:</span><span class="w"> </span><span class="c1"># sdo data to be transferred at drive startup</span>
+<span class="linenos"> 7</span><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x60C2</span><span class="p p-Indicator">,</span><span class="nt"> sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">1</span><span class="p p-Indicator">,</span><span class="nt"> type</span><span class="p">:</span><span class="w"> </span><span class="nv">int8</span><span class="p p-Indicator">,</span><span class="nt"> value</span><span class="p">:</span><span class="w"> </span><span class="nv">10</span><span class="w"> </span><span class="p p-Indicator">}</span><span class="w"> </span><span class="c1"># Set interpolation time for cyclic modes to 10 ms</span>
+<span class="linenos"> 8</span><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x60C2</span><span class="p p-Indicator">,</span><span class="nt"> sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">2</span><span class="p p-Indicator">,</span><span class="nt"> type</span><span class="p">:</span><span class="w"> </span><span class="nv">int8</span><span class="p p-Indicator">,</span><span class="nt"> value</span><span class="p">:</span><span class="w"> </span><span class="nv">-3</span><span class="w"> </span><span class="p p-Indicator">}</span><span class="w"> </span><span class="c1"># Set base 10-3s</span>
+<span class="linenos"> 9</span><span class="nt">rpdo</span><span class="p">:</span><span class="w"> </span><span class="c1"># RxPDO = receive PDO 4 Mapping, master (out) to slave (in) (MOSI), command values received by the drive from ROS2 control</span>
+<span class="linenos">10</span><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">index</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0x1603</span>
+<span class="linenos">11</span><span class="w">    </span><span class="nt">channels</span><span class="p">:</span>
+<span class="linenos">12</span><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span>
+<span class="linenos">13</span><span class="nt">          index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x6040</span><span class="p p-Indicator">,</span>
+<span class="linenos">14</span><span class="nt">          sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span>
+<span class="linenos">15</span><span class="nt">          type</span><span class="p">:</span><span class="w"> </span><span class="nv">uint16</span><span class="p p-Indicator">,</span>
+<span class="linenos">16</span><span class="nt">          command_interface</span><span class="p">:</span><span class="w"> </span><span class="nv">control_word</span><span class="p p-Indicator">,</span>
+<span class="linenos">17</span><span class="nt">          default</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span>
+<span class="linenos">18</span><span class="w">        </span><span class="p p-Indicator">}</span><span class="w"> </span><span class="c1"># Control word</span>
+<span class="linenos">19</span><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span>
+<span class="linenos">20</span><span class="nt">          index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x607a</span><span class="p p-Indicator">,</span>
+<span class="linenos">21</span><span class="nt">          sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span>
+<span class="linenos">22</span><span class="nt">          type</span><span class="p">:</span><span class="w"> </span><span class="nv">int32</span><span class="p p-Indicator">,</span>
+<span class="linenos">23</span><span class="nt">          command_interface</span><span class="p">:</span><span class="w"> </span><span class="nv">position</span><span class="p p-Indicator">,</span>
+<span class="linenos">24</span><span class="nt">          factor</span><span class="p">:</span><span class="w"> </span><span class="nv">8769.23076923077</span><span class="p p-Indicator">,</span>
+<span class="linenos">25</span><span class="nt">          default</span><span class="p">:</span><span class="w"> </span><span class="nv">.nan</span><span class="p p-Indicator">,</span>
+<span class="linenos">26</span><span class="w">        </span><span class="p p-Indicator">}</span><span class="w"> </span><span class="c1"># Target position</span>
+<span class="linenos">27</span><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span>
+<span class="linenos">28</span><span class="nt">          index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x60ff</span><span class="p p-Indicator">,</span>
+<span class="linenos">29</span><span class="nt">          sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span>
+<span class="linenos">30</span><span class="nt">          type</span><span class="p">:</span><span class="w"> </span><span class="nv">int32</span><span class="p p-Indicator">,</span>
+<span class="linenos">31</span><span class="nt">          command_interface</span><span class="p">:</span><span class="w"> </span><span class="nv">velocity</span><span class="p p-Indicator">,</span>
+<span class="linenos">32</span><span class="nt">          factor</span><span class="p">:</span><span class="w"> </span><span class="nv">263076.92307692306</span><span class="p p-Indicator">,</span>
+<span class="linenos">33</span><span class="nt">          default</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span>
+<span class="linenos">34</span><span class="w">        </span><span class="p p-Indicator">}</span><span class="w"> </span><span class="c1"># Target velocity</span>
+<span class="linenos">35</span><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span>
+<span class="linenos">36</span><span class="nt">          index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x6071</span><span class="p p-Indicator">,</span>
+<span class="linenos">37</span><span class="nt">          sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span>
+<span class="linenos">38</span><span class="nt">          type</span><span class="p">:</span><span class="w"> </span><span class="nv">int16</span><span class="p p-Indicator">,</span>
+<span class="linenos">39</span><span class="nt">          command_interface</span><span class="p">:</span><span class="w"> </span><span class="nv">effort</span><span class="p p-Indicator">,</span>
+<span class="linenos">40</span><span class="nt">          factor</span><span class="p">:</span><span class="w"> </span><span class="nv">4.321249499153383e-05</span><span class="p p-Indicator">,</span>
+<span class="linenos">41</span><span class="nt">          default</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span>
+<span class="linenos">42</span><span class="w">        </span><span class="p p-Indicator">}</span><span class="w"> </span><span class="c1"># Target torque</span>
+<span class="linenos">43</span><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x60b0</span><span class="p p-Indicator">,</span><span class="nt"> sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span><span class="nt"> type</span><span class="p">:</span><span class="w"> </span><span class="nv">int32</span><span class="p p-Indicator">,</span><span class="nt"> default</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="w"> </span><span class="p p-Indicator">}</span><span class="w"> </span><span class="c1"># Offset position</span>
+<span class="linenos">44</span><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x60b1</span><span class="p p-Indicator">,</span><span class="nt"> sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span><span class="nt"> type</span><span class="p">:</span><span class="w"> </span><span class="nv">int32</span><span class="p p-Indicator">,</span><span class="nt"> default</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="w"> </span><span class="p p-Indicator">}</span><span class="w"> </span><span class="c1"># Offset velocity</span>
+<span class="linenos">45</span><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x60b2</span><span class="p p-Indicator">,</span><span class="nt"> sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span><span class="nt"> type</span><span class="p">:</span><span class="w"> </span><span class="nv">int16</span><span class="p p-Indicator">,</span><span class="nt"> default</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="w"> </span><span class="p p-Indicator">}</span><span class="w"> </span><span class="c1"># Offset torque</span>
+<span class="linenos">46</span><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span>
+<span class="linenos">47</span><span class="nt">          index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x6060</span><span class="p p-Indicator">,</span>
+<span class="linenos">48</span><span class="nt">          sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span>
+<span class="linenos">49</span><span class="nt">          type</span><span class="p">:</span><span class="w"> </span><span class="nv">int8</span><span class="p p-Indicator">,</span>
+<span class="linenos">50</span><span class="nt">          command_interface</span><span class="p">:</span><span class="w"> </span><span class="nv">mode_of_operation</span><span class="p p-Indicator">,</span>
+<span class="linenos">51</span><span class="nt">          default</span><span class="p">:</span><span class="w"> </span><span class="nv">9</span><span class="p p-Indicator">,</span>
+<span class="linenos">52</span><span class="w">        </span><span class="p p-Indicator">}</span><span class="w"> </span><span class="c1"># Mode of operation. Available modes are: position (8), velocity (9), effort (10) and homing (6)</span>
+<span class="linenos">53</span><span class="nt">tpdo</span><span class="p">:</span><span class="w"> </span><span class="c1"># TxPDO = transmit PDO 4 Mapping, slave (out) to master (in) (MISO), state values transmitted by the drive to ROS2 control</span>
+<span class="linenos">54</span><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">index</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0x1a03</span>
+<span class="linenos">55</span><span class="w">    </span><span class="nt">channels</span><span class="p">:</span>
+<span class="linenos">56</span><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span>
+<span class="linenos">57</span><span class="nt">          index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x6041</span><span class="p p-Indicator">,</span>
+<span class="linenos">58</span><span class="nt">          sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span>
+<span class="linenos">59</span><span class="nt">          type</span><span class="p">:</span><span class="w"> </span><span class="nv">uint16</span><span class="p p-Indicator">,</span>
+<span class="linenos">60</span><span class="nt">          state_interface</span><span class="p">:</span><span class="w"> </span><span class="nv">status_word</span><span class="p p-Indicator">,</span>
+<span class="linenos">61</span><span class="w">        </span><span class="p p-Indicator">}</span><span class="w"> </span><span class="c1"># Status word</span>
+<span class="linenos">62</span><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span>
+<span class="linenos">63</span><span class="nt">          index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x6064</span><span class="p p-Indicator">,</span>
+<span class="linenos">64</span><span class="nt">          sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span>
+<span class="linenos">65</span><span class="nt">          type</span><span class="p">:</span><span class="w"> </span><span class="nv">int32</span><span class="p p-Indicator">,</span>
+<span class="linenos">66</span><span class="nt">          state_interface</span><span class="p">:</span><span class="w"> </span><span class="nv">position</span><span class="p p-Indicator">,</span>
+<span class="linenos">67</span><span class="nt">          factor</span><span class="p">:</span><span class="w"> </span><span class="nv">0.11403508771929824e-6</span><span class="p p-Indicator">,</span>
+<span class="linenos">68</span><span class="w">        </span><span class="p p-Indicator">}</span><span class="w"> </span><span class="c1"># Position actual value</span>
+<span class="linenos">69</span><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span>
+<span class="linenos">70</span><span class="nt">          index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x606c</span><span class="p p-Indicator">,</span>
+<span class="linenos">71</span><span class="nt">          sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span>
+<span class="linenos">72</span><span class="nt">          type</span><span class="p">:</span><span class="w"> </span><span class="nv">int32</span><span class="p p-Indicator">,</span>
+<span class="linenos">73</span><span class="nt">          state_interface</span><span class="p">:</span><span class="w"> </span><span class="nv">velocity</span><span class="p p-Indicator">,</span>
+<span class="linenos">74</span><span class="nt">          factor</span><span class="p">:</span><span class="w"> </span><span class="nv">3.8011695906432747e-6</span><span class="p p-Indicator">,</span>
+<span class="linenos">75</span><span class="w">        </span><span class="p p-Indicator">}</span><span class="w"> </span><span class="c1"># Velocity actual value</span>
+<span class="linenos">76</span><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span>
+<span class="linenos">77</span><span class="nt">          index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x6077</span><span class="p p-Indicator">,</span>
+<span class="linenos">78</span><span class="nt">          sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span>
+<span class="linenos">79</span><span class="nt">          type</span><span class="p">:</span><span class="w"> </span><span class="nv">int16</span><span class="p p-Indicator">,</span>
+<span class="linenos">80</span><span class="nt">          state_interface</span><span class="p">:</span><span class="w"> </span><span class="nv">effort</span><span class="p p-Indicator">,</span>
+<span class="linenos">81</span><span class="nt">          factor</span><span class="p">:</span><span class="w"> </span><span class="nv">23141.45480828912</span><span class="p p-Indicator">,</span>
+<span class="linenos">82</span><span class="w">        </span><span class="p p-Indicator">}</span><span class="w"> </span><span class="c1"># Force actual value</span>
+<span class="linenos">83</span><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span>
+<span class="linenos">84</span><span class="nt">          index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x6061</span><span class="p p-Indicator">,</span>
+<span class="linenos">85</span><span class="nt">          sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span>
+<span class="linenos">86</span><span class="nt">          type</span><span class="p">:</span><span class="w"> </span><span class="nv">int8</span><span class="p p-Indicator">,</span>
+<span class="linenos">87</span><span class="nt">          state_interface</span><span class="p">:</span><span class="w"> </span><span class="nv">mode_of_operation</span><span class="p p-Indicator">,</span>
+<span class="linenos">88</span><span class="w">        </span><span class="p p-Indicator">}</span><span class="w"> </span><span class="c1"># Mode of operation display</span>
+<span class="linenos">89</span><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x3141</span><span class="p p-Indicator">,</span><span class="nt"> sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">1</span><span class="p p-Indicator">,</span><span class="nt"> type</span><span class="p">:</span><span class="w"> </span><span class="nv">int16</span><span class="w"> </span><span class="p p-Indicator">}</span><span class="w"> </span><span class="c1"># Digital Input Properties</span>
+<span class="linenos">90</span><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x60b9</span><span class="p p-Indicator">,</span><span class="nt"> sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span><span class="nt"> type</span><span class="p">:</span><span class="w"> </span><span class="nv">int16</span><span class="w"> </span><span class="p p-Indicator">}</span><span class="w"> </span><span class="c1"># Touch Probe Status</span>
+<span class="linenos">91</span><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x60ba</span><span class="p p-Indicator">,</span><span class="nt"> sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span><span class="nt"> type</span><span class="p">:</span><span class="w"> </span><span class="nv">int32</span><span class="w"> </span><span class="p p-Indicator">}</span><span class="w"> </span><span class="c1"># Touch Probe Position 1 Positive edge</span>
+<span class="linenos">92</span><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> index</span><span class="p">:</span><span class="w"> </span><span class="nv">0x60bb</span><span class="p p-Indicator">,</span><span class="nt"> sub_index</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span><span class="nt"> type</span><span class="p">:</span><span class="w"> </span><span class="nv">int32</span><span class="w"> </span><span class="p p-Indicator">}</span><span class="w"> </span><span class="c1"># Touch Probe Position 1 Negative edge</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="config_cia402_drive.html" class="btn btn-neutral float-left" title="CiA402 EtherCAT Motor Drive configuration" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="sdo_async_com.html" class="btn btn-neutral float-right" title="SDO acyclic exchange using ROS2 services" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, ICUBE Laboratory, University of Strasbourg.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
