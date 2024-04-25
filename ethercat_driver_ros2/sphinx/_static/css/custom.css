@@ -1,7 +1,6 @@
-
 .wy-table-responsive table td,
 .wy-table-responsive table th {
- white-space:normal;
+    white-space: normal;
 }
 
 tr {
@@ -14,4 +13,9 @@ thead {
 
 table {
     white-space: normal;
+}
+
+pre {
+    white-space: pre-wrap !important;
+    word-break: break-all;
 }

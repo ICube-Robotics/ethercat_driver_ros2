@@ -1,0 +1,92 @@
+# Configuration file for Maxon EPOS4 50/5 drive
+vendor_id: 0x000000fb
+product_id: 0x63500000 # Product code
+assign_activate: 0x0300 # DC Synch register
+auto_fault_reset: true # true = automatic fault reset, false = fault reset on rising edge command interface "reset_fault"
+sdo: # sdo data to be transferred at drive startup
+  - { index: 0x60C2, sub_index: 1, type: int8, value: 10 } # Set interpolation time for cyclic modes to 10 ms
+  - { index: 0x60C2, sub_index: 2, type: int8, value: -3 } # Set base 10-3s
+rpdo: # RxPDO = receive PDO 4 Mapping, master (out) to slave (in) (MOSI), command values received by the drive from ROS2 control
+  - index: 0x1603
+    channels:
+      - {
+          index: 0x6040,
+          sub_index: 0,
+          type: uint16,
+          command_interface: control_word,
+          default: 0,
+        } # Control word
+      - {
+          index: 0x607a,
+          sub_index: 0,
+          type: int32,
+          command_interface: position,
+          factor: 8769.23076923077,
+          default: .nan,
+        } # Target position
+      - {
+          index: 0x60ff,
+          sub_index: 0,
+          type: int32,
+          command_interface: velocity,
+          factor: 263076.92307692306,
+          default: 0,
+        } # Target velocity
+      - {
+          index: 0x6071,
+          sub_index: 0,
+          type: int16,
+          command_interface: effort,
+          factor: 4.321249499153383e-05,
+          default: 0,
+        } # Target torque
+      - { index: 0x60b0, sub_index: 0, type: int32, default: 0 } # Offset position
+      - { index: 0x60b1, sub_index: 0, type: int32, default: 0 } # Offset velocity
+      - { index: 0x60b2, sub_index: 0, type: int16, default: 0 } # Offset torque
+      - {
+          index: 0x6060,
+          sub_index: 0,
+          type: int8,
+          command_interface: mode_of_operation,
+          default: 9,
+        } # Mode of operation. Available modes are: position (8), velocity (9), effort (10) and homing (6)
+tpdo: # TxPDO = transmit PDO 4 Mapping, slave (out) to master (in) (MISO), state values transmitted by the drive to ROS2 control
+  - index: 0x1a03
+    channels:
+      - {
+          index: 0x6041,
+          sub_index: 0,
+          type: uint16,
+          state_interface: status_word,
+        } # Status word
+      - {
+          index: 0x6064,
+          sub_index: 0,
+          type: int32,
+          state_interface: position,
+          factor: 0.11403508771929824e-6,
+        } # Position actual value
+      - {
+          index: 0x606c,
+          sub_index: 0,
+          type: int32,
+          state_interface: velocity,
+          factor: 3.8011695906432747e-6,
+        } # Velocity actual value
+      - {
+          index: 0x6077,
+          sub_index: 0,
+          type: int16,
+          state_interface: effort,
+          factor: 23141.45480828912,
+        } # Force actual value
+      - {
+          index: 0x6061,
+          sub_index: 0,
+          type: int8,
+          state_interface: mode_of_operation,
+        } # Mode of operation display
+      - { index: 0x3141, sub_index: 1, type: int16 } # Digital Input Properties
+      - { index: 0x60b9, sub_index: 0, type: int16 } # Touch Probe Status
+      - { index: 0x60ba, sub_index: 0, type: int32 } # Touch Probe Position 1 Positive edge
+      - { index: 0x60bb, sub_index: 0, type: int32 } # Touch Probe Position 1 Negative edge
