@@ -6,15 +6,15 @@ This case study is a simple example to show how to set up the config of the :cod
 System configuration
 --------------------
 
-The system is composed of a motor coupled to a transmission line (a gearbox and a transmission screw) which rotation is measured by an encoder.
+The system is composed of a motor coupled to a transmission line (a gearbox and a transmission screw) whose rotation is measured by an encoder.
 
 
 Transmission configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The transmission is composed of a motor, a gearbox and a transmission screw (lead screw with ball bearing for zero friction) with the following characteristics:
+The transmission is composed of a motor, a gearbox, and a transmission screw (lead screw with ball bearing for zero friction) with the following characteristics:
 
-- gearbox with gear ratio, reduction absolute: 57/13 (:math:`r \triangleq \frac{13}{57}`)
+- gearbox with gear ratio, reduction absolute value: 57/13 (:math:`r \triangleq \frac{13}{57}`)
 - gearbox maximum efficiency: 0.84 (:math:`\eta_g \triangleq 0.84`)
 - lead screw with lead: 1 mm (:math:`l \triangleq 1 mm`)
 
@@ -47,18 +47,18 @@ This is the configuration part of the tpdo of the :code:`EcCiA402Drive` plugin a
 
 Linear displacement per count of the encoder
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The motor has a reductor so each turn of the motor does not correspond to a turn of the system.
+The motor has a reductor so each revolution of the motor does not correspond to a revolution of the system.
 It is necessary to first compute the rotation of the shaft at the output of the gearbox.
 
-  * reduction absolute is :math:`r \triangleq \frac{13}{57}`
+  * reduction absolute value is :math:`r \triangleq \frac{13}{57}`
 
-So for 57 turns of the motor, the shaft will only turn 13 times. So the motor has to turn approximately 4.4 times to make the system turn once.
+So for 57 revolutions of the motor, the shaft will only turn 13 times. So the motor has to turn approximately 4.4 times to make the system turn once.
 
 The lead of the screw is defined as the linear distance traveled per rotation of the screw and in this case is :math:`1mm`.
 
-The encoder reports :math:`C \triangleq 2000` counts per revolution (CPR) so 2000 counts per turn of the shaft, so an angular resolution of :math:`\frac{360}{2000} = 0.18^{\circ}`.
+The encoder reports :math:`C \triangleq 2000` counts per revolution (CPR) so 2000 counts per revolution of the shaft, so an angular resolution of :math:`\frac{360}{2000} = 0.18^{\circ}`.
 
-Let :math:`d` be the linear displacement in meters, :math:`r` the reduction absolute, :math:`l` the lead of the screw in meters and :math:`C` the counts per revolution of the encoder and :math:`c` the value of the encoder.
+Let :math:`d` be the linear displacement in meters, :math:`r` the reduction absolute value, :math:`l` the lead of the screw in meters and :math:`C` the counts per revolution of the encoder and :math:`c` the value of the encoder.
 Then, a count :math:`c` of the encoder corresponds to a linear displacement :math:`d` of
 
 .. math::
