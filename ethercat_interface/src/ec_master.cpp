@@ -70,7 +70,9 @@ EcMaster::~EcMaster()
     //
   }
   for (auto & domain : domain_info_) {
-    delete domain.second;
+    if (domain.second != NULL) {
+      delete domain.second;
+    }
   }
 }
 
@@ -218,6 +220,9 @@ bool EcMaster::activate()
   // register domain
   for (auto & iter : domain_info_) {
     DomainInfo * domain_info = iter.second;
+    if (domain_info == NULL) {
+      throw std::runtime_error("Null domain info: " + std::to_string(iter.first));
+    }
     bool domain_status = ecrt_domain_reg_pdo_entry_list(
       domain_info->domain,
       &(domain_info->domain_regs[0]));
@@ -241,6 +246,9 @@ bool EcMaster::activate()
   // retrieve domain data
   for (auto & iter : domain_info_) {
     DomainInfo * domain_info = iter.second;
+    if (domain_info == NULL) {
+      throw std::runtime_error("Null domain info: " + std::to_string(iter.first));
+    }
     domain_info->domain_pd = ecrt_domain_data(domain_info->domain);
     if (domain_info->domain_pd == NULL) {
       printWarning("Activate. Failed to retrieve domain process data.");
@@ -256,6 +264,9 @@ void EcMaster::update(uint32_t domain)
   ecrt_master_receive(master_);
 
   DomainInfo * domain_info = domain_info_.at(domain);
+  if (domain_info == NULL) {
+    throw std::runtime_error("Null domain info: " + std::to_string(domain));
+  }
 
   ecrt_domain_process(domain_info->domain);
 
@@ -296,7 +307,7 @@ void EcMaster::readData(uint32_t domain)
 
   DomainInfo * domain_info = domain_info_.at(domain);
   if (domain_info == NULL) {
-    throw std::runtime_error("Null domain info " + domain);
+    throw std::runtime_error("Null domain info: " + std::to_string(domain));
   }
 
   ecrt_domain_process(domain_info->domain);
@@ -324,7 +335,7 @@ void EcMaster::writeData(uint32_t domain)
 {
   DomainInfo * domain_info = domain_info_.at(domain);
   if (domain_info == NULL) {
-    throw std::runtime_error("Null domain info " + domain);
+    throw std::runtime_error("Null domain info: " + std::to_string(domain));
   }
 
   // read and write process data
@@ -438,6 +449,9 @@ void EcMaster::setThreadRealTime()
 void EcMaster::checkDomainState(uint32_t domain)
 {
   DomainInfo * domain_info = domain_info_.at(domain);
+  if (domain_info == NULL) {
+    throw std::runtime_error("Null domain info: " + std::to_string(domain));
+  }
 
   ec_domain_state_t ds;
   ecrt_domain_state(domain_info->domain, &ds);
