@@ -30,6 +30,9 @@ CallbackReturn EthercatDriver::on_init(
     return CallbackReturn::ERROR;
   }
 
+  const std::lock_guard<std::mutex> lock(ec_mutex_);
+  activated_ = false;
+
   hw_joint_states_.resize(info_.joints.size());
   for (uint j = 0; j < info_.joints.size(); j++) {
     hw_joint_states_[j].resize(
@@ -259,6 +262,11 @@ EthercatDriver::export_command_interfaces()
 CallbackReturn EthercatDriver::on_activate(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
+  const std::lock_guard<std::mutex> lock(ec_mutex_);
+  if (activated_) {
+    RCLCPP_FATAL(rclcpp::get_logger("EthercatDriver"), "Double on_activate()");
+    return CallbackReturn::ERROR;
+  }
   RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"), "Starting ...please wait...");
   if (info_.hardware_parameters.find("control_frequency") == info_.hardware_parameters.end()) {
     control_frequency_ = 100;
@@ -303,7 +311,10 @@ CallbackReturn EthercatDriver::on_activate(
     }
   }
 
-  master_.activate();
+  if (!master_.activate()) {
+    RCLCPP_ERROR(rclcpp::get_logger("EthercatDriver"), "Activate EcMaster failed");
+    return CallbackReturn::ERROR;
+  }
   RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"), "Activated EcMaster!");
 
   // start after one second
@@ -339,12 +350,17 @@ CallbackReturn EthercatDriver::on_activate(
   RCLCPP_INFO(
     rclcpp::get_logger("EthercatDriver"), "System Successfully started!");
 
+  activated_ = true;
+
   return CallbackReturn::SUCCESS;
 }
 
 CallbackReturn EthercatDriver::on_deactivate(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
+  const std::lock_guard<std::mutex> lock(ec_mutex_);
+  activated_ = false;
+
   RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"), "Stopping ...please wait...");
 
   // stop EC and disconnect
@@ -360,7 +376,11 @@ hardware_interface::return_type EthercatDriver::read(
   const rclcpp::Time & /*time*/,
   const rclcpp::Duration & /*period*/)
 {
-  master_.readData();
+  // try to lock so we can avoid blocking the read/write loop on the lock.
+  const std::unique_lock<std::mutex> lock(ec_mutex_, std::try_to_lock);
+  if (lock.owns_lock() && activated_) {
+    master_.readData();
+  }
   return hardware_interface::return_type::OK;
 }
 
@@ -368,7 +388,11 @@ hardware_interface::return_type EthercatDriver::write(
   const rclcpp::Time & /*time*/,
   const rclcpp::Duration & /*period*/)
 {
-  master_.writeData();
+  // try to lock so we can avoid blocking the read/write loop on the lock.
+  const std::unique_lock<std::mutex> lock(ec_mutex_, std::try_to_lock);
+  if (lock.owns_lock() && activated_) {
+    master_.writeData();
+  }
   return hardware_interface::return_type::OK;
 }
 

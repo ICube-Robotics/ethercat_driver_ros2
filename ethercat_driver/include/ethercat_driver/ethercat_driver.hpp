@@ -84,6 +84,8 @@ private:
 
   int control_frequency_;
   ethercat_interface::EcMaster master_;
+  std::mutex ec_mutex_;
+  bool activated_;
 };
 }  // namespace ethercat_driver
 
