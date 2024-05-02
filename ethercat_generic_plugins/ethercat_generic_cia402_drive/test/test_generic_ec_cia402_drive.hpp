@@ -22,6 +22,7 @@
 
 #include "gmock/gmock.h"
 
+#include "ethercat_interface/ec_buffer_tools.h"
 #include "ethercat_generic_plugins/generic_ec_cia402_drive.hpp"
 
 // subclassing and friending so we can access member variables

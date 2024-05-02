@@ -74,7 +74,7 @@ TEST_F(GenericEcSlaveTest, SlaveSetupNoSlaveConfig)
   std::unordered_map<std::string, std::string> slave_paramters;
   // setup failed, 'slave_config' parameter not set
   ASSERT_EQ(
-    plugin_->setupSlave(
+    plugin_->setup_slave(
       slave_paramters,
       &state_interface,
       &command_interface
@@ -92,7 +92,7 @@ TEST_F(GenericEcSlaveTest, SlaveSetupMissingFileSlaveConfig)
   slave_paramters["slave_config"] = "slave_config.yaml";
   // setup failed, 'slave_config.yaml' file not set
   ASSERT_EQ(
-    plugin_->setupSlave(
+    plugin_->setup_slave(
       slave_paramters,
       &state_interface,
       &command_interface
@@ -108,109 +108,57 @@ TEST_F(GenericEcSlaveTest, SlaveSetupSlaveFromConfig)
     plugin_->setup_from_config(YAML::Load(test_slave_config)),
     true
   );
-  ASSERT_EQ(plugin_->vendor_id_, 0x00000011);
-  ASSERT_EQ(plugin_->product_id_, 0x07030924);
-  ASSERT_EQ(plugin_->assign_activate_, 0x0321);
+  ASSERT_EQ(plugin_->vendor_id_, 0x00000011u);
+  ASSERT_EQ(plugin_->product_id_, 0x07030924u);
+  ASSERT_EQ(plugin_->assign_activate_, 0x0321u);
 
-  ASSERT_EQ(plugin_->rpdos_.size(), 1);
-  ASSERT_EQ(plugin_->rpdos_[0].index, 0x1607);
-
-  ASSERT_EQ(plugin_->tpdos_.size(), 2);
-  ASSERT_EQ(plugin_->tpdos_[0].index, 0x1a07);
-  ASSERT_EQ(plugin_->tpdos_[1].index, 0x1a45);
-
-  ASSERT_EQ(plugin_->pdo_channels_info_[1].interface_name, "velocity");
-  ASSERT_EQ(plugin_->pdo_channels_info_[2].factor, 2);
-  ASSERT_EQ(plugin_->pdo_channels_info_[2].offset, 10);
-  ASSERT_EQ(plugin_->pdo_channels_info_[3].default_value, 1000);
-  ASSERT_TRUE(std::isnan(plugin_->pdo_channels_info_[0].default_value));
-  ASSERT_EQ(plugin_->pdo_channels_info_[4].interface_name, "null");
-  ASSERT_EQ(plugin_->pdo_channels_info_[12].interface_name, "analog_input2");
-  ASSERT_EQ(plugin_->pdo_channels_info_[4].data_type, "uint16");
-}
-
-TEST_F(GenericEcSlaveTest, SlaveSetupPdoChannels)
-{
-  SetUp();
-  plugin_->setup_from_config(YAML::Load(test_slave_config));
-  std::vector<ec_pdo_entry_info_t> channels(
-    plugin_->channels(),
-    plugin_->channels() + plugin_->all_channels_.size()
-  );
-
-  ASSERT_EQ(channels.size(), 13);
-  ASSERT_EQ(channels[0].index, 0x607a);
-  ASSERT_EQ(channels[11].index, 0x2205);
-  ASSERT_EQ(channels[11].subindex, 0x01);
-}
-
-TEST_F(GenericEcSlaveTest, SlaveSetupSyncs)
-{
-  SetUp();
-  plugin_->setup_from_config(YAML::Load(test_slave_config));
-  plugin_->setup_syncs();
-  std::vector<ec_sync_info_t> syncs(
-    plugin_->syncs(),
-    plugin_->syncs() + plugin_->syncSize()
-  );
-
-  ASSERT_EQ(syncs.size(), 5);
-  ASSERT_EQ(syncs[1].index, 1);
-  ASSERT_EQ(syncs[1].dir, EC_DIR_INPUT);
-  ASSERT_EQ(syncs[1].n_pdos, 0);
-  ASSERT_EQ(syncs[1].watchdog_mode, EC_WD_DISABLE);
-  ASSERT_EQ(syncs[2].dir, EC_DIR_OUTPUT);
-  ASSERT_EQ(syncs[2].n_pdos, 1);
-  ASSERT_EQ(syncs[3].index, 3);
-  ASSERT_EQ(syncs[3].dir, EC_DIR_INPUT);
-  ASSERT_EQ(syncs[3].n_pdos, 2);
-  ASSERT_EQ(syncs[3].watchdog_mode, EC_WD_DISABLE);
-}
-
-TEST_F(GenericEcSlaveTest, SlaveSetupDomains)
-{
-  SetUp();
-  plugin_->setup_from_config(YAML::Load(test_slave_config));
-  std::map<unsigned int, std::vector<unsigned int>> domains;
-  plugin_->domains(domains);
-
-  ASSERT_EQ(domains[0].size(), 13);
-  ASSERT_EQ(domains[0][0], 0);
-  ASSERT_EQ(domains[0][12], 12);
+  ASSERT_EQ(plugin_->get_pdo_config()[0].pdo_channel_config[1].interface_name, "velocity");
+  ASSERT_EQ(plugin_->get_pdo_config()[0].pdo_channel_config[2].factor, 2);
+  ASSERT_EQ(plugin_->get_pdo_config()[0].pdo_channel_config[2].offset, 10);
+  ASSERT_EQ(plugin_->get_pdo_config()[0].pdo_channel_config[3].default_value, 1000);
+  ASSERT_TRUE(std::isnan(plugin_->get_pdo_config()[0].pdo_channel_config[0].default_value));
+  ASSERT_EQ(plugin_->get_pdo_config()[0].pdo_channel_config[4].interface_name, "null");
+  ASSERT_EQ(plugin_->get_pdo_config()[2].pdo_channel_config[1].interface_name, "analog_input2");
+  ASSERT_EQ(plugin_->get_pdo_config()[0].pdo_channel_config[4].data_type, "uint16");
 }
 
 TEST_F(GenericEcSlaveTest, EcReadTPDOToStateInterface)
 {
   SetUp();
-  std::unordered_map<std::string, std::string> slave_paramters;
   std::vector<double> state_interface = {0, 0};
-  plugin_->state_interface_ptr_ = &state_interface;
+  std::unordered_map<std::string, std::string> slave_paramters;
   slave_paramters["state_interface/effort"] = "1";
+
+  plugin_->state_interface_ptr_ = &state_interface;
   plugin_->paramters_ = slave_paramters;
   plugin_->setup_from_config(YAML::Load(test_slave_config));
   plugin_->setup_interface_mapping();
-  ASSERT_EQ(plugin_->pdo_channels_info_[8].interface_index, 1);
+
+  ASSERT_EQ(plugin_->get_pdo_config().size(), 3u);
+  ASSERT_EQ(plugin_->get_pdo_config()[1].pdo_channel_config[2].interface_index, 1);
   uint8_t domain_address[2];
-  EC_WRITE_S16(domain_address, 42);
-  plugin_->processData(8, domain_address);
+  write_s16(domain_address, 42);
+  plugin_->process_data(1, 2, domain_address);
   ASSERT_EQ(plugin_->state_interface_ptr_->at(1), 5 * 42 + 15);
 }
 
 TEST_F(GenericEcSlaveTest, EcWriteRPDOFromCommandInterface)
 {
   SetUp();
-  std::unordered_map<std::string, std::string> slave_paramters;
   std::vector<double> command_interface = {0, 42};
-  plugin_->command_interface_ptr_ = &command_interface;
+  std::unordered_map<std::string, std::string> slave_paramters;
   slave_paramters["command_interface/effort"] = "1";
+
+  plugin_->command_interface_ptr_ = &command_interface;
   plugin_->paramters_ = slave_paramters;
   plugin_->setup_from_config(YAML::Load(test_slave_config));
   plugin_->setup_interface_mapping();
-  ASSERT_EQ(plugin_->pdo_channels_info_[2].interface_index, 1);
+
+  ASSERT_EQ(plugin_->get_pdo_config()[0].pdo_channel_config[2].interface_index, 1);
   uint8_t domain_address[2];
-  plugin_->processData(2, domain_address);
-  ASSERT_EQ(plugin_->pdo_channels_info_[2].last_value, 2 * 42 + 10);
-  ASSERT_EQ(EC_READ_S16(domain_address), 2 * 42 + 10);
+  plugin_->process_data(0, 2, domain_address);
+  ASSERT_EQ(plugin_->get_pdo_config()[0].pdo_channel_config[2].last_value, 2 * 42 + 10);
+  ASSERT_EQ(read_s16(domain_address), 2 * 42 + 10);
 }
 
 TEST_F(GenericEcSlaveTest, EcWriteRPDODefaultValue)
@@ -218,35 +166,36 @@ TEST_F(GenericEcSlaveTest, EcWriteRPDODefaultValue)
   SetUp();
   plugin_->setup_from_config(YAML::Load(test_slave_config));
   plugin_->setup_interface_mapping();
+
   uint8_t domain_address[2];
-  plugin_->processData(2, domain_address);
-  ASSERT_EQ(plugin_->pdo_channels_info_[2].last_value, -5);
-  ASSERT_EQ(EC_READ_S16(domain_address), -5);
+  plugin_->process_data(0, 2, domain_address);
+  ASSERT_EQ(plugin_->get_pdo_config()[0].pdo_channel_config[2].last_value, -5);
+  ASSERT_EQ(read_s16(domain_address), -5);
 }
 
 TEST_F(GenericEcSlaveTest, SlaveSetupSDOConfig)
 {
   SetUp();
   plugin_->setup_from_config(YAML::Load(test_slave_config));
-  ASSERT_EQ(plugin_->sdo_config[0].index, 0x60C2);
-  ASSERT_EQ(plugin_->sdo_config[0].sub_index, 1);
-  ASSERT_EQ(plugin_->sdo_config[1].sub_index, 2);
-  ASSERT_EQ(plugin_->sdo_config[0].data_size(), 1);
-  ASSERT_EQ(plugin_->sdo_config[0].data, 10);
-  ASSERT_EQ(plugin_->sdo_config[2].index, 0x6098);
-  ASSERT_EQ(plugin_->sdo_config[3].data_type, "int32");
-  ASSERT_EQ(plugin_->sdo_config[3].data_size(), 4);
+  ASSERT_EQ(plugin_->get_sdo_config()[0].index, 0x60C2);
+  ASSERT_EQ(plugin_->get_sdo_config()[0].sub_index, 1);
+  ASSERT_EQ(plugin_->get_sdo_config()[1].sub_index, 2);
+  ASSERT_EQ(plugin_->get_sdo_config()[0].data_size(), 1ul);
+  ASSERT_EQ(plugin_->get_sdo_config()[0].data, 10);
+  ASSERT_EQ(plugin_->get_sdo_config()[2].index, 0x6098);
+  ASSERT_EQ(plugin_->get_sdo_config()[3].data_type, "int32");
+  ASSERT_EQ(plugin_->get_sdo_config()[3].data_size(), 4ul);
 }
 
 TEST_F(GenericEcSlaveTest, SlaveSetupSyncManagerConfig)
 {
   SetUp();
   plugin_->setup_from_config(YAML::Load(test_slave_config));
-  ASSERT_EQ(plugin_->sm_configs_.size(), 4);
-  ASSERT_EQ(plugin_->sm_configs_[0].index, 0);
-  ASSERT_EQ(plugin_->sm_configs_[0].type, EC_DIR_OUTPUT);
-  ASSERT_EQ(plugin_->sm_configs_[0].watchdog, EC_WD_DISABLE);
-  ASSERT_EQ(plugin_->sm_configs_[0].pdo_name, "null");
-  ASSERT_EQ(plugin_->sm_configs_[2].pdo_name, "rpdo");
-  ASSERT_EQ(plugin_->sm_configs_[2].watchdog, EC_WD_ENABLE);
+  ASSERT_EQ(plugin_->get_sm_config().size(), 4ul);
+  ASSERT_EQ(plugin_->get_sm_config()[0].index, 0);
+  ASSERT_EQ(plugin_->get_sm_config()[0].type, 0);
+  ASSERT_EQ(plugin_->get_sm_config()[0].watchdog, -1);
+  ASSERT_EQ(plugin_->get_sm_config()[0].pdo_name, "null");
+  ASSERT_EQ(plugin_->get_sm_config()[2].pdo_name, "rpdo");
+  ASSERT_EQ(plugin_->get_sm_config()[2].watchdog, 1);
 }

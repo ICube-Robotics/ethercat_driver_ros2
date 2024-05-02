@@ -12,17 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-// Author: Maciej Bednarczyk (macbednarczyk@gmail.com)
+// Author: Maciej Bednarczyk (mcbed.robotics@gmail.com)
 
 #ifndef ETHERCAT_INTERFACE__EC_PDO_CHANNEL_MANAGER_HPP_
 #define ETHERCAT_INTERFACE__EC_PDO_CHANNEL_MANAGER_HPP_
 
-#include <ecrt.h>
 #include <string>
 #include <vector>
 #include <limits>
 
 #include "yaml-cpp/yaml.h"
+#include "ethercat_interface/ec_buffer_tools.h"
 
 namespace ethercat_interface
 {
@@ -36,6 +36,26 @@ class EcPdoChannelManager
 {
 public:
   EcPdoChannelManager() {}
+  EcPdoChannelManager(
+    uint16_t index,
+    uint8_t sub_index,
+    PdoType pdo_type,
+    std::string data_type,
+    std::string interface_name = "",
+    uint8_t data_mask = 255,
+    double default_value = std::numeric_limits<double>::quiet_NaN(),
+    double factor = 1,
+    double offset = 0)
+  : index(index),
+    sub_index(sub_index),
+    pdo_type(pdo_type),
+    data_type(data_type),
+    interface_name(interface_name),
+    data_mask(data_mask),
+    default_value(default_value),
+    factor(factor),
+    offset(offset)
+  {}
   ~EcPdoChannelManager() {}
   void setup_interface_ptrs(
     std::vector<double> * state_interface,
@@ -45,30 +65,28 @@ public:
     state_interface_ptr_ = state_interface;
   }
 
-  ec_pdo_entry_info_t get_pdo_entry_info() {return {index, sub_index, type2bits(data_type)};}
-
   double ec_read(uint8_t * domain_address)
   {
     if (data_type == "uint8") {
-      last_value = static_cast<double>(EC_READ_U8(domain_address));
+      last_value = static_cast<double>(read_u8(domain_address));
     } else if (data_type == "int8") {
-      last_value = static_cast<double>(EC_READ_S8(domain_address));
+      last_value = static_cast<double>(read_s8(domain_address));
     } else if (data_type == "uint16") {
-      last_value = static_cast<double>(EC_READ_U16(domain_address));
+      last_value = static_cast<double>(read_u16(domain_address));
     } else if (data_type == "int16") {
-      last_value = static_cast<double>(EC_READ_S16(domain_address));
+      last_value = static_cast<double>(read_s16(domain_address));
     } else if (data_type == "uint32") {
-      last_value = static_cast<double>(EC_READ_U32(domain_address));
+      last_value = static_cast<double>(read_u32(domain_address));
     } else if (data_type == "int32") {
-      last_value = static_cast<double>(EC_READ_S32(domain_address));
+      last_value = static_cast<double>(read_s32(domain_address));
     } else if (data_type == "uint64") {
-      last_value = static_cast<double>(EC_READ_U64(domain_address));
+      last_value = static_cast<double>(read_u64(domain_address));
     } else if (data_type == "int64") {
-      last_value = static_cast<double>(EC_READ_S64(domain_address));
+      last_value = static_cast<double>(read_s64(domain_address));
     } else if (data_type == "bool") {
-      last_value = (EC_READ_U8(domain_address) & data_mask) ? 1 : 0;
+      last_value = (read_u8(domain_address) & data_mask) ? 1 : 0;
     } else {
-      last_value = static_cast<double>(EC_READ_U8(domain_address) & data_mask);
+      last_value = static_cast<double>(read_u8(domain_address) & data_mask);
     }
     last_value = factor * last_value + offset;
     return last_value;
@@ -77,23 +95,23 @@ public:
   void ec_write(uint8_t * domain_address, double value)
   {
     if (data_type == "uint8") {
-      EC_WRITE_U8(domain_address, static_cast<uint8_t>(value));
+      write_u8(domain_address, static_cast<uint8_t>(value));
     } else if (data_type == "int8") {
-      EC_WRITE_S8(domain_address, static_cast<int8_t>(value));
+      write_s8(domain_address, static_cast<int8_t>(value));
     } else if (data_type == "uint16") {
-      EC_WRITE_U16(domain_address, static_cast<uint16_t>(value));
+      write_u16(domain_address, static_cast<uint16_t>(value));
     } else if (data_type == "int16") {
-      EC_WRITE_S16(domain_address, static_cast<int16_t>(value));
+      write_s16(domain_address, static_cast<int16_t>(value));
     } else if (data_type == "uint32") {
-      EC_WRITE_U32(domain_address, static_cast<uint32_t>(value));
+      write_u32(domain_address, static_cast<uint32_t>(value));
     } else if (data_type == "int32") {
-      EC_WRITE_S32(domain_address, static_cast<int32_t>(value));
+      write_s32(domain_address, static_cast<int32_t>(value));
     } else if (data_type == "uint64") {
-      EC_WRITE_U64(domain_address, static_cast<uint64_t>(value));
+      write_u64(domain_address, static_cast<uint64_t>(value));
     } else if (data_type == "int64") {
-      EC_WRITE_S64(domain_address, static_cast<int64_t>(value));
+      write_s64(domain_address, static_cast<int64_t>(value));
     } else {
-      buffer_ = EC_READ_U8(domain_address);
+      buffer_ = read_u8(domain_address);
       if (popcount(data_mask) == 1) {
         buffer_ &= ~(data_mask);
         if (value) {buffer_ |= data_mask;}
@@ -101,7 +119,7 @@ public:
         buffer_ = 0;
         buffer_ |= (static_cast<uint8_t>(value) & data_mask);
       }
-      EC_WRITE_U8(domain_address, buffer_);
+      write_u8(domain_address, buffer_);
     }
     last_value = value;
   }
@@ -203,9 +221,11 @@ public:
     return -1;
   }
 
-  PdoType pdo_type;
+  uint8_t get_bits_size() {return type2bits(data_type);}
+
   uint16_t index;
   uint8_t sub_index;
+  PdoType pdo_type;
   std::string data_type;
   std::string interface_name;
   uint8_t data_mask = 255;
