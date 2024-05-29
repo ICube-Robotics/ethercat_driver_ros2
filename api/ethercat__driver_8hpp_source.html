@@ -157,10 +157,12 @@ $(function() {
 <div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160; </div>
 <div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;  <span class="keywordtype">int</span> control_frequency_;</div>
 <div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;  <a class="code" href="classethercat__interface_1_1EcMaster.html">ethercat_interface::EcMaster</a> master_;</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;};</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;}  <span class="comment">// namespace ethercat_driver</span></div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160; </div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="preprocessor">#endif  </span><span class="comment">// ETHERCAT_DRIVER__ETHERCAT_DRIVER_HPP_</span></div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;  std::mutex ec_mutex_;</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;  <span class="keywordtype">bool</span> activated_;</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;};</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;}  <span class="comment">// namespace ethercat_driver</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160; </div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="preprocessor">#endif  </span><span class="comment">// ETHERCAT_DRIVER__ETHERCAT_DRIVER_HPP_</span></div>
 <div class="ttc" id="aclassethercat__driver_1_1EthercatDriver_html"><div class="ttname"><a href="classethercat__driver_1_1EthercatDriver.html">ethercat_driver::EthercatDriver</a></div><div class="ttdef"><b>Definition:</b> ethercat_driver.hpp:40</div></div>
 <div class="ttc" id="aclassethercat__driver_1_1EthercatDriver_html_a247cd9bfbf64a8915b084444d619b6ab"><div class="ttname"><a href="classethercat__driver_1_1EthercatDriver.html#a247cd9bfbf64a8915b084444d619b6ab">ethercat_driver::EthercatDriver::on_configure</a></div><div class="ttdeci">ETHERCAT_DRIVER_PUBLIC CallbackReturn on_configure(const rclcpp_lifecycle::State &amp;previous_state) override</div></div>
 <div class="ttc" id="aclassethercat__driver_1_1EthercatDriver_html_a3197ad92f1d35563cb2c3fdeb478c346"><div class="ttname"><a href="classethercat__driver_1_1EthercatDriver.html#a3197ad92f1d35563cb2c3fdeb478c346">ethercat_driver::EthercatDriver::read</a></div><div class="ttdeci">ETHERCAT_DRIVER_PUBLIC hardware_interface::return_type read(const rclcpp::Time &amp;, const rclcpp::Duration &amp;) override</div></div>
