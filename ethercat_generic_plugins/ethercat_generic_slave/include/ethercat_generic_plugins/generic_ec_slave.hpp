@@ -36,7 +36,7 @@ public:
   virtual ~GenericEcSlave();
   virtual int assign_activate_dc_sync();
 
-  virtual void processData(size_t index, uint8_t * domain_address);
+  virtual void processData(size_t entry_idx, uint8_t * domain_address);
 
   virtual const ec_sync_info_t * syncs();
   virtual size_t syncSize();
@@ -44,7 +44,7 @@ public:
   virtual void domains(DomainMap & domains) const;
 
   virtual bool setupSlave(
-    std::unordered_map<std::string, std::string> slave_paramters,
+    std::unordered_map<std::string, std::string> slave_parameters,
     std::vector<double> * state_interface,
     std::vector<double> * command_interface);
 
@@ -52,8 +52,9 @@ protected:
   uint32_t counter_ = 0;
   std::vector<ec_pdo_info_t> rpdos_;
   std::vector<ec_pdo_info_t> tpdos_;
+  std::vector<bool> all_channels_skip_list_;
   std::vector<ec_pdo_entry_info_t> all_channels_;
-  std::vector<ethercat_interface::EcPdoChannelManager> pdo_channels_info_;
+  std::vector<ethercat_interface::EcPdoChannelManager *> pdo_channels_info_;
   std::vector<ethercat_interface::SMConfig> sm_configs_;
   std::vector<ec_sync_info_t> syncs_;
   std::vector<unsigned int> domain_map_;

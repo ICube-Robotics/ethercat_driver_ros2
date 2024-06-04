@@ -59,13 +59,13 @@ To be loaded by the :code:`ethercat_driver_ros2`, the new module plugin needs to
     // configure the slave module with urdf parameters
     // and link ros2_control command and stat interface
     virtual bool setupSlave(
-      std::unordered_map<std::string, std::string> slave_paramters,
+      std::unordered_map<std::string, std::string> slave_parameters,
       std::vector<double> * state_interface,
       std::vector<double> * command_interface)
     {
       state_interface_ptr_ = state_interface;
       command_interface_ptr_ = command_interface;
-      paramters_ = slave_paramters;
+      parameters_ = slave_parameters;
 
       // Your module setup logic goes here
 

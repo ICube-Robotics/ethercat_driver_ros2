@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <ros2_control name="ec_safety_estop_test_config" type="system">
+        <hardware>
+            <plugin>ethercat_driver/EthercatSafetyDriver</plugin>
+            <param name="master_id">0</param>
+            <param name="control_frequency">100</param>
+            <param name="fsoe_config">estop_ethercat_safety.yaml</param>
+        </hardware>
+
+        <gpio name="el1918">
+            <ec_module name="el1918">
+                <param name="alias">0</param>
+                <param name="position">1</param>
+                <param name="slave_config">beckhoff_el1918.yaml</param>
+                <command_interface name="safety_states"/>
+                <!-- bit 0 is safety_error_ack and bit 1 is safety_run -->
+            </ec_module>
+        </gpio>
+
+        <gpio name="ek1914">
+            <state_interface name="input_1" />
+            <state_interface name="input_2" />
+            <state_interface name="input_3" />
+            <state_interface name="input_4" />
+            <command_interface name="output_1" />
+            <command_interface name="output_2" />
+            <command_interface name="output_3" />
+            <command_interface name="output_4" />
+            <ec_module name="ek1914">
+                <plugin>ethercat_generic_plugins/GenericEcSlave</plugin>
+                <param name="alias">0</param>
+                <param name="position">0</param>
+                <param name="slave_config">beckhoff_ek1914.yaml</param>
+            </ec_module>
+        </gpio>
+    </ros2_control>
+</robot>

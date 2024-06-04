@@ -13,13 +13,16 @@ find_package(pluginlib REQUIRED)
 find_package(yaml_cpp_vendor REQUIRED)
 
 file(GLOB_RECURSE PLUGINS_SRC src/*.cpp)
-add_library(ethercat_generic_slave ${PLUGINS_SRC})
-target_compile_features(ethercat_generic_slave PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
-target_include_directories(ethercat_generic_slave PUBLIC
+
+add_library(${PROJECT_NAME} ${PLUGINS_SRC})
+
+target_compile_features(${PROJECT_NAME} PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
+
+target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
-ament_target_dependencies(
-  ethercat_generic_slave
+  $<INSTALL_INTERFACE:include>
+)
+ament_target_dependencies( ${PROJECT_NAME}
   ethercat_interface
   pluginlib
   yaml_cpp_vendor
@@ -33,7 +36,7 @@ install(
 )
 
 install(
-  TARGETS ethercat_generic_slave
+  TARGETS ${PROJECT_NAME}
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
@@ -62,13 +65,13 @@ if(BUILD_TESTING)
     test_generic_ec_slave
     test/test_generic_ec_slave.cpp
   )
-  target_include_directories(test_generic_ec_slave PRIVATE include)
-  target_link_libraries(test_generic_ec_slave
-    ethercat_generic_slave
-  )
   ament_target_dependencies(test_generic_ec_slave
     pluginlib
     ethercat_interface
+  )
+  target_include_directories(test_generic_ec_slave PRIVATE include)
+  target_link_libraries(test_generic_ec_slave
+    ${PROJECT_NAME}
   )
 endif()
 
@@ -76,7 +79,7 @@ ament_export_include_directories(
   include
 )
 ament_export_libraries(
-  ethercat_generic_slave
+  ${PROJECT_NAME}
 )
 ament_export_targets(
   export_${PROJECT_NAME}

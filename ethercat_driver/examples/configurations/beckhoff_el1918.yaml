@@ -1,0 +1,41 @@
+# Configuration file for Beckhoff EL1918
+# Description : EtherCAT safety Terminal, master version, 8-channel digital safety input, 24 V DC, 10 us (TBC).
+vendor_id: 0x00000002
+product_id: 0x077e3052
+tpdo: # TxPDO = transmit PDO Mapping, MASTER IN SLAVE OUT
+  - index: 0x1a00
+    channels:
+      - { index: 0x6080, sub_index: 0x01, type: int8 }
+      - { index: 0x6081, sub_index: 0x01, type: int8 }
+      - { index: 0x6080, sub_index: 0x03, type: int16 }
+      - { index: 0x6080, sub_index: 0x02, type: int16 }
+  - index: 0x1bff
+    channels:
+      - { index: 0xf100, sub_index: 0x01, type: int8 }
+      - { index: 0xf100, sub_index: 0x02, type: int8 }
+rpdo: # RxPDO = receive PDO Mapping, MASTER OUT SLAVE IN
+  - index: 0x1600
+    channels:
+      - { index: 0x7080, sub_index: 0x01, type: int8 }
+      - { index: 0x7081, sub_index: 0x01, type: int8 }
+      - { index: 0x7080, sub_index: 0x03, type: int16 }
+      - { index: 0x7080, sub_index: 0x02, type: int16 }
+  - index: 0x17f0
+    channels:
+      - {
+          index: 0xf788,
+          sub_index: 0x00,
+          type: int8,
+          command_interface: safety_states, # Bit 0 is safety error ACK and Bit 1 is safety RUN
+        }
+  - index: 0x17ff
+    channels:
+      - { index: 0x0000, sub_index: 0x00, type: bit16 }
+
+sm: # Sync Manager
+  - { index: 0, type: output, watchdog: disable }
+  - { index: 1, type: input, watchdog: disable }
+  - { index: 2, type: output, pdo: rpdo, watchdog: disable }
+  - { index: 3, type: input, pdo: tpdo, watchdog: disable }
+  - { index: 4, type: output, watchdog: disable }
+  - { index: 5, type: input, watchdog: disable }

@@ -24,7 +24,11 @@ ament_export_include_directories(
 add_library(
   ${PROJECT_NAME}
   SHARED
-  src/ec_master.cpp)
+  src/ec_master.cpp
+  src/ec_pdo_channel_manager.cpp
+  src/ec_pdo_single_interface_channel_manager.cpp
+  src/ec_pdo_group_interface_channel_manager.cpp
+)
 
 target_include_directories(
   ${PROJECT_NAME}
@@ -64,6 +68,10 @@ if(BUILD_TESTING)
   target_include_directories(test_ec_pdo_channel_manager PRIVATE include ${ETHERLAB_DIR}/include)
   ament_target_dependencies(test_ec_pdo_channel_manager
     yaml_cpp_vendor
+  )
+
+  target_link_libraries(test_ec_pdo_channel_manager
+    ${PROJECT_NAME}
   )
 endif()
 
