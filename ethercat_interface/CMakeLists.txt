@@ -1,6 +1,13 @@
 cmake_minimum_required(VERSION 3.8)
 project(ethercat_interface)
 
+
+# Default to C++17
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+endif()
+
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
@@ -53,7 +60,10 @@ install(
 if(BUILD_TESTING)
   # find_package(ament_cmake_gtest REQUIRED)
   find_package(ament_lint_auto REQUIRED)
+
   find_package(yaml_cpp_vendor REQUIRED)
+  find_package(yaml-cpp REQUIRED)
+
   ament_lint_auto_find_test_dependencies()
 
   # Test PdoChannelManager
@@ -62,9 +72,10 @@ if(BUILD_TESTING)
     test/test_ec_pdo_channel_manager.cpp
   )
   target_include_directories(test_ec_pdo_channel_manager PRIVATE include ${ETHERLAB_DIR}/include)
-  ament_target_dependencies(test_ec_pdo_channel_manager
-    yaml_cpp_vendor
-  )
+
+  target_link_libraries(test_ec_pdo_channel_manager
+    ${PROJECT_NAME}
+    yaml-cpp)
 endif()
 
 ## EXPORTS

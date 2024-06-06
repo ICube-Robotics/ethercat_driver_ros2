@@ -20,7 +20,7 @@
 
 TEST(TestLoadGenericEcSlave, load_ec_module)
 {
-  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{
-    "ethercat_interface", "ethercat_interface::EcSlave"};
+  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_(
+    "ethercat_interface", "ethercat_interface::EcSlave");
   ASSERT_NO_THROW(ec_loader_.createSharedInstance("ethercat_generic_plugins/GenericEcSlave"));
 }
