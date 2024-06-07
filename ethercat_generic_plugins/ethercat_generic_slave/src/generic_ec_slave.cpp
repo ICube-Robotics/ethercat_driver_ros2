@@ -68,19 +68,23 @@ void GenericEcSlave::setup_syncs()
   if (sm_configs_.size() == 0) {
     syncs_.push_back({0, EC_DIR_OUTPUT, 0, NULL, EC_WD_DISABLE});
     syncs_.push_back({1, EC_DIR_INPUT, 0, NULL, EC_WD_DISABLE});
-    syncs_.push_back({2, EC_DIR_OUTPUT, (unsigned int)(rpdos_.size()), rpdos_.data(),
+    syncs_.push_back(
+      {2, EC_DIR_OUTPUT, (unsigned int)(rpdos_.size()), rpdos_.data(),
         EC_WD_ENABLE});
-    syncs_.push_back({3, EC_DIR_INPUT, (unsigned int)(tpdos_.size()), tpdos_.data(),
+    syncs_.push_back(
+      {3, EC_DIR_INPUT, (unsigned int)(tpdos_.size()), tpdos_.data(),
         EC_WD_DISABLE});
   } else {
     for (auto & sm : sm_configs_) {
       if (sm.pdo_name == "null") {
         syncs_.push_back({sm.index, sm.type, 0, NULL, sm.watchdog});
       } else if (sm.pdo_name == "rpdo") {
-        syncs_.push_back({sm.index, sm.type, (unsigned int)(rpdos_.size()), rpdos_.data(),
+        syncs_.push_back(
+          {sm.index, sm.type, (unsigned int)(rpdos_.size()), rpdos_.data(),
             sm.watchdog});
       } else if (sm.pdo_name == "tpdo") {
-        syncs_.push_back({sm.index, sm.type, (unsigned int)(tpdos_.size()), tpdos_.data(),
+        syncs_.push_back(
+          {sm.index, sm.type, (unsigned int)(tpdos_.size()), tpdos_.data(),
             sm.watchdog});
       }
     }
