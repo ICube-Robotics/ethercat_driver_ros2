@@ -24,7 +24,6 @@
 #include "ethercat_manager/ec_master_async.hpp"
 #include "ethercat_manager/data_convertion_tools.hpp"
 
-
 namespace ethercat_manager
 {
 void upload(
@@ -60,6 +59,9 @@ void upload(
     response->success = false;
     RCLCPP_ERROR(rclcpp::get_logger("ethercat_manager"), return_stream.str().c_str());
     response->sdo_return_message = return_stream.str();
+    if (nullptr != data.target) {
+      delete[] data.target;
+    }
     return;
   }
 
@@ -70,6 +72,9 @@ void upload(
     response->success = false;
     RCLCPP_ERROR(rclcpp::get_logger("ethercat_manager"), return_stream.str().c_str());
     response->sdo_return_message = return_stream.str();
+    if (nullptr != data.target) {
+      delete[] data.target;
+    }
     return;
   }
 
@@ -78,11 +83,13 @@ void upload(
   try {
     buffer2data(data_stream, data_value, data_type, data.target, data.data_size);
   } catch (SizeException & e) {
-    delete[] data.target;
     return_stream << e.what();
     response->success = false;
     RCLCPP_ERROR(rclcpp::get_logger("ethercat_manager"), return_stream.str().c_str());
     response->sdo_return_message = return_stream.str();
+    if (nullptr != data.target) {
+      delete[] data.target;
+    }
     return;
   }
   return_stream << "SDO upload done successfully";
@@ -91,7 +98,9 @@ void upload(
   response->sdo_return_value = data_value;
   response->sdo_return_message = return_stream.str();
 
-  delete[] data.target;
+  if (nullptr != data.target) {
+    delete[] data.target;
+  }
   RCLCPP_INFO(rclcpp::get_logger("ethercat_sdo_srv_server"), return_stream.str().c_str());
 }
 
@@ -122,18 +131,22 @@ void download(
     data.data_size = data2buffer(
       data_type, request->sdo_value, data.data, data.data_size);
   } catch (SizeException & e) {
-    delete[] data.data;
     return_stream << e.what();
     response->success = false;
     response->sdo_return_message = return_stream.str();
     RCLCPP_ERROR(rclcpp::get_logger("ethercat_manager"), return_stream.str().c_str());
+    if (nullptr != data.data) {
+      delete[] data.data;
+    }
     return;
   } catch (std::ios::failure & e) {
-    delete[] data.data;
     return_stream << "Invalid value for type '" << data_type->name << "'!";
     response->success = false;
     response->sdo_return_message = return_stream.str();
     RCLCPP_ERROR(rclcpp::get_logger("ethercat_manager"), return_stream.str().c_str());
+    if (nullptr != data.data) {
+      delete[] data.data;
+    }
     return;
   }
 
@@ -145,6 +158,9 @@ void download(
     response->success = false;
     RCLCPP_ERROR(rclcpp::get_logger("ethercat_manager"), return_stream.str().c_str());
     response->sdo_return_message = return_stream.str();
+    if (nullptr != data.data) {
+      delete[] data.data;
+    }
     return;
   }
 
@@ -155,6 +171,9 @@ void download(
     response->success = false;
     RCLCPP_ERROR(rclcpp::get_logger("ethercat_manager"), return_stream.str().c_str());
     response->sdo_return_message = return_stream.str();
+    if (nullptr != data.data) {
+      delete[] data.data;
+    }
     return;
   }
 
@@ -164,11 +183,12 @@ void download(
   response->success = true;
   response->sdo_return_message = return_stream.str();
 
-  delete[] data.data;
+  if (nullptr != data.data) {
+    delete[] data.data;
+  }
   RCLCPP_INFO(rclcpp::get_logger("ethercat_sdo_srv_server"), return_stream.str().c_str());
 }
 }  // namespace ethercat_manager
-
 
 int main(int argc, char ** argv)
 {
