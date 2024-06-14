@@ -1,0 +1,21 @@
+# This service handles the setting up of the mode of operation for a CiA402 drive.
+
+# Modes of Operation
+uint8 MODE_NO_MODE=0
+uint8 MODE_PROFILED_POSITION=1
+uint8 MODE_PROFILED_VELOCITY=3
+uint8 MODE_PROFILED_TORQUE=4
+uint8 MODE_HOMING=6
+uint8 MODE_INTERPOLATED_POSITION=7
+uint8 MODE_CYCLIC_SYNC_POSITION=8
+uint8 MODE_CYCLIC_SYNC_VELOCITY=9
+uint8 MODE_CYCLIC_SYNC_TORQUE=10
+
+# DoF name
+string dof_name
+
+# Mode of Operation
+int32 mode_of_operation
+---
+# Return message
+string return_message
