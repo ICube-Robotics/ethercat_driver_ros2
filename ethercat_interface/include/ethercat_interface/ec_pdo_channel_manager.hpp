@@ -65,6 +65,8 @@ public:
       last_value = static_cast<double>(EC_READ_U64(domain_address));
     } else if (data_type == "int64") {
       last_value = static_cast<double>(EC_READ_S64(domain_address));
+    } else if (data_type == "real32" || data_type == "float") {
+      last_value = static_cast<double>(EC_READ_REAL(domain_address));
     } else if (data_type == "bool") {
       last_value = (EC_READ_U8(domain_address) & data_mask) ? 1 : 0;
     } else {
@@ -92,6 +94,8 @@ public:
       EC_WRITE_U64(domain_address, static_cast<uint64_t>(value));
     } else if (data_type == "int64") {
       EC_WRITE_S64(domain_address, static_cast<int64_t>(value));
+    } else if (data_type == "real32" || data_type == "float") {
+      EC_WRITE_REAL(domain_address, static_cast<float>(value));
     } else {
       buffer_ = EC_READ_U8(domain_address);
       if (popcount(data_mask) == 1) {

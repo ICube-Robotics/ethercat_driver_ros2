@@ -25,7 +25,7 @@ size_t type2bytes(std::string type)
     return 1;
   } else if (type == "int16" || type == "uint16") {
     return 2;
-  } else if (type == "int32" || type == "uint32") {
+  } else if (type == "int32" || type == "uint32" || type == "float" || type == "real32") {
     return 4;
   } else if (type == "int64" || type == "uint64") {
     return 8;

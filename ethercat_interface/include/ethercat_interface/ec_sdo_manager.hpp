@@ -51,6 +51,8 @@ public:
       EC_WRITE_U64(buffer, static_cast<uint64_t>(data));
     } else if (data_type == "int64") {
       EC_WRITE_S64(buffer, static_cast<int64_t>(data));
+    } else if (data_type == "real32" || data_type == "float") {
+      EC_WRITE_REAL(buffer, static_cast<float>(data));
     }
   }
 
@@ -105,7 +107,7 @@ private:
       return 1;
     } else if (type == "int16" || type == "uint16") {
       return 2;
-    } else if (type == "int32" || type == "uint32") {
+    } else if (type == "int32" || type == "uint32" || type == "float" || type == "real32") {
       return 4;
     } else if (type == "int64" || type == "uint64") {
       return 8;
