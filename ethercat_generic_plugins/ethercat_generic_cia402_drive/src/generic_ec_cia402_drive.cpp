@@ -148,6 +148,17 @@ bool EcCiA402Drive::setup_from_config(YAML::Node drive_config)
   if (drive_config["auto_state_transitions"]) {
     auto_state_transitions_ = drive_config["auto_state_transitions"].as<bool>();
   }
+
+  // Find the default mode of operation if it was specified in the configuration file
+  for (auto & channel : pdo_channels_info_) {
+    if (channel.index == CiA402D_RPDO_MODE_OF_OPERATION) {
+      if (!std::isnan(channel.default_value) ) {
+        mode_of_operation_ = channel.default_value;
+      }
+      break;
+    }
+  }
+
   return true;
 }
 
