@@ -275,44 +275,75 @@ TEST_F(EcCiA402DriveTest, EcWriteDefaultTargetPosition)
 {
   std::unordered_map<std::string, std::string> slave_paramters;
   std::vector<double> command_interface = {
-    std::numeric_limits<double>::quiet_NaN(),
-    std::numeric_limits<double>::quiet_NaN()};
+    std::numeric_limits<double>::quiet_NaN(),  // target position
+    std::numeric_limits<double>::quiet_NaN(),  // target velocity
+    std::numeric_limits<double>::quiet_NaN(),  // target torque
+    std::numeric_limits<double>::quiet_NaN(),  // max torque
+    std::numeric_limits<double>::quiet_NaN(),  // control word
+    std::numeric_limits<double>::quiet_NaN()  // mode of operation
+  };
   slave_paramters["command_interface/mode_of_operation"] = "1";
   plugin_->paramters_ = slave_paramters;
-  plugin_->command_interface_ptr_ = &command_interface;
+  plugin_->command_interface_ptr_ = &command_interface;  // initialize commands with NaN
   plugin_->setup_from_config(YAML::Load(test_drive_config));
   plugin_->setup_interface_mapping();
   plugin_->is_operational_ = true;
-  plugin_->mode_of_operation_display_ = 8;
+  plugin_->mode_of_operation_display_ = 18;  // 18 is not a valid mode
   uint8_t domain_address[4];
   uint8_t domain_address_moo[2];
 
-  plugin_->processData(5, domain_address_moo);
-  plugin_->processData(10, domain_address_moo);
-  ASSERT_EQ(plugin_->mode_of_operation_display_, 8);
+  /** Test that target position is set to actual value when command is NaN for
+   * mode of operation: position (8)
+  */
+  ASSERT_EQ(
+    plugin_->mode_of_operation_,
+    8) << "Default mode_of_operation from config is NOT correctly loaded";
 
-  EC_WRITE_S32(domain_address, 123456);
-  plugin_->processData(6, domain_address);
-  ASSERT_EQ(plugin_->last_position_, 123456);
+  plugin_->processData(5, domain_address_moo);  // write mode_of_operation
+  plugin_->processData(10, domain_address_moo);  // read mode_of_operation_display
+  ASSERT_EQ(
+    plugin_->mode_of_operation_display_,
+    8) << "Mode of operation is NOT correctly set or read";
 
-  EC_WRITE_S32(domain_address, 0);
-  plugin_->processData(0, domain_address);
-  ASSERT_EQ(EC_READ_S32(domain_address), 123456);
+  EC_WRITE_S32(domain_address, 123456);  // initialize domain memory with 123456
+  plugin_->processData(6, domain_address);  // read position actual value from domain
+  ASSERT_EQ(plugin_->last_position_, 123456) << "Position actual value is NOT correctly set";
 
+  EC_WRITE_S32(domain_address, 0);  // initialize domain memory with 0
+  plugin_->processData(0, domain_address);  // write target position to domain
+  ASSERT_EQ(
+    EC_READ_S32(domain_address),
+    123456) <<
+    "Target position is NOT correctly set to actual value "
+    "when command is NaN in position mode of operation (8)";
+
+  /** Test that target position is set to actual value when command is NaN for
+   * mode of operation: velocity (9)
+  */
   command_interface[1] = 9;
-  plugin_->processData(5, domain_address_moo);
-  plugin_->processData(10, domain_address_moo);
-  ASSERT_EQ(plugin_->mode_of_operation_display_, 9);
+  plugin_->processData(5, domain_address_moo);  // write mode_of_operation
+  plugin_->processData(10, domain_address_moo);  // read mode_of_operation_display
+  ASSERT_EQ(
+    plugin_->mode_of_operation_display_,
+    9) << "Mode of operation is NOT correctly set or read";
 
-  EC_WRITE_S32(domain_address, 0);
-  plugin_->processData(0, domain_address);
-  ASSERT_EQ(EC_READ_S32(domain_address), 123456);
+  /** Test with current actual position (123456) */
+  EC_WRITE_S32(domain_address, 0);  // initialize domain memory with 0
+  plugin_->processData(0, domain_address);  // write target position to domain
+  ASSERT_EQ(
+    EC_READ_S32(domain_address),
+    123456) <<
+    "Target position is NOT correctly set to actual value "
+    "when command is NaN in velocity mode of operation (9)";
 
-  EC_WRITE_S32(domain_address, 654321);
-  plugin_->processData(6, domain_address);
-  ASSERT_EQ(plugin_->last_position_, 654321);
+  /** Change actual position to 654321 */
+  EC_WRITE_S32(domain_address, 654321);  // initialize domain memory with 654321
+  plugin_->processData(6, domain_address);  // read position actual value from domain
+  ASSERT_EQ(plugin_->last_position_, 654321) << "Position actual value is NOT correctly set";
 
-  EC_WRITE_S32(domain_address, 0);
-  plugin_->processData(0, domain_address);
-  ASSERT_EQ(EC_READ_S32(domain_address), 654321);
+  EC_WRITE_S32(domain_address, 0);  // initialize domain memory with 0
+  plugin_->processData(0, domain_address);  // write target position to domain
+  ASSERT_EQ(EC_READ_S32(domain_address), 654321) <<
+    "Target position is NOT correctly set to actual value "
+    "when command is NaN in velocity mode of operation (9)";
 }
