@@ -52,7 +52,8 @@ public:
     } else if (data_type == "int64") {
       EC_WRITE_S64(buffer, static_cast<int64_t>(data));
     } else if (data_type == "real32" || data_type == "float") {
-      EC_WRITE_REAL(buffer, static_cast<float>(data));
+      uint32_t raw = *(uint32_t *)(const void *)&doubledata;
+      EC_WRITE_U32(buffer, static_cast<uint32_t>(raw));
     }
   }
 
@@ -81,7 +82,11 @@ public:
     }
     // value
     if (sdo_config["value"]) {
-      data = sdo_config["value"].as<int>();
+      if (data_type == "float" || data_type == "real32") {
+        doubledata = sdo_config["value"].as<double>();
+      } else {
+        data = sdo_config["value"].as<int>();
+      }
     } else {
       std::cerr << "sdo " << index << ": missing sdo value" << std::endl;
       return false;
@@ -99,6 +104,7 @@ public:
   uint8_t sub_index;
   std::string data_type;
   int data;
+  double doubledata;
 
 private:
   size_t type2bytes(std::string type)

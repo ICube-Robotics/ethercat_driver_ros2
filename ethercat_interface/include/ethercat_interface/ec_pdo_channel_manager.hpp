@@ -66,7 +66,9 @@ public:
     } else if (data_type == "int64") {
       last_value = static_cast<double>(EC_READ_S64(domain_address));
     } else if (data_type == "real32" || data_type == "float") {
-      last_value = static_cast<double>(EC_READ_REAL(domain_address));
+      uint32_t raw = EC_READ_U32(domain_address);
+      float value = *(float *)(const void *)&raw;
+      last_value = static_cast<double>(value);
     } else if (data_type == "bool") {
       last_value = (EC_READ_U8(domain_address) & data_mask) ? 1 : 0;
     } else {
@@ -95,7 +97,8 @@ public:
     } else if (data_type == "int64") {
       EC_WRITE_S64(domain_address, static_cast<int64_t>(value));
     } else if (data_type == "real32" || data_type == "float") {
-      EC_WRITE_REAL(domain_address, static_cast<float>(value));
+      uint32_t raw = *(uint32_t *)(const void *)&value;
+      EC_WRITE_U32(domain_address, static_cast<uint32_t>(raw));
     } else {
       buffer_ = EC_READ_U8(domain_address);
       if (popcount(data_mask) == 1) {
@@ -196,7 +199,7 @@ public:
       return 8;
     } else if (type == "int16" || type == "uint16") {
       return 16;
-    } else if (type == "int32" || type == "uint32") {
+    } else if (type == "int32" || type == "uint32" || type == "float" || type == "real32") {
       return 32;
     } else if (type == "int64" || type == "uint64") {
       return 64;
