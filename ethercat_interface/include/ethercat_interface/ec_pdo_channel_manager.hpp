@@ -67,7 +67,11 @@ public:
       last_value = static_cast<double>(EC_READ_S64(domain_address));
     } else if (data_type == "real32" || data_type == "float") {
       uint32_t raw = EC_READ_U32(domain_address);
-      float value = *(float *)(const void *)&raw;
+      float value = *(float *)&raw;
+      last_value = static_cast<double>(value);
+    } else if (data_type == "real64" || data_type == "double") {
+      uint64_t raw = EC_READ_U64(domain_address);
+      double value = *(double *)&raw;
       last_value = static_cast<double>(value);
     } else if (data_type == "bool") {
       last_value = (EC_READ_U8(domain_address) & data_mask) ? 1 : 0;
@@ -97,8 +101,12 @@ public:
     } else if (data_type == "int64") {
       EC_WRITE_S64(domain_address, static_cast<int64_t>(value));
     } else if (data_type == "real32" || data_type == "float") {
-      uint32_t raw = *(uint32_t *)(const void *)&value;
+      float f = (float)value;
+      uint32_t raw = *(uint32_t *)&f;
       EC_WRITE_U32(domain_address, static_cast<uint32_t>(raw));
+    } else if (data_type == "real64" || data_type == "double") {
+      uint32_t raw = *(uint32_t *)&value;
+      EC_WRITE_U64(domain_address, static_cast<uint64_t>(raw));
     } else {
       buffer_ = EC_READ_U8(domain_address);
       if (popcount(data_mask) == 1) {
@@ -201,7 +209,7 @@ public:
       return 16;
     } else if (type == "int32" || type == "uint32" || type == "float" || type == "real32") {
       return 32;
-    } else if (type == "int64" || type == "uint64") {
+    } else if (type == "int64" || type == "uint64" || type == "double" || type == "real64") {
       return 64;
     } else if (type.find("bit") != std::string::npos) {
       std::string n_bits = type.substr(type.find("bit") + 3);

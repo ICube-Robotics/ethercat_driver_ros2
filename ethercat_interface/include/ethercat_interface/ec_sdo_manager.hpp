@@ -43,11 +43,11 @@ public:
       EC_WRITE_U16(buffer, static_cast<uint16_t>(data));
     } else if (data_type == "int16") {
       EC_WRITE_S16(buffer, static_cast<int16_t>(data));
-    } else if (data_type == "uint32") {
+    } else if (data_type == "uint32" || data_type == "real32" || data_type == "float") {
       EC_WRITE_U32(buffer, static_cast<uint32_t>(data));
     } else if (data_type == "int32") {
       EC_WRITE_S32(buffer, static_cast<int32_t>(data));
-    } else if (data_type == "uint64") {
+    } else if (data_type == "uint64" || data_type == "real64" || data_type == "double") {
       EC_WRITE_U64(buffer, static_cast<uint64_t>(data));
     } else if (data_type == "int64") {
       EC_WRITE_S64(buffer, static_cast<int64_t>(data));
@@ -83,7 +83,11 @@ public:
     // value
     if (sdo_config["value"]) {
       if (data_type == "float" || data_type == "real32") {
-        doubledata = sdo_config["value"].as<double>();
+        float floatvalue = sdo_config["value"].as<float>();
+        data = *(int *)&floatvalue;
+      } else if (data_type == "double" || data_type == "real64") {
+        float doublevalue = sdo_config["value"].as<double>();
+        data = *(int *)&doublevalue;
       } else {
         data = sdo_config["value"].as<int>();
       }
@@ -104,7 +108,6 @@ public:
   uint8_t sub_index;
   std::string data_type;
   int data;
-  double doubledata;
 
 private:
   size_t type2bytes(std::string type)
@@ -115,7 +118,7 @@ private:
       return 2;
     } else if (type == "int32" || type == "uint32" || type == "float" || type == "real32") {
       return 4;
-    } else if (type == "int64" || type == "uint64") {
+    } else if (type == "int64" || type == "uint64" || type == "double" || type == "real64") {
       return 8;
     }
   }
