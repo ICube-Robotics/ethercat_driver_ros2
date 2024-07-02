@@ -43,14 +43,17 @@ public:
       EC_WRITE_U16(buffer, static_cast<uint16_t>(data));
     } else if (data_type == "int16") {
       EC_WRITE_S16(buffer, static_cast<int16_t>(data));
-    } else if (data_type == "uint32") {
+    } else if (data_type == "uint32" || data_type == "real32" || data_type == "float") {
       EC_WRITE_U32(buffer, static_cast<uint32_t>(data));
     } else if (data_type == "int32") {
       EC_WRITE_S32(buffer, static_cast<int32_t>(data));
-    } else if (data_type == "uint64") {
+    } else if (data_type == "uint64" || data_type == "real64" || data_type == "double") {
       EC_WRITE_U64(buffer, static_cast<uint64_t>(data));
     } else if (data_type == "int64") {
       EC_WRITE_S64(buffer, static_cast<int64_t>(data));
+    } else if (data_type == "real32" || data_type == "float") {
+      uint32_t raw = *(uint32_t *)(const void *)&doubledata;
+      EC_WRITE_U32(buffer, static_cast<uint32_t>(raw));
     }
   }
 
@@ -79,7 +82,15 @@ public:
     }
     // value
     if (sdo_config["value"]) {
-      data = sdo_config["value"].as<int>();
+      if (data_type == "float" || data_type == "real32") {
+        float floatvalue = sdo_config["value"].as<float>();
+        data = *(int *)&floatvalue;
+      } else if (data_type == "double" || data_type == "real64") {
+        float doublevalue = sdo_config["value"].as<double>();
+        data = *(int *)&doublevalue;
+      } else {
+        data = sdo_config["value"].as<int>();
+      }
     } else {
       std::cerr << "sdo " << index << ": missing sdo value" << std::endl;
       return false;
@@ -105,9 +116,9 @@ private:
       return 1;
     } else if (type == "int16" || type == "uint16") {
       return 2;
-    } else if (type == "int32" || type == "uint32") {
+    } else if (type == "int32" || type == "uint32" || type == "float" || type == "real32") {
       return 4;
-    } else if (type == "int64" || type == "uint64") {
+    } else if (type == "int64" || type == "uint64" || type == "double" || type == "real64") {
       return 8;
     }
   }
