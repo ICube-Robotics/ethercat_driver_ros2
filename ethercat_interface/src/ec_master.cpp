@@ -40,7 +40,7 @@ EcMaster::DomainInfo::DomainInfo(ec_master_t * master)
     return;
   }
 
-  const ec_pdo_entry_reg_t empty = {0};
+  const ec_pdo_entry_reg_t empty{};
   domain_regs.push_back(empty);
 }
 
@@ -66,7 +66,7 @@ EcMaster::EcMaster(const int master)
 
 EcMaster::~EcMaster()
 {
-  for (SlaveInfo & slave : slave_info_) {
+  for ([[maybe_unused]] SlaveInfo & slave : slave_info_) {
     //
   }
   for (auto & domain : domain_info_) {
@@ -211,7 +211,7 @@ void EcMaster::registerPDOInDomain(
   }
 
   // set the last element to null
-  ec_pdo_entry_reg_t empty = {0};
+  ec_pdo_entry_reg_t empty{};
   domain_info->domain_regs.back() = empty;
 }
 
@@ -441,9 +441,9 @@ void EcMaster::setThreadRealTime()
   /* Pre-fault our stack
       8*1024 is the maximum stack size
       which is guaranteed safe to access without faulting */
-  int MAX_SAFE_STACK = 8 * 1024;
-  unsigned char dummy[MAX_SAFE_STACK];
-  memset(dummy, 0, MAX_SAFE_STACK);
+  constexpr int MAX_SAFE_STACK = 8 * 1024;
+  unsigned char dummy[MAX_SAFE_STACK]{};
+  //memset(dummy, 0, MAX_SAFE_STACK);
 }
 
 void EcMaster::checkDomainState(uint32_t domain)
