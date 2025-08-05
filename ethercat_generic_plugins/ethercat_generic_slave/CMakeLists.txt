@@ -29,13 +29,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
-ament_target_dependencies( ${PROJECT_NAME}
-  ethercat_interface
-  pluginlib
-  yaml_cpp_vendor
-  yaml-cpp
-)
 target_link_libraries(${PROJECT_NAME}
+  ethercat_interface::ethercat_interface
+  pluginlib::pluginlib
   yaml-cpp
 )
 
@@ -73,7 +69,10 @@ if(BUILD_TESTING)
     test_generic_ec_slave
     test/test_generic_ec_slave.cpp
   )
-  target_include_directories(test_generic_ec_slave PRIVATE include)
+  target_include_directories(test_generic_ec_slave PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
+  )
   target_link_libraries(test_generic_ec_slave
     ${PROJECT_NAME}
   )

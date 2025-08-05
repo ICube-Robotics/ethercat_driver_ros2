@@ -26,15 +26,11 @@ target_compile_features(${PROJECT_NAME} PUBLIC c_std_99 cxx_std_17)  # Require C
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
-target_link_libraries(${PROJECT_NAME} yaml-cpp)
 
-
-ament_target_dependencies(
-  ${PROJECT_NAME}
-  ethercat_interface
-  ethercat_generic_slave
-  pluginlib
-  yaml_cpp_vendor
+target_link_libraries(${PROJECT_NAME} PUBLIC
+  ethercat_interface::ethercat_interface
+  ethercat_generic_slave::ethercat_generic_slave
+  pluginlib::pluginlib
   yaml-cpp
 )
 

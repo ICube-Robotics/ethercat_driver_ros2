@@ -31,13 +31,12 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   $<INSTALL_INTERFACE:include>
 )
 
-ament_target_dependencies(
-  ${PROJECT_NAME}
-  hardware_interface
-  pluginlib
-  rclcpp
-  rclcpp_lifecycle
-  ethercat_interface
+target_link_libraries(${PROJECT_NAME}
+  hardware_interface::hardware_interface
+  pluginlib::pluginlib
+  rclcpp::rclcpp
+  rclcpp_lifecycle::rclcpp_lifecycle
+  ethercat_interface::ethercat_interface
   yaml_cpp_vendor
 )
 
@@ -135,15 +134,11 @@ if(BUILD_TESTING)
   target_link_libraries(test_ethercat_safety_driver
     ${PROJECT_NAME}
     ${YAML_CPP_LIBRARIES}
-  )
-
-  ament_target_dependencies(test_ethercat_safety_driver
-    hardware_interface
-    pluginlib
-    rclcpp
-    rclcpp_lifecycle
-    ethercat_interface
-    yaml_cpp_vendor
+    hardware_interface::hardware_interface
+    pluginlib::pluginlib
+    rclcpp::rclcpp
+    rclcpp_lifecycle::rclcpp_lifecycle
+    ethercat_interface::ethercat_interface
   )
 
   # Add yaml-cpp to test target as well
