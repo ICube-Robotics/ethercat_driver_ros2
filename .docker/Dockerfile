@@ -19,5 +19,5 @@ RUN mkdir ec_dev && cd ec_dev && \
     make && make install
 # Ros2 control interfaces
 RUN apt install -y ros-${ROS_DISTRO}-control-msgs ros-${ROS_DISTRO}-control-toolbox ros-${ROS_DISTRO}-hardware-interface ros-${ROS_DISTRO}-controller-interface
-# Ros formating tools
+# Ros formatting tools
 RUN apt install -y ros-${ROS_DISTRO}-ament-clang-format
