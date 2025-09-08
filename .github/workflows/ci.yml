@@ -2,9 +2,9 @@ name: CI
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [ jazzy ]
   pull_request:
-    branches: [ main ]
+    branches: [ jazzy ]
 jobs:
   CI:
     permissions:
