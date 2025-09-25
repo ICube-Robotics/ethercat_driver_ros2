@@ -39,6 +39,8 @@ jobs:
             # Install click, try via apt first, fallback to pip with --break-system-packages
             apt-get update
             apt-get install -y python3-click || (apt-get install -y python3-pip && python3 -m pip install --break-system-packages click)
+            # Install yaml-cpp
+            apt-get install -y libyaml-cpp-dev
             . /opt/ros/jazzy/setup.sh
             rosdep install --ignore-src --from-paths . -y -r && \
             colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
@@ -53,6 +55,8 @@ jobs:
             # Install click, try via apt first, fallback to pip with --break-system-packages
             apt-get update
             apt-get install -y python3-click || (apt-get install -y python3-pip && python3 -m pip install --break-system-packages click)
+            # Install yaml-cpp
+            apt-get install -y libyaml-cpp-dev
             . /opt/ros/jazzy/setup.sh
             rosdep install --ignore-src --from-paths . -y -r && \
             colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
