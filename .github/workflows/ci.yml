@@ -40,7 +40,7 @@ jobs:
             apt-get update
             apt-get install -y python3-click || (apt-get install -y python3-pip && python3 -m pip install --break-system-packages click)
             # Install yaml-cpp
-            apt-get install -y libyaml-cpp-dev
+            apt-get install -y ros-jazzy-yaml-cpp-vendor
             . /opt/ros/jazzy/setup.sh
             rosdep install --ignore-src --from-paths . -y -r && \
             colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
@@ -56,7 +56,7 @@ jobs:
             apt-get update
             apt-get install -y python3-click || (apt-get install -y python3-pip && python3 -m pip install --break-system-packages click)
             # Install yaml-cpp
-            apt-get install -y libyaml-cpp-dev
+            apt-get install -y ros-jazzy-yaml-cpp-vendor
             . /opt/ros/jazzy/setup.sh
             rosdep install --ignore-src --from-paths . -y -r && \
             colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
