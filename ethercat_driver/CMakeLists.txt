@@ -16,6 +16,10 @@ find_package(rclcpp_lifecycle REQUIRED)
 find_package(ethercat_interface REQUIRED)
 find_package(yaml_cpp_vendor REQUIRED)
 
+# Find system yaml-cpp for proper linking
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(YAML_CPP REQUIRED yaml-cpp)
+
 file(GLOB_RECURSE PLUGINS_SRC src/*.cpp)
 
 add_library(${PROJECT_NAME} ${PLUGINS_SRC})
@@ -36,6 +40,11 @@ ament_target_dependencies(
   ethercat_interface
   yaml_cpp_vendor
 )
+
+# Explicitly link yaml-cpp
+target_link_libraries(${PROJECT_NAME} ${YAML_CPP_LIBRARIES})
+target_include_directories(${PROJECT_NAME} PRIVATE ${YAML_CPP_INCLUDE_DIRS})
+target_compile_options(${PROJECT_NAME} PRIVATE ${YAML_CPP_CFLAGS_OTHER})
 
 # Causes the visibility macros to use dllexport rather than dllimport,
 # which is appropriate when building the dll but not consuming it.
@@ -125,7 +134,9 @@ if(BUILD_TESTING)
 
   target_link_libraries(test_ethercat_safety_driver
     ${PROJECT_NAME}
+    ${YAML_CPP_LIBRARIES}
   )
+
   ament_target_dependencies(test_ethercat_safety_driver
     hardware_interface
     pluginlib
@@ -134,6 +145,10 @@ if(BUILD_TESTING)
     ethercat_interface
     yaml_cpp_vendor
   )
+
+  # Add yaml-cpp to test target as well
+  target_include_directories(test_ethercat_safety_driver PRIVATE ${YAML_CPP_INCLUDE_DIRS})
+  target_compile_options(test_ethercat_safety_driver PRIVATE ${YAML_CPP_CFLAGS_OTHER})
 endif()
 
 ## EXPORTS
