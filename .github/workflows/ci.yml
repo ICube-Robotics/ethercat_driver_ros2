@@ -36,9 +36,9 @@ jobs:
           options: -v ${{github.workspace}}/:/ros/
           run: |
             cd /ros
-            # Install click inside the container
-            apt-get update && apt-get install -y python3-pip
-            python3 -m pip install click
+            # Install click, try via apt first, fallback to pip with --break-system-packages
+            apt-get update
+            apt-get install -y python3-click || (apt-get install -y python3-pip && python3 -m pip install --break-system-packages click)
             . /opt/ros/jazzy/setup.sh
             rosdep install --ignore-src --from-paths . -y -r && \
             colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
@@ -50,6 +50,9 @@ jobs:
           options: -v ${{github.workspace}}/:/ros/
           run: |
             cd /ros
+            # Install click, try via apt first, fallback to pip with --break-system-packages
+            apt-get update
+            apt-get install -y python3-click || (apt-get install -y python3-pip && python3 -m pip install --break-system-packages click)
             . /opt/ros/jazzy/setup.sh
             rosdep install --ignore-src --from-paths . -y -r && \
             colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
