@@ -40,6 +40,12 @@ jobs:
             rosdep install --ignore-src --from-paths . -y -r && \
             colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
 
+      - name: Install Python dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+          python3 -m pip install click
+
       - name: Tests
         uses: addnab/docker-run-action@v3
         with:
