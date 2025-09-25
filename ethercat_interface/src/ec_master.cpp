@@ -25,18 +25,17 @@
 #include <string.h>
 #include <iostream>
 #include <sstream>
-
-#define EC_NEWTIMEVAL2NANO(TV) \
-  (((TV).tv_sec - 946684800ULL) * 1000000000ULL + (TV).tv_nsec)
+#include <bitset>
+#include <cstring>
 
 namespace ethercat_interface
 {
 
-EcMaster::DomainInfo::DomainInfo(ec_master_t * master)
+DomainInfo::DomainInfo(ec_master_t * master)
 {
   domain = ecrt_master_create_domain(master);
   if (domain == NULL) {
-    printWarning("Failed to create domain");
+    EcMaster::printWarning("Failed to create domain");
     return;
   }
 
@@ -45,7 +44,7 @@ EcMaster::DomainInfo::DomainInfo(ec_master_t * master)
 }
 
 
-EcMaster::DomainInfo::~DomainInfo()
+DomainInfo::~DomainInfo()
 {
   for (Entry & entry : entries) {
     delete[] entry.offset;
@@ -54,7 +53,7 @@ EcMaster::DomainInfo::~DomainInfo()
 }
 
 
-EcMaster::EcMaster(const int master)
+EcMaster::EcMaster(const unsigned int master)
 {
   master_ = ecrt_request_master(master);
   if (master_ == NULL) {
@@ -80,14 +79,25 @@ EcMaster::~EcMaster()
 
 void EcMaster::addSlave(uint16_t alias, uint16_t position, EcSlave * slave)
 {
-  // configure slave in master
+  slave->setAliasAndPosition(alias, position);
+  addSlave(slave);
+}
 
+void EcMaster::addSlave(EcSlave * slave)
+{
+  if (false == slave->isAliasAndPositionSet()) {
+    std::string error_message = "Alias and position not set for slave (vendor id=" + std::to_string(
+      slave->vendor_id_) + ",product_code=" + std::to_string(slave->product_id_) + ").";
+    throw std::runtime_error(error_message);
+  }
+
+  // configure slave in master
   SlaveInfo slave_info;
   slave_info.slave = slave;
   slave_info.config = ecrt_master_slave_config(
-    master_, alias, position,
-    slave->vendor_id_,
-    slave->product_id_);
+    master_,
+    slave->alias_, slave->position_,
+    slave->vendor_id_, slave->product_id_);
   if (slave_info.config == NULL) {
     printWarning("Add slave. Failed to get slave configuration.");
     return;
@@ -110,7 +120,10 @@ void EcMaster::addSlave(uint16_t alias, uint16_t position, EcSlave * slave)
 
   slave_info_.push_back(slave_info);
 
-  // check if slave has pdos
+  // Setup PDOs registered by the slave.
+  // For each slave, PDOs are grouped by sync manager.
+  // For each active sync manager of the slave,
+  // register the associated set of PDOs.
   size_t num_syncs = slave->syncSize();
   const ec_sync_info_t * syncs = slave->syncs();
   if (num_syncs > 0) {
@@ -123,27 +136,26 @@ void EcMaster::addSlave(uint16_t alias, uint16_t position, EcSlave * slave)
   } else {
     printWarning(
       "Add slave. Sync size is zero for " +
-      std::to_string(alias) + ":" + std::to_string(position));
+      std::to_string(slave->alias_) + ":" + std::to_string(slave->position_));
   }
 
-  // check if slave registered any pdos for the domain
+  // Get all domains and associated pdos that the slave registers
   EcSlave::DomainMap domain_map;
   slave->domains(domain_map);
   for (auto & iter : domain_map) {
     // get the domain info, create if necessary
     uint32_t domain_index = iter.first;
-    DomainInfo * domain_info = NULL;
+    DomainInfo * domain = NULL;
     if (domain_info_.count(domain_index)) {
-      domain_info = domain_info_.at(domain_index);
+      domain = domain_info_.at(domain_index);
     }
-    if (domain_info == NULL) {
-      domain_info = new DomainInfo(master_);
-      domain_info_[domain_index] = domain_info;
+    if (domain == NULL) {
+      domain = new DomainInfo(master_);
+      domain_info_[domain_index] = domain;
     }
 
     registerPDOInDomain(
-      alias, position,
-      iter.second, domain_info,
+      iter.second, domain,
       slave);
   }
 }
@@ -167,7 +179,6 @@ int EcMaster::configSlaveSdo(
 }
 
 void EcMaster::registerPDOInDomain(
-  uint16_t alias, uint16_t position,
   std::vector<uint32_t> & channel_indices,
   DomainInfo * domain_info,
   EcSlave * slave)
@@ -193,8 +204,8 @@ void EcMaster::registerPDOInDomain(
   for (size_t i = 0; i < num_pdo_regs; ++i) {
     // create pdo entry in the domain
     ec_pdo_entry_reg_t & pdo_reg = domain_info->domain_regs[start_index + i];
-    pdo_reg.alias = alias;
-    pdo_reg.position = position;
+    pdo_reg.alias = slave->alias_;
+    pdo_reg.position = slave->position_;
     pdo_reg.vendor_id = slave->vendor_id_;
     pdo_reg.product_code = slave->product_id_;
     pdo_reg.index = pdo_regs[channel_indices[i]].index;
@@ -204,12 +215,16 @@ void EcMaster::registerPDOInDomain(
 
 
     // print the domain pdo entry
-    std::cout << "{" << pdo_reg.alias << ", " << pdo_reg.position;
-    std::cout << ", 0x" << std::hex << pdo_reg.vendor_id;
-    std::cout << ", 0x" << std::hex << pdo_reg.product_code;
-    std::cout << ", 0x" << std::hex << pdo_reg.index;
-    std::cout << ", 0x" << std::hex << static_cast<int>(pdo_reg.subindex);
-    std::cout << "}" << std::dec << std::endl;
+    RCLCPP_INFO(
+      rclcpp::get_logger("EthercatDriver"),
+      "{ %d, %d, 0x%x, 0x%x, 0x%x, 0x%x }",
+      pdo_reg.alias,
+      pdo_reg.position,
+      pdo_reg.vendor_id,
+      pdo_reg.product_code,
+      pdo_reg.index,
+      static_cast<int>(pdo_reg.subindex)
+    );
   }
 
   // set the last element to null
@@ -272,6 +287,10 @@ void EcMaster::update(uint32_t domain)
 
   ecrt_domain_process(domain_info->domain);
 
+  // Transfer data if configured
+  // TODO(@yguel) make transfer per domain ? Quid of transfers across domains ?
+  transferAll();
+
   // check process data state (optional)
   checkDomainState(domain);
 
@@ -313,6 +332,10 @@ void EcMaster::readData(uint32_t domain)
   }
 
   ecrt_domain_process(domain_info->domain);
+
+  // Transfer data if configured
+  // TODO(@yguel) make transfer per domain ? Quid of transfers across domains ?
+  transferAll();
 
   // check process data state (optional)
   checkDomainState(domain);
@@ -459,10 +482,18 @@ void EcMaster::checkDomainState(uint32_t domain)
   ecrt_domain_state(domain_info->domain, &ds);
 
   if (ds.working_counter != domain_info->domain_state.working_counter) {
-    printf("Domain: WC %u.\n", ds.working_counter);
+    RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"), "Domain: WC %d.", ds.working_counter);
   }
   if (ds.wc_state != domain_info->domain_state.wc_state) {
-    printf("Domain: State %u.\n", ds.wc_state);
+    RCLCPP_INFO(
+      rclcpp::get_logger("EthercatDriver"),
+      "Domain: State %s.",
+      ds.wc_state == EC_WC_ZERO ? "ZERO" :
+      (
+        (ds.wc_state == EC_WC_INCOMPLETE) ? "INCOMPLETE" :
+        (ds.wc_state == EC_WC_COMPLETE) ? "COMPLETE" : "UNKNOWN"
+      )
+    );
   }
   domain_info->domain_state = ds;
 }
@@ -474,13 +505,13 @@ void EcMaster::checkMasterState()
   ecrt_master_state(master_, &ms);
 
   if (ms.slaves_responding != master_state_.slaves_responding) {
-    printf("%u slave(s).\n", ms.slaves_responding);
+    RCLCPP_WARN(rclcpp::get_logger("EthercatDriver"), "%d slave(s).", ms.slaves_responding);
   }
   if (ms.al_states != master_state_.al_states) {
-    printf("Master AL states: 0x%02X.\n", ms.al_states);
+    RCLCPP_WARN(rclcpp::get_logger("EthercatDriver"), "Master AL states: 0x%02X.", ms.al_states);
   }
   if (ms.link_up != master_state_.link_up) {
-    printf("Link is %s.\n", ms.link_up ? "up" : "down");
+    RCLCPP_WARN(rclcpp::get_logger("EthercatDriver"), "Link is %s.", ms.link_up ? "up" : "down");
   }
   master_state_ = ms;
 }
@@ -494,23 +525,162 @@ void EcMaster::checkSlaveStates()
 
     if (s.al_state != slave.config_state.al_state) {
       // this spams the terminal at initialization.
-      printf("Slave: State 0x%02X.\n", s.al_state);
+      RCLCPP_WARN(rclcpp::get_logger("EthercatDriver"), "Slave: State 0x%02X.", s.al_state);
     }
     if (s.online != slave.config_state.online) {
-      printf("Slave: %s.\n", s.online ? "online" : "offline");
+      RCLCPP_WARN(
+        rclcpp::get_logger(
+          "EthercatDriver"), "Slave: %s.", s.online ? "online" : "offline");
     }
     if (s.operational != slave.config_state.operational) {
-      printf("Slave: %soperational.\n", s.operational ? "" : "Not ");
+      RCLCPP_WARN(
+        rclcpp::get_logger("EthercatDriver"),
+        "Slave: (alias: %d, pos: %d, vendor_id: %d, prod_id: %d) --> %soperational.",
+        slave.slave->alias_,
+        slave.slave->position_,
+        slave.slave->vendor_id_,
+        slave.slave->product_id_,
+        s.operational ? "" : "NOT ");
       slave.slave->set_state_is_operational(s.operational ? true : false);
     }
     slave.config_state = s;
   }
 }
 
-
-void EcMaster::printWarning(const std::string & message)
+void EcMaster::checkDomainInfoValidity(
+  const DomainInfo & domain_info,
+  const ec_pdo_entry_reg_t & pdo_entry_reg)
 {
-  std::cout << "WARNING. Master. " << message << std::endl;
+  if (nullptr == domain_info.domain_pd) {
+    throw std::runtime_error("Domain process data pointer not set.");
+  }
+  if (nullptr == pdo_entry_reg.offset) {
+    throw std::runtime_error("Offset not set in pdo_entry_reg.");
+  }
+}
+
+void EcMaster::registerTransferInDomain(const std::vector<EcTransferNet> & transfer_nets)
+{
+  // Fill in the EcTransferInfo structures
+
+  // For each transfer of each net,
+  for (auto & net : transfer_nets) {
+    for (auto & transfer : net.transfers) {
+      EcTransferInfo transfer_info;
+      transfer_info.size = transfer.size;
+      RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"), "Transfer size: %ld", transfer.size);
+      /**
+       * For the input and the output of the transfer find
+       *   1. the process domain data pointer
+       *   2. the offset in the process domain data
+       * By iterating over the existing DomainInfo and domain_regs vector
+       * to find the ec_pdo_entry_reg_t whose alias, position, index and subindex
+       * match the transfer input and output memory entries
+       */
+      for (const auto & key_val : domain_info_) {
+        const DomainInfo & domain = *(key_val.second);
+        for (auto & domain_reg : domain.domain_regs) {
+          // Find match for input
+          if (domain_reg.alias == transfer.input.alias &&
+            domain_reg.position == transfer.input.position &&
+            domain_reg.index == transfer.input.index &&
+            domain_reg.subindex == transfer.input.subindex)
+          {
+            transfer_info.input_domain = &domain;
+            // 3. Compute the pointer arithmetic and store the result in the EcTransferInfo object
+            transfer_info.in_ptr = domain.domain_pd + *(domain_reg.offset);
+            RCLCPP_INFO(
+              rclcpp::get_logger("EthercatDriver"),
+              "Transfer input:  esclave position: %d / index: 0x%x / in offset:  %d",
+              domain_reg.position,
+              domain_reg.index,
+              *(domain_reg.offset)
+            );
+          }
+          // Find match for output
+          if (domain_reg.alias == transfer.output.alias &&
+            domain_reg.position == transfer.output.position &&
+            domain_reg.index == transfer.output.index &&
+            domain_reg.subindex == transfer.output.subindex)
+          {
+            transfer_info.output_domain = &domain;
+            // 3. Compute the pointer arithmetic and store the result in the EcTransferInfo object
+            transfer_info.out_ptr = domain.domain_pd + *(domain_reg.offset);
+            RCLCPP_INFO(
+              rclcpp::get_logger("EthercatDriver"),
+              "Transfer output: slave position: %d / index: 0x%x / out offset: %d",
+              domain_reg.position,
+              domain_reg.index,
+              *(domain_reg.offset)
+            );
+          }
+        }
+      }
+
+      // Record the transfer
+      transfers_.push_back(transfer_info);
+    }
+  }
+}
+
+void EcMaster::transferAll()
+{
+  // Proceed to the transfer of all the data declared in transfers_.
+  for (auto & transfer : transfers_) {
+    // Copy the data from the input to the output
+    memcpy(transfer.out_ptr, transfer.in_ptr, transfer.size);
+  }
+}
+
+void EcMaster::printMemoryFrames(std::ostream & os)
+{
+  for (auto & kv : domain_info_) {
+    os << "Domain: " << kv.first << std::endl;
+    auto & d = kv.second;
+    size_t size = ecrt_domain_size(d->domain);
+    // Display the memory
+    for (size_t i = 0; i < size; i++) {
+      os << std::hex << static_cast<int>(d->domain_pd[i]) << " ";
+    }
+    os << std::endl;
+  }
+}
+
+uint8_t * EcMaster::getMemoryStart(
+  const uint16_t position,
+  const uint16_t index,
+  const uint16_t subindex)
+{
+  for (auto & kv : domain_info_) {
+    auto & d = kv.second;
+    for (auto & reg : d->domain_regs) {
+      if (reg.position == position && reg.index == index && reg.subindex == subindex) {
+        return d->domain_pd + *(reg.offset);
+      }
+    }
+  }
+  return nullptr;
+}
+
+void EcMaster::printMemoryFrame(
+  const uint16_t position,
+  const uint16_t index,
+  const uint16_t subindex,
+  const size_t n,
+  bool binary,
+  std::ostream & os)
+{
+  uint8_t * pointer = getMemoryStart(position, index, subindex);
+  if (pointer != nullptr) {
+    for (size_t i = 0; i < n; i++) {
+      if (binary) {
+        os << std::bitset<8>(pointer[i]) << " ";
+      } else {
+        os << std::hex << static_cast<int>(pointer[i]) << " ";
+      }
+    }
+    os << std::endl;
+  }
 }
 
 }  // namespace ethercat_interface

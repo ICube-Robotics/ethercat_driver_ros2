@@ -1,0 +1,27 @@
+# Configuration file for the EtherCAT safety network of the estop test system
+safety_modules:
+  - name: s2
+    plugin: ethercat_generic_plugins/GenericEcSlave
+    parameters: { alias: 0, position: 1, slave_config: safety_slave_s2.yaml }
+  - name: m1
+    plugin: ethercat_generic_plugins/GenericEcSlave
+    parameters: { alias: 0, position: 4, slave_config: safety_master.yaml }
+  - name: m2
+    plugin: ethercat_generic_plugins/GenericEcSlave
+    parameters: { alias: 0, position: 5, slave_config: safety_master.yaml }
+nets:
+  - name: n1
+    safety_master: m1
+    transfers:
+      - size: 18
+        in: { ec_module: s1, index: 0x607a, subindex: 0x02 }
+        out: { ec_module: s2, index: 0x60ff, subindex: 0x04 }
+      - size: 42
+        in: { ec_module: s1, index: 0x707a, subindex: 0x01 }
+        out: { ec_module: s3, index: 0x10ff, subindex: 0x01 }
+  - name: n2
+    safety_master: m2
+    transfers:
+      - size: 18
+        in: { ec_module: q1, index: 0x607a, subindex: 0x06 }
+        out: { ec_module: q2, index: 0x60ff, subindex: 0x03 }

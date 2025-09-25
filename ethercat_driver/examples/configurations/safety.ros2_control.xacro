@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <ros2_control name="ec_safety_test_config" type="system">
+        <hardware>
+            <plugin>ethercat_driver/EthercatDriver</plugin>
+            <param name="master_id">0</param>
+            <param name="control_frequency">100</param>
+            <param name="fsoe_config">test_config_ethercat_safety.yaml</param>
+        </hardware>
+
+        <sensor name="limit_switches">
+            <state_interface name="limit_switch_left" />
+            <state_interface name="limit_switch_right" />
+            <ec_module name="limit_switches_on_EL1018">
+                <plugin>ethercat_generic_plugins/GenericEcSlave</plugin>
+                <param name="alias">0</param>
+                <param name="position">6</param>
+                <param name="slave_config">beckhoff_el1018.yaml</param>
+            </ec_module>
+        </sensor>
+
+        <sensor name="encoder">
+            <state_interface name="position" />
+            <command_interface name="reset" />
+            <ec_module name="encoder_on_EL5101">
+                <plugin>ethercat_generic_plugins/GenericEcSlave</plugin>
+                <param name="alias">0</param>
+                <param name="position">2</param>
+                <param name="slave_config">beckhoff_el5101.yaml</param>
+            </ec_module>
+        </sensor>
+
+        <joint name="base_to_charriot">
+            <state_interface name="position" />
+            <state_interface name="velocity" />
+            <state_interface name="effort" />
+            <command_interface name="position" />
+            <command_interface name="velocity" />
+            <command_interface name="effort" />
+            <command_interface name="reset_fault" />
+            <ec_module name="MAXON_on_EPOS3">
+                <plugin>ethercat_generic_plugins/EcCiA402Drive</plugin>
+                <param name="alias">0</param>
+                <param name="position">0</param>
+                <!-- Available modes of operation = position 8, velocity 9, effort 10, homing 6 -->
+                <param name="mode_of_operation">9</param>
+                <!-- epos3  -->
+                <param name="slave_config">maxon_epos3.yaml</param>
+            </ec_module>
+        </joint>
+    </ros2_control>
+</robot>

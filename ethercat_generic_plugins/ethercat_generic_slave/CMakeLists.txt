@@ -20,13 +20,16 @@ find_package(yaml_cpp_vendor REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
 file(GLOB_RECURSE PLUGINS_SRC src/*.cpp)
+
 add_library(${PROJECT_NAME} ${PLUGINS_SRC})
+
 target_compile_features(${PROJECT_NAME} PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
+
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
-ament_target_dependencies(
-  ${PROJECT_NAME}
+  $<INSTALL_INTERFACE:include>
+)
+ament_target_dependencies( ${PROJECT_NAME}
   ethercat_interface
   pluginlib
   yaml_cpp_vendor

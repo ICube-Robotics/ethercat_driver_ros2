@@ -22,16 +22,105 @@
 #include <vector>
 #include <map>
 #include <chrono>
+#include <iostream>
 #include "ethercat_interface/ec_slave.hpp"
+#include "ethercat_interface/ec_transfer.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 
 namespace ethercat_interface
 {
 
+inline uint64_t EC_NEWTIMEVAL2NANO(struct timespec & TV)
+{
+  return (TV.tv_sec - 946684800ULL) * 1000000000ULL + TV.tv_nsec;
+}
+
+class EcMemoryEntry
+{
+public:
+  std::string module_name;   //< Module.
+  uint16_t alias;            //< Slave alias.
+  uint16_t position;         //< Slave position.
+  uint16_t index;            //< Channel index.
+  uint16_t subindex;         //< Channel subindex.
+
+public:
+  inline
+  std::string to_simple_string() const
+  {
+    return "( name= " + module_name + ", index= " +
+           std::to_string(index) + ", subindex= " + std::to_string(subindex) + " )";
+  }
+};
+
+class EcTransferEntry
+{
+public:
+  EcMemoryEntry input;
+  EcMemoryEntry output;
+  size_t size;   //< Size of the exchange data.
+
+public:
+  inline
+  std::string to_simple_string() const
+  {
+    return input.to_simple_string() + " -> " + output.to_simple_string() + " /  ( size= " +
+           std::to_string(size) + " )";
+  }
+};
+
+class EcTransferNet
+{
+public:
+  std::string name;                    //< transfer net name (e.g. a safety net)
+  std::string master;                  //< transfer master (e.g. the safety master of the net)
+  std::vector<EcTransferEntry> transfers;   //< Data transfers (e.g. safety data transfers)
+
+public:
+  void reset(const std::string & new_name)
+  {
+    name = new_name;
+    master = "";
+    transfers.clear();
+  }
+};
+
+// Forward declarations
+class EcSlave;
+
+/** Data for a single domain */
+struct DomainInfo
+{
+  explicit DomainInfo(ec_master_t * master);
+  ~DomainInfo();
+
+  ec_domain_t * domain = NULL;
+  ec_domain_state_t domain_state = {};
+  uint8_t * domain_pd = NULL;  //< pointer to process domain data
+
+  /** domain pdo registration array.
+   *  do not modify after active(), or may invalidate */
+  std::vector<ec_pdo_entry_reg_t> domain_regs;
+
+  /** slave's pdo and in memory data entries in the domain */
+  struct Entry
+  {
+    EcSlave * slave = NULL;
+    int num_pdos = 0;
+    uint32_t * offset = NULL;
+    uint32_t * bit_position = NULL;
+    int num_in_memory_data = 0;
+    uint32_t * offset_in_memory = NULL;
+  };
+
+  std::vector<Entry> entries;
+};
+
 class EcMaster
 {
 public:
-  explicit EcMaster(const int master = 0);
+  explicit EcMaster(const unsigned int master = 0);
   virtual ~EcMaster();
 
   /** \brief add a slave device to the master
@@ -40,6 +129,12 @@ public:
     * look for the "A B:C STATUS DEVICE" (e.g. B=alias, C=position)
     */
   void addSlave(uint16_t alias, uint16_t position, EcSlave * slave);
+
+  /** \brief add a slave device to the master
+    * alias and position should have been set
+    * before calling this function.
+    */
+  void addSlave(EcSlave * slave);
 
   /** \brief configure slave using SDO
     */
@@ -87,10 +182,55 @@ public:
 
   uint32_t getInterval() {return interval_;}
 
-  void readData(uint32_t domain = 0);
-  void writeData(uint32_t domain = 0);
+  virtual void readData(uint32_t domain = 0);
+  virtual void writeData(uint32_t domain = 0);
 
-private:
+  /** @brief Fill in the EcTransferInfo structures
+  *
+  * @param transfer_nets transfer nets
+  *
+  * \pre DomainInfo and domain_regs vectors must have been initialized and
+  * activated. A call to EcMaster::activate() is required before calling
+  * this function, to fill in the domain_regs vector offsets. Specifically
+  * with IgH EtherCAT Master, the offset must have been initialized with the
+  * ecrt_domain_reg_pdo_entry_list function.
+  *
+  * @throw std::runtime_error if some domain_info or some pdo_entry_reg are
+  *  not valid
+  */
+  void registerTransferInDomain(const std::vector<EcTransferNet> & transfer_nets);
+
+  /** @brief Proceed to the transfer of all the data declared in transfers_.
+   */
+  void transferAll();
+
+protected:
+  /** @brief Output the memory content of the all the domains
+   * (available for pedagogic and debug purposes)
+   *
+   * @param[out] os Output stream
+  */
+  void printMemoryFrames(std::ostream & os);
+
+  /** @brief Get pointer on memory frame for a certain point
+   * in the frame defined by a slave position, an index and a subindex
+   */
+  uint8_t * getMemoryStart(
+    const uint16_t position,
+    const uint16_t index,
+    const uint16_t subindex);
+
+  /** @brief Output memory n bytes of memory from a certain point in
+   * the frame defined by a slave position, an index, subindex */
+  void printMemoryFrame(
+    const uint16_t position,
+    const uint16_t index,
+    const uint16_t subindex,
+    const size_t n,
+    bool binary = false,
+    std::ostream & os = std::cout);
+
+protected:
   /** true if running */
   volatile bool running_ = false;
 
@@ -100,9 +240,7 @@ private:
   // EtherCAT Control
 
   /** register a domain of the slave */
-  struct DomainInfo;
   void registerPDOInDomain(
-    uint16_t alias, uint16_t position,
     std::vector<uint32_t> & channel_indices,
     DomainInfo * domain_info,
     EcSlave * slave);
@@ -117,37 +255,28 @@ private:
   void checkSlaveStates();
 
   /** print warning message to terminal */
-  static void printWarning(const std::string & message);
+  inline
+  static void printWarning(const std::string & message)
+  {
+    RCLCPP_WARN(rclcpp::get_logger("EthercatDriver"), "WARNING. Master. %s", message.c_str());
+  }
+
+
+  /** @brief Check the validity of the domain info and the ec_pdo_entry_reg_t
+   * and throw an exception if not valid.
+   *
+   * @param domain_info Domain info
+   * @param pdo_entry_reg PDO entry registration
+   *
+   * @throw std::runtime_error if domain_info or pdo_entry_reg is not valid
+  */
+  void checkDomainInfoValidity(
+    const DomainInfo & domain_info,
+    const ec_pdo_entry_reg_t & pdo_entry_reg);
 
   /** EtherCAT master data */
   ec_master_t * master_ = NULL;
   ec_master_state_t master_state_ = {};
-
-  /** data for a single domain */
-  struct DomainInfo
-  {
-    explicit DomainInfo(ec_master_t * master);
-    ~DomainInfo();
-
-    ec_domain_t * domain = NULL;
-    ec_domain_state_t domain_state = {};
-    uint8_t * domain_pd = NULL;
-
-    /** domain pdo registration array.
-     *  do not modify after active(), or may invalidate */
-    std::vector<ec_pdo_entry_reg_t> domain_regs;
-
-    /** slave's pdo entries in the domain */
-    struct Entry
-    {
-      EcSlave * slave = NULL;
-      int num_pdos = 0;
-      uint32_t * offset = NULL;
-      uint32_t * bit_position = NULL;
-    };
-
-    std::vector<Entry> entries;
-  };
 
   /** map from domain index to domain info */
   std::map<uint32_t, DomainInfo *> domain_info_;
@@ -170,6 +299,13 @@ private:
   uint32_t check_state_frequency_ = 10;
 
   uint32_t interval_;
+
+  /** Data transfers (necessary for transfer communication) */
+  std::vector<EcTransferInfo> transfers_;
+
+protected:
+  friend struct DomainInfo;
+  friend struct EcTransferInfo;
 };
 
 }  // namespace ethercat_interface
