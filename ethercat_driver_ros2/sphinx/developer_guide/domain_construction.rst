@@ -32,14 +32,14 @@ The application has access to objects of type :code:`ec_pdo_entry_reg_t` (IgH ma
 
 In this structure the :code:`offset` and :code:`bit_position` are pointers to the offset and bit position of the data in the domain because this structure is given to the master that fill in those values establishing the link for the application with its data.
 
-The application configures its link with the EtherCAT master via separate API calls. 
+The application configures its link with the EtherCAT master via separate API calls.
 It first creates domains with:
 1. :code:`ec_domain_t * ecrt_master_create_domain(const ec_master_t *master)`
 Then it provides the master with:
-2. the list of slaves that are used in the domain 
+2. the list of slaves that are used in the domain
 
 .. code-block:: cpp
-    
+
     ec_slave_config_t *ecrt_master_slave_config(
         ec_master_t *master, /**< EtherCAT master */
         uint16_t alias, /**< Slave alias. */
@@ -50,6 +50,7 @@ Then it provides the master with:
 
 3. the list of PDO entries that are used in the domain, via an array of :code:`ec_pdo_entry_reg_t` objects, where offset and bit_position points to the data the application will use and have to be filled by the master: :code:`bool ecrt_domain_reg_pdo_entry_list(ec_domain_t *domain, ec_pdo_entry_reg_t *entries)`
 4. It asks for pointer to the start of the domain memory: :code:`uint8_t * ecrt_domain_data(ec_domain_t *domain)`
+
 One domain can be used for read and one for writing data for instance, so the application may make several calls to the above functions to create the domains it needs.
 
 ethercat_driver_ros2 data structure organization

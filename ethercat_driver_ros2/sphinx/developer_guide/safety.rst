@@ -1,13 +1,13 @@
 FailSafe over EtherCAT (FSoE) : Safety and the Ethercat Driver for ROS2
 =======================================================================
 
-In order to have safe robotic systems, it is important to have a safety layer that can monitor the system and take action in case of a failure. The FailSafe over EtherCAT (FSoE) protocol is a safety protocol that can be used to monitor the system and take action in case of a failure. 
+In order to have safe robotic systems, it is important to have a safety layer that can monitor the system and take action in case of a failure. The FailSafe over EtherCAT (FSoE) protocol is a safety protocol that can be used to monitor the system and take action in case of a failure.
 In order to use the FSoE protocol with ROS2, the Ethercat Driver for ROS2 has been extended to be compatible with EtherCAT communications using the FSoE protocol.
 
 This document describes the integration of FSoE communications in the Ethercat Driver for ROS2 and how to use it to monitor the system and take action in case of a failure.
 
 In addition to the standard EtherCAT slaves, safety is implemented by adding safety slaves and safety masters to the EtherCAT network, all being «viewed» by the EtherCAT master as standard slaves.
-One safety master handles a set of safety slaves creating a safety sub-network within the EtherCAT network. 
+One safety master handles a set of safety slaves creating a safety sub-network within the EtherCAT network.
 All the communications between the safety slaves and their respective safety masters are done inside the standard EtherCAT frames and must not be tampered with or an error will be raised.
 The ethercat_driver_ros2 package has been extended:
 

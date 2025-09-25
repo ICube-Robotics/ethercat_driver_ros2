@@ -102,6 +102,25 @@ if(BUILD_TESTING)
   # Create a custom target to group the copy commands
   add_custom_target(copy_safety_config ALL DEPENDS ${CFG_OUT})
 
+  # Install click if not available
+  execute_process(
+    COMMAND python3 -c "import click"
+    RESULT_VARIABLE CLICK_CHECK_RESULT
+    OUTPUT_QUIET
+    ERROR_QUIET
+  )
+
+  if(NOT CLICK_CHECK_RESULT EQUAL 0)
+    message(STATUS "Installing click Python package...")
+    execute_process(
+      COMMAND python3 -m pip install click
+      RESULT_VARIABLE CLICK_INSTALL_RESULT
+    )
+    if(NOT CLICK_INSTALL_RESULT EQUAL 0)
+      message(FATAL_ERROR "Failed to install click package")
+    endif()
+  endif()
+
   set(UP_PY ${CMAKE_CURRENT_SOURCE_DIR}/examples/configurations/update_slave_config_path.py)
   set(UP_IN ${CFG_DST}/safety_estop.ros2_control.template.xacro)
   set(UP_OUT ${CFG_DST}/safety_estop.ros2_control.xacro)
