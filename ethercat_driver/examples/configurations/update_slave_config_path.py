@@ -14,10 +14,11 @@
 
 # Executable python3 script to update the configuration of a slave device
 
-from lxml import etree
 import os
 import sys
+
 import click
+from lxml import etree
 
 
 def prepend_slave_config_xml_tag(xml_file, prepend_path, output_file=None):
@@ -32,13 +33,13 @@ def prepend_slave_config_xml_tag(xml_file, prepend_path, output_file=None):
     find_all_param = tree.findall('.//param')
     for param in find_all_param:
         if param.attrib.get('name') == 'slave_config':
-            print(f"Found slave_config path: {param.text}")
+            print(f'Found slave_config path: {param.text}')
             param.text = os.path.join(prepend_path, param.text)
-            print(f"Updated slave_config path: {param.text}")
+            print(f'Updated slave_config path: {param.text}')
         if param.attrib.get('name') == 'safety':
-            print(f"Found safety path: {param.text}")
+            print(f'Found safety path: {param.text}')
             param.text = os.path.join(prepend_path, param.text)
-            print(f"Updated safety path: {param.text}")
+            print(f'Updated safety path: {param.text}')
     if output_file:
         tree.write(output_file, pretty_print=True,
                    xml_declaration=True, encoding='UTF-8')
@@ -55,11 +56,11 @@ def prepend_slave_config_xml_tag(xml_file, prepend_path, output_file=None):
               help='Output file', default=None)
 def main(xml_file, prepend_path, output_file):
     prepend_slave_config_xml_tag(xml_file, prepend_path, output_file)
-    msg = f"Updated the slave config path in {xml_file} with {prepend_path}"
+    msg = f'Updated the slave config path in {xml_file} with {prepend_path}'
     if output_file:
-        msg += f" and saved to {output_file}"
+        msg += f' and saved to {output_file}'
     else:
-        msg += f" and saved to {xml_file}"
+        msg += f' and saved to {xml_file}'
     print(msg)
     return 0
 
