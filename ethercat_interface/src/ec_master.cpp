@@ -84,6 +84,8 @@ void EcMaster::addSlave(uint16_t alias, uint16_t position, EcSlave * slave)
 
   SlaveInfo slave_info;
   slave_info.slave = slave;
+  slave_info.alias = alias;
+  slave_info.position = position;
   slave_info.config = ecrt_master_slave_config(
     master_, alias, position,
     slave->vendor_id_,
@@ -149,20 +151,22 @@ void EcMaster::addSlave(uint16_t alias, uint16_t position, EcSlave * slave)
 }
 
 int EcMaster::configSlaveSdo(
-  uint16_t slave_position, SdoConfigEntry sdo_config,
+  uint16_t alias, uint16_t position,
+  SdoConfigEntry sdo_config,
   uint32_t * abort_code)
 {
   uint8_t buffer[8];
   sdo_config.buffer_write(buffer);
-  int ret = ecrt_master_sdo_download(
-    master_,
-    slave_position,
-    sdo_config.index,
-    sdo_config.sub_index,
-    buffer,
-    sdo_config.data_size(),
-    abort_code
-  );
+
+  auto slave = std::find_if(
+        slave_info_.begin(), slave_info_.end(),
+        [alias, position](const SlaveInfo &slave_info) {
+          return slave_info.alias == alias && slave_info.position == position;
+        }
+    );
+  int ret = ecrt_slave_config_sdo(
+          slave->config, sdo_config.index, sdo_config.sub_index, buffer,
+          sdo_config.data_size());
   return ret;
 }
 

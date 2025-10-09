@@ -43,7 +43,7 @@ public:
 
   /** \brief configure slave using SDO
     */
-  int configSlaveSdo(uint16_t slave_position, SdoConfigEntry sdo_config, uint32_t * abort_code);
+  int configSlaveSdo(uint16_t alias, uint16_t position, SdoConfigEntry sdo_config, uint32_t * abort_code);
 
   /** call after adding all slaves, and before update */
   bool activate();
@@ -158,6 +158,8 @@ private:
     EcSlave * slave = NULL;
     ec_slave_config_t * config = NULL;
     ec_slave_config_state_t config_state = {0, 0, 0};
+    uint16_t alias;
+    uint16_t position;
   };
 
   std::vector<SlaveInfo> slave_info_;
