@@ -43,7 +43,7 @@ public:
 
   /** \brief configure slave using SDO
     */
-  int configSlaveSdo(uint16_t alias, uint16_t position, SdoConfigEntry sdo_config, uint32_t * abort_code);
+  int configSlaveSdo(uint16_t alias, uint16_t position, SdoConfigEntry sdo_config);
 
   /** call after adding all slaves, and before update */
   bool activate();

@@ -152,8 +152,7 @@ void EcMaster::addSlave(uint16_t alias, uint16_t position, EcSlave * slave)
 
 int EcMaster::configSlaveSdo(
   uint16_t alias, uint16_t position,
-  SdoConfigEntry sdo_config,
-  uint32_t * abort_code)
+  SdoConfigEntry sdo_config)
 {
   uint8_t buffer[8];
   sdo_config.buffer_write(buffer);
