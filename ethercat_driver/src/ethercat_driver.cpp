@@ -689,7 +689,7 @@ void EthercatDriver::loadTransferConfigYamlFile(YAML::Node & node, const std::st
   std::string file_path;
   if (path.empty()) {
     // Get the fsoe_config or transfer_config parameter of the ethercat_driver hardware plugin
-    if (info_.hardware_parameters.find("fsoe_config") == info_.hardware_parameters.end() ||
+    if (info_.hardware_parameters.find("fsoe_config") == info_.hardware_parameters.end() &&
       info_.hardware_parameters.find("transfer_config") == info_.hardware_parameters.end() )
     {
       std::string msg("transfer_config or fsoe_config parameter is missing!");
@@ -698,10 +698,24 @@ void EthercatDriver::loadTransferConfigYamlFile(YAML::Node & node, const std::st
         rclcpp::get_logger("EthercatDriver"), msg.c_str());
       throw std::runtime_error(msg);
     }
-    if (info_.hardware_parameters.find("fsoe_config") == info_.hardware_parameters.end() ) {
+    if (info_.hardware_parameters.find("fsoe_config") != info_.hardware_parameters.end() &&
+      info_.hardware_parameters.find("transfer_config") != info_.hardware_parameters.end())
+    {
+      std::string msg(
+        "Both transfer_config and fsoe_config parameters are provided! Please provide only one "
+        "of them.");
+      RCLCPP_FATAL(
+        rclcpp::get_logger("EthercatDriver"), msg.c_str());
+      throw std::runtime_error(msg);
+    }
+    if (info_.hardware_parameters.find("fsoe_config") != info_.hardware_parameters.end() ) {
+      std::string msg("The fsoe_config parameter is deprecated. "
+        "Please use transfer_config instead.");
+      RCLCPP_WARN(
+        rclcpp::get_logger("EthercatDriver"), msg.c_str());
       file_path = info_.hardware_parameters.at("fsoe_config");
     }
-    if (info_.hardware_parameters.find("transfer_config") == info_.hardware_parameters.end()) {
+    if (info_.hardware_parameters.find("transfer_config") != info_.hardware_parameters.end()) {
       file_path = info_.hardware_parameters.at("transfer_config");
     }
   } else {
