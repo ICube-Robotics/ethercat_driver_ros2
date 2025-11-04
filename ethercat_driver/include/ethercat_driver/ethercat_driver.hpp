@@ -43,7 +43,7 @@ public:
   RCLCPP_SHARED_PTR_DEFINITIONS(EthercatDriver)
 
   ETHERCAT_DRIVER_PUBLIC
-  CallbackReturn on_init(const hardware_interface::HardwareInfo & info) override;
+  CallbackReturn on_init(const hardware_interface::HardwareComponentInterfaceParams & params) override;
 
   ETHERCAT_DRIVER_PUBLIC
   CallbackReturn on_configure(const rclcpp_lifecycle::State & previous_state) override;
