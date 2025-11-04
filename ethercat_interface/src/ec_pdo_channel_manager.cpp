@@ -30,7 +30,7 @@ const std::vector<std::string> ec_pdo_channel_data_types = {
   "int8", "uint8",
   "int16", "uint16",
   "int32", "uint32",
-  "int64", "uint64"
+  "int64", "uint64",
   "float", "real32",
   "double", "real64"
 };
