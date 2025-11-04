@@ -10,8 +10,8 @@
   <buildtool_depend>ament_cmake_ros</buildtool_depend>
 
   <depend>hardware_interface</depend>
-  <depend>python-click</depend>
   <depend>pluginlib</depend>
+  <depend>python3-click</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_lifecycle</depend>
   <depend>ethercat_interface</depend>
