@@ -188,15 +188,17 @@ double int64_read(uint8_t * domain_address, uint8_t /*data_mask*/)
 double real32_read(uint8_t * domain_address, uint8_t /*data_mask*/)
 {
   uint32_t raw = EC_READ_U32(domain_address);
-  float value = *reinterpret_cast<float *>(&raw);
-  return static_cast<float>(value);
+  float value;
+  std::memcpy(&value, &raw, sizeof(value));
+  return value;
 }
 
 double real64_read(uint8_t * domain_address, uint8_t /*data_mask*/)
 {
   uint64_t raw = EC_READ_U64(domain_address);
-  double value = *reinterpret_cast<double *>(&raw);
-  return static_cast<double>(value);
+  double value;
+  std::memcpy(&value, &raw, sizeof(value));
+  return value;
 }
 
 double bool_read(uint8_t * domain_address, uint8_t data_mask)
@@ -269,13 +271,15 @@ void int64_write(uint8_t * domain_address, double value, uint8_t /*data_mask*/)
 void real32_write(uint8_t * domain_address, double value, uint8_t /*data_mask*/)
 {
   float f = static_cast<float>(value);
-  uint32_t raw = *reinterpret_cast<uint32_t *>(&f);
+  uint32_t raw;
+  std::memcpy(&raw, &f, sizeof(raw));
   EC_WRITE_U32(domain_address, static_cast<uint32_t>(raw));
 }
 
 void real64_write(uint8_t * domain_address, double value, uint8_t /*data_mask*/)
 {
-  uint64_t raw = *reinterpret_cast<uint64_t *>(&value);
+  uint64_t raw;
+  std::memcpy(&raw, &value, sizeof(raw));
   EC_WRITE_U64(domain_address, static_cast<uint64_t>(raw));
 }
 
