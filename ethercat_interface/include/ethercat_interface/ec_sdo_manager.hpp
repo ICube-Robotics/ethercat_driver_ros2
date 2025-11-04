@@ -81,10 +81,10 @@ public:
     if (sdo_config["value"]) {
       if (data_type == "float" || data_type == "real32") {
         float floatvalue = sdo_config["value"].as<float>();
-        data = *(int *)&floatvalue;
+        data = *reinterpret_cast<int *>(&floatvalue);
       } else if (data_type == "double" || data_type == "real64") {
-        float doublevalue = sdo_config["value"].as<double>();
-        data = *(int *)&doublevalue;
+        double doublevalue = sdo_config["value"].as<double>();
+        data = *reinterpret_cast<int *>(&doublevalue);
       } else {
         data = sdo_config["value"].as<int>();
       }
@@ -118,6 +118,7 @@ private:
     } else if (type == "int64" || type == "uint64" || type == "double" || type == "real64") {
       return 8;
     }
+    return 0;
   }
 };
 
