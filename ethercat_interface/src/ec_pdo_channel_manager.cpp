@@ -31,6 +31,8 @@ const std::vector<std::string> ec_pdo_channel_data_types = {
   "int16", "uint16",
   "int32", "uint32",
   "int64", "uint64"
+  "float", "real32",
+  "double", "real64"
 };
 
 const std::vector<uint8_t> ec_pdo_channel_data_bits = {
@@ -39,6 +41,8 @@ const std::vector<uint8_t> ec_pdo_channel_data_bits = {
   1,
   8, 8,
   16, 16,
+  32, 32,
+  64, 64,
   32, 32,
   64, 64
 };
@@ -181,6 +185,20 @@ double int64_read(uint8_t * domain_address, uint8_t /*data_mask*/)
   return static_cast<double>(EC_READ_S64(domain_address));
 }
 
+double real32_read(uint8_t * domain_address, uint8_t /*data_mask*/)
+{
+  uint32_t raw = EC_READ_U32(domain_address);
+  float value = *reinterpret_cast<float *>(&raw);
+  return static_cast<float>(value);
+}
+
+double real64_read(uint8_t * domain_address, uint8_t /*data_mask*/)
+{
+  uint64_t raw = EC_READ_U64(domain_address);
+  double value = *reinterpret_cast<double *>(&raw);
+  return static_cast<double>(value);
+}
+
 double bool_read(uint8_t * domain_address, uint8_t data_mask)
 {
   return (EC_READ_U8(domain_address) & data_mask) ? 1. : 0.;
@@ -199,6 +217,8 @@ const SingleReadFunctionType ec_pdo_single_read_functions[] = {
   int16_read, uint16_read,
   int32_read, uint32_read,
   int64_read, uint64_read,
+  real32_read, real32_read,
+  real64_read, real64_read,
   octet_read
 };
 
@@ -244,6 +264,19 @@ void uint64_write(uint8_t * domain_address, double value, uint8_t /*data_mask*/)
 void int64_write(uint8_t * domain_address, double value, uint8_t /*data_mask*/)
 {
   EC_WRITE_S64(domain_address, static_cast<int64_t>(value));
+}
+
+void real32_write(uint8_t * domain_address, double value, uint8_t /*data_mask*/)
+{
+  float f = static_cast<float>(value);
+  uint32_t raw = *reinterpret_cast<uint32_t *>(&f);
+  EC_WRITE_U32(domain_address, static_cast<uint32_t>(raw));
+}
+
+void real64_write(uint8_t * domain_address, double value, uint8_t /*data_mask*/)
+{
+  uint64_t raw = *reinterpret_cast<uint64_t *>(&value);
+  EC_WRITE_U64(domain_address, static_cast<uint64_t>(raw));
 }
 
 /** @brief Helper function that counts the number of bits in an octet */
@@ -299,6 +332,8 @@ const SingleWriteFunctionType ec_pdo_single_write_functions[] = {
   int16_write, uint16_write,
   int32_write, uint32_write,
   int64_write, uint64_write,
+  real32_write, real32_write,
+  real64_write, real64_write,
   octet_override
 };
 
