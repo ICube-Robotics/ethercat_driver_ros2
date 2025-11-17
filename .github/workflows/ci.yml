@@ -36,9 +36,7 @@ jobs:
           options: -v ${{github.workspace}}/:/ros/
           run: |
             cd /ros
-            # Install click, try via apt first, fallback to pip with --break-system-packages
             apt-get update
-            apt-get install -y python3-click || (apt-get install -y python3-pip && python3 -m pip install --break-system-packages click)
             # Install both system and ROS2 yaml-cpp packages
             apt-get install -y libyaml-cpp-dev ros-jazzy-yaml-cpp-vendor pkg-config
             . /opt/ros/jazzy/setup.sh
