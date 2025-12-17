@@ -2,9 +2,9 @@ name: CI
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [ humble, main ]
   pull_request:
-    branches: [ main ]
+    branches: [ humble, main ]
 jobs:
   CI:
     permissions:
