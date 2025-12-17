@@ -76,6 +76,7 @@ EcMaster::~EcMaster()
       delete domain.second;
     }
   }
+  ecrt_release_master(master_);
 }
 
 void EcMaster::addSlave(uint16_t alias, uint16_t position, EcSlave * slave)

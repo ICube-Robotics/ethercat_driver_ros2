@@ -372,6 +372,17 @@ CallbackReturn EthercatDriver::on_deactivate(
   return CallbackReturn::SUCCESS;
 }
 
+CallbackReturn EthercatDriver::on_cleanup(
+  const rclcpp_lifecycle::State & /*previous_state*/)
+{
+  ec_modules_.clear();
+
+  RCLCPP_INFO(
+    rclcpp::get_logger("EthercatDriver"), "System successfully cleaned up!");
+
+  return CallbackReturn::SUCCESS;
+}
+
 hardware_interface::return_type EthercatDriver::read(
   const rclcpp::Time & /*time*/,
   const rclcpp::Duration & /*period*/)
