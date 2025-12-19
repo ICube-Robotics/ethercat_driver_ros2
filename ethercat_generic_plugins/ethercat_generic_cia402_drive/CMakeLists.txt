@@ -18,20 +18,28 @@ find_package(ethercat_interface REQUIRED)
 find_package(ethercat_generic_slave REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(yaml_cpp_vendor REQUIRED)
-find_package(yaml-cpp REQUIRED)
+
+# Find system yaml-cpp for proper linking
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(YAML_CPP REQUIRED yaml-cpp)
 
 file(GLOB_RECURSE PLUGINS_SRC src/*.cpp)
 add_library(${PROJECT_NAME} ${PLUGINS_SRC})
 target_compile_features(${PROJECT_NAME} PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
+# Add compile options required by the yaml_cpp_vendor
+target_compile_options(${PROJECT_NAME} PRIVATE ${YAML_CPP_CFLAGS_OTHER})
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
+  $<INSTALL_INTERFACE:include>
+)
+# Add yaml include dirs
+target_include_directories(${PROJECT_NAME} PRIVATE ${YAML_CPP_INCLUDE_DIRS})
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
   ethercat_interface::ethercat_interface
   ethercat_generic_slave::ethercat_generic_slave
   pluginlib::pluginlib
-  yaml-cpp
+  ${YAML_CPP_LIBRARIES}
 )
 
 pluginlib_export_plugin_description_file(ethercat_interface ethercat_plugins.xml)

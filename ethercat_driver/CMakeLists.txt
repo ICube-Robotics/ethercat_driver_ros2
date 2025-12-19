@@ -31,13 +31,16 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   $<INSTALL_INTERFACE:include>
 )
 
+# Add yaml include dirs
+target_include_directories(${PROJECT_NAME} PRIVATE ${YAML_CPP_INCLUDE_DIRS})
+
 target_link_libraries(${PROJECT_NAME}
   hardware_interface::hardware_interface
   pluginlib::pluginlib
   rclcpp::rclcpp
   rclcpp_lifecycle::rclcpp_lifecycle
   ethercat_interface::ethercat_interface
-  yaml_cpp_vendor
+  ${YAML_CPP_LIBRARIES}
 )
 
 # Explicitly link yaml-cpp

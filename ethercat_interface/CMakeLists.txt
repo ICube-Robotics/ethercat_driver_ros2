@@ -62,7 +62,9 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
 
   find_package(yaml_cpp_vendor REQUIRED)
-  find_package(yaml-cpp REQUIRED)
+  # Find system yaml-cpp for proper linking
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(YAML_CPP REQUIRED yaml-cpp)
 
   ament_lint_auto_find_test_dependencies()
 
@@ -71,11 +73,16 @@ if(BUILD_TESTING)
     test_ec_pdo_channel_manager
     test/test_ec_pdo_channel_manager.cpp
   )
-  target_include_directories(test_ec_pdo_channel_manager PRIVATE include ${ETHERLAB_DIR}/include)
+  target_include_directories(test_ec_pdo_channel_manager PRIVATE
+    include
+    ${ETHERLAB_DIR}/include
+    ${YAML_CPP_INCLUDE_DIRS}
+  )
 
   target_link_libraries(test_ec_pdo_channel_manager
     ${PROJECT_NAME}
-    yaml-cpp)
+    ${YAML_CPP_LIBRARIES}
+  )
 endif()
 
 ## EXPORTS
