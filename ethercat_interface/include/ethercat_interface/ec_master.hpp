@@ -90,6 +90,8 @@ public:
   void readData(uint32_t domain = 0);
   void writeData(uint32_t domain = 0);
 
+  bool isValid() const { return master_ != NULL; }
+
 private:
   /** true if running */
   volatile bool running_ = false;

@@ -1,3 +1,6 @@
+// Modified by: Muhammad Awais Rafique (mraf@skl.vc), Peyman Karimi Eskandari (pkes@skl.vc)
+// Modification: Added peak limits to specify the torque limits in the EtherCAT PDO channel manager before sending them to actuator drivers. The limits do not apply to CSP unless explicitly specified in the ethercat_config .yaml files because the default upper and lower limit is 2*pi and -2*pi which is the maximum position range.
+
 // Copyright 2023 ICUBE Laboratory, University of Strasbourg
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,6 +24,7 @@
 #include <string>
 #include <vector>
 #include <limits>
+#include <algorithm>
 
 #include "yaml-cpp/yaml.h"
 
@@ -109,19 +113,24 @@ public:
   void ec_update(uint8_t * domain_address)
   {
     // update state interface
-    if (pdo_type == TPDO) {
+    if (pdo_type == TPDO)
+    {
       ec_read(domain_address);
-      if (interface_index >= 0) {
+      if (interface_index >= 0)
+      {
         state_interface_ptr_->at(interface_index) = last_value;
       }
-    } else if (pdo_type == RPDO && allow_ec_write) {
-      if (interface_index >= 0 &&
-        !std::isnan(command_interface_ptr_->at(interface_index)) &&
-        !override_command)
+    } 
+    else if (pdo_type == RPDO && allow_ec_write)
+    {
+      if (interface_index >= 0 && !std::isnan(command_interface_ptr_->at(interface_index)) && !override_command)
       {
-        ec_write(domain_address, factor * command_interface_ptr_->at(interface_index) + offset);
-      } else {
-        if (!std::isnan(default_value)) {
+        ec_write(domain_address, factor * std::clamp(command_interface_ptr_->at(interface_index), lower_limit, upper_limit) + offset);
+      } 
+      else 
+      {
+        if (!std::isnan(default_value))
+        {
           ec_write(domain_address, default_value);
         }
       }
@@ -179,6 +188,21 @@ public:
       data_mask = channel_config["mask"].as<uint8_t>();
     }
 
+    if (channel_config["peak_limit_multiplier"]) {
+      limit_multiplier = std::abs(channel_config["peak_limit_multiplier"].as<double>());
+    }
+
+    // lower limit
+    if (channel_config["peak_lower_limit"]) {
+      lower_limit = limit_multiplier * channel_config["peak_lower_limit"].as<double>();
+    }
+    // upper limit
+    if (channel_config["peak_upper_limit"]) {
+      upper_limit = limit_multiplier * channel_config["peak_upper_limit"].as<double>();
+    }
+
+
+
     return true;
   }
 
@@ -217,6 +241,9 @@ public:
   double factor = 1;
   double offset = 0;
 
+  double upper_limit = 6.2831853; // Set to 2*PI by default, all torque limits are lower than this value
+  double lower_limit = -6.2831853; // Set to -2*PI by default, all torque limits are higher than this value
+  double limit_multiplier = 0.95; // Used to scale the peak limits, only applies if peak limits are set in the yaml file, otherwise the default limits are used.
 private:
   std::vector<double> * command_interface_ptr_;
   std::vector<double> * state_interface_ptr_;

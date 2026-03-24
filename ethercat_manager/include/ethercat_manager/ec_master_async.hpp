@@ -21,6 +21,7 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <ecrt.h>
 #include <errno.h>
 #include <sstream>

@@ -21,6 +21,7 @@
 #include <string>
 #include <unordered_map>
 #include <limits>
+#include <atomic>
 
 #include "yaml-cpp/yaml.h"
 #include "ethercat_interface/ec_slave.hpp"
@@ -51,6 +52,9 @@ public:
   int8_t mode_of_operation_ = -1;
 
 protected:
+  // Global aggregated count of faulted instances (process-wide)
+  static std::atomic<int> num_faulted_;
+
   uint32_t counter_ = 0;
   uint16_t last_status_word_ = -1;
   uint16_t status_word_ = 0;
@@ -60,10 +64,18 @@ protected:
   bool initialized_ = false;
   bool auto_fault_reset_ = false;
   bool auto_state_transitions_ = true;
+  bool auto_state_transitions_cmd_ = false;
   bool fault_reset_ = false;
   int fault_reset_command_interface_index_ = -1;
   bool last_fault_reset_command_ = false;
   double last_position_ = std::numeric_limits<double>::quiet_NaN();
+  bool temperature_fault_detected_ = false;
+  uint16_t error_code_ = 0;
+  int auto_state_cmd_index_ = -1;
+  bool last_auto_state_cmd_ = false;
+
+  // Quick stop behavior controls
+  bool exclude_from_global_quick_stop_ = false; // Do not propagate this drive's faults globally if true
 
   /** returns device state based upon the status_word */
   DeviceState deviceState(uint16_t status_word);

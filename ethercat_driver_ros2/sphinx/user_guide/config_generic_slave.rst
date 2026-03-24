@@ -83,6 +83,12 @@ Each PDO Channel has the following configuration flags:
     - Data conversion factor/scale (:code:`type` : :code:`double`).
   * - :code:`offset`
     - Data offset term (:code:`type` : :code:`double`).
+  * - :code:`peak_upper_limit`
+    - Peak Upper limit (:code:`type` : :code:`double`) applied to command_interface as saturation before multiplying factor and adding offset. default value is :code:`6.2831853` (2*PI).
+  * - :code:`peak_lower_limit`
+    - Peak Lower limit (:code:`type` : :code:`double`) applied to command_interface as saturation before multiplying factor and adding offset. default value is :code:`-6.2831853` (-2*PI).
+  * - :code:`peak_limit_multiplier`
+    - Peak limit multiplier (:code:`type` : :code:`double`) applied to peak limits to scale them slightly below the actual actuator limits (specified in peak upper/lower limits). This is useful to avoid hitting the limits during operation.
 
 
 .. warning:: For each channel, tags :code:`index`, :code:`sub_index` and :code:`type` are **mandatory** even if the channel is not used in order to fill the data layout expected by the module. All other tags can remain unset.

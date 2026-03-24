@@ -20,7 +20,7 @@
 #define EC_IOR(nr, type)  _IOR(EC_IOCTL_TYPE, nr, type)
 #define EC_IOW(nr, type)  _IOW(EC_IOCTL_TYPE, nr, type)
 #define EC_IOWR(nr, type)  _IOWR(EC_IOCTL_TYPE, nr, type)
-#define EC_IOCTL_VERSION_MAGIC 31
+#define EC_IOCTL_VERSION_MAGIC 37 // ioctl() version magic is matching: /dev/EtherCAT0: 37, ethercat tool: 37
 #define EC_IOCTL_MODULE  EC_IOR(0x00, ec_ioctl_module_t)
 #define EC_IOCTL_SLAVE_SDO_UPLOAD  EC_IOWR(0x0e, ec_ioctl_slave_sdo_upload_t)
 #define EC_IOCTL_SLAVE_SDO_DOWNLOAD  EC_IOWR(0x0f, ec_ioctl_slave_sdo_download_t)

@@ -41,6 +41,7 @@ public:
   virtual const ec_sync_info_t * syncs() {return NULL;}
   virtual bool initialized() {return true;}
   virtual void set_state_is_operational(bool value) {is_operational_ = value;}
+  bool is_operational() const { return is_operational_; }
   /** Assign activate DC synchronization. return activate word*/
   virtual int assign_activate_dc_sync() {return 0x00;}
   /** number of elements in the syncs array. */

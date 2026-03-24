@@ -54,7 +54,7 @@ void upload(
 
   EcMasterAsync master(request->master_id);
   try {
-    master.open(EcMasterAsync::Read);
+    master.open(EcMasterAsync::ReadWrite);
   } catch (MasterException & e) {
     return_stream << e.what();
     response->success = false;

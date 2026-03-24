@@ -11,9 +11,12 @@ find_package(ament_cmake_ros REQUIRED)
 find_package(rclcpp REQUIRED)
 
 # EtherLab
-set(ETHERLAB_DIR /usr/local/etherlab)
+if(DEFINED ENV{CONDA_PREFIX})
+  set(ETHERLAB_DIR $ENV{CONDA_PREFIX}/usr/local/etherlab)
+else()
+  set(ETHERLAB_DIR /usr/local/etherlab)
+endif()
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
 find_library(ETHERCAT_LIB ethercat HINTS ${ETHERLAB_DIR}/lib)
 
 ament_export_include_directories(
