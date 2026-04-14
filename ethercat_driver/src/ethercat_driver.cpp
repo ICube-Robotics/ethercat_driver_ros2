@@ -33,6 +33,17 @@ CallbackReturn EthercatDriver::on_init(
   const std::lock_guard<std::mutex> lock(ec_mutex_);
   activated_ = false;
 
+  // Defer EcMaster construction so that master_id from hardware parameters
+  // is honoured (default inline member used master_id=0 for every instance).
+  int master_id = 0;
+  if (info_.hardware_parameters.count("master_id")) {
+    master_id = std::stoi(info_.hardware_parameters.at("master_id"));
+  }
+  master_ = std::make_unique<ethercat_interface::EcMaster>(master_id);
+  RCLCPP_INFO(
+    rclcpp::get_logger("EthercatDriver"),
+    "EcMaster constructed with master_id=%d", master_id);
+
   hw_joint_states_.resize(info_.joints.size());
   for (uint j = 0; j < info_.joints.size(); j++) {
     hw_joint_states_[j].resize(
@@ -282,10 +293,10 @@ CallbackReturn EthercatDriver::on_activate(
 
   // start EC and wait until state operative
 
-  master_.setCtrlFrequency(control_frequency_);
+  master_->setCtrlFrequency(control_frequency_);
 
   for (auto i = 0ul; i < ec_modules_.size(); i++) {
-    master_.addSlave(
+    master_->addSlave(
       std::stod(ec_module_parameters_[i]["alias"]),
       std::stod(ec_module_parameters_[i]["position"]),
       ec_modules_[i].get());
@@ -295,7 +306,7 @@ CallbackReturn EthercatDriver::on_activate(
   for (auto i = 0ul; i < ec_modules_.size(); i++) {
     for (auto & sdo : ec_modules_[i]->sdo_config) {
       uint32_t abort_code;
-      int ret = master_.configSlaveSdo(
+      int ret = master_->configSlaveSdo(
         std::stod(ec_module_parameters_[i]["position"]),
         sdo,
         &abort_code
@@ -311,7 +322,7 @@ CallbackReturn EthercatDriver::on_activate(
     }
   }
 
-  if (!master_.activate()) {
+  if (!master_->activate()) {
     RCLCPP_ERROR(rclcpp::get_logger("EthercatDriver"), "Activate EcMaster failed");
     return CallbackReturn::ERROR;
   }
@@ -328,7 +339,7 @@ CallbackReturn EthercatDriver::on_activate(
     clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &t, NULL);
     // update EtherCAT bus
 
-    master_.update();
+    master_->update();
     RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"), "updated!");
 
     // check if operational
@@ -340,7 +351,7 @@ CallbackReturn EthercatDriver::on_activate(
       running = false;
     }
     // calculate next shot. carry over nanoseconds into microseconds.
-    t.tv_nsec += master_.getInterval();
+    t.tv_nsec += master_->getInterval();
     while (t.tv_nsec >= 1000000000) {
       t.tv_nsec -= 1000000000;
       t.tv_sec++;
@@ -364,7 +375,7 @@ CallbackReturn EthercatDriver::on_deactivate(
   RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"), "Stopping ...please wait...");
 
   // stop EC and disconnect
-  master_.stop();
+  master_->stop();
 
   RCLCPP_INFO(
     rclcpp::get_logger("EthercatDriver"), "System successfully stopped!");
@@ -379,7 +390,7 @@ hardware_interface::return_type EthercatDriver::read(
   // try to lock so we can avoid blocking the read/write loop on the lock.
   const std::unique_lock<std::mutex> lock(ec_mutex_, std::try_to_lock);
   if (lock.owns_lock() && activated_) {
-    master_.readData();
+    master_->readData();
   }
   return hardware_interface::return_type::OK;
 }
@@ -391,7 +402,7 @@ hardware_interface::return_type EthercatDriver::write(
   // try to lock so we can avoid blocking the read/write loop on the lock.
   const std::unique_lock<std::mutex> lock(ec_mutex_, std::try_to_lock);
   if (lock.owns_lock() && activated_) {
-    master_.writeData();
+    master_->writeData();
   }
   return hardware_interface::return_type::OK;
 }
