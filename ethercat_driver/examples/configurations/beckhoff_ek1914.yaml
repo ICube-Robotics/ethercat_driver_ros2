@@ -1,0 +1,93 @@
+# Configuration file for Beckhoff EK1914
+# Description : Coupler, 4-channel digital input,
+#  2-channel digital safety input, 4-channel digital output,
+#  2-channel digital safety output, 24 V DC, 1 ms (TBC).
+vendor_id: 0x00000002
+product_id: 0x077a2c52
+tpdo: # Slave-OUT & Master-IN
+  - index: 0x1a00
+    channels:
+      - { index: 0x6000, sub_index: 0x01, type: int8 }
+      - { index: 0x6001, sub_index: 0x01, type: bool, mask: 1 }
+      - { index: 0x6001, sub_index: 0x02, type: bool, mask: 2 }
+      - { index: 0x0000, sub_index: 0x00, type: bit6 }
+      - { index: 0x6000, sub_index: 0x03, type: int16 }
+      - { index: 0x6000, sub_index: 0x02, type: int16 }
+  - index: 0x1a01
+    channels:
+      - {
+          index: 0x6010,
+          sub_index: 0x01,
+          type: bool,
+          mask: 1,
+          state_interface: input_1,
+        }
+      - {
+          index: 0x6010,
+          sub_index: 0x02,
+          type: bool,
+          mask: 2,
+          state_interface: input_2,
+        }
+      - {
+          index: 0x6010,
+          sub_index: 0x03,
+          type: bool,
+          mask: 4,
+          state_interface: input_3,
+        }
+      - {
+          index: 0x6010,
+          sub_index: 0x04,
+          type: bool,
+          mask: 8,
+          state_interface: input_4,
+        }
+      - { index: 0x0000, sub_index: 0x00, type: bit12 }
+rpdo: # Slave-IN & Master-OUT
+  - index: 0x1600
+    channels:
+      - { index: 0x7000, sub_index: 0x01, type: int8 }
+      - { index: 0x7001, sub_index: 0x01, type: bool, mask: 1 }
+      - { index: 0x7001, sub_index: 0x02, type: bool, mask: 2 }
+      - { index: 0x0000, sub_index: 0x00, type: bit6 }
+      - { index: 0x7000, sub_index: 0x03, type: int16 }
+      - { index: 0x7000, sub_index: 0x02, type: int16 }
+  - index: 0x1601
+    channels:
+      - {
+          index: 0x7010,
+          sub_index: 0x01,
+          type: bool,
+          mask: 1,
+          command_interface: output_1,
+        }
+      - {
+          index: 0x7010,
+          sub_index: 0x02,
+          type: bool,
+          mask: 2,
+          command_interface: output_2,
+        }
+      - {
+          index: 0x7010,
+          sub_index: 0x03,
+          type: bool,
+          mask: 4,
+          command_interface: output_3,
+        }
+      - {
+          index: 0x7010,
+          sub_index: 0x04,
+          type: bool,
+          mask: 8,
+          command_interface: output_4,
+        }
+      - { index: 0x7010, sub_index: 0x05, type: bool, mask: 16 }
+      - { index: 0x7010, sub_index: 0x06, type: bool, mask: 32 }
+      - { index: 0x0000, sub_index: 0x00, type: bit10 }
+sm:
+  - { index: 0, type: output, watchdog: disable }
+  - { index: 1, type: input, watchdog: disable }
+  - { index: 2, type: output, pdo: rpdo, watchdog: disable }
+  - { index: 3, type: input, pdo: tpdo, watchdog: disable }

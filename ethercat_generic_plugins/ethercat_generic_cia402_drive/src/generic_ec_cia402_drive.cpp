@@ -17,6 +17,7 @@
 #include <numeric>
 
 #include "ethercat_generic_plugins/generic_ec_cia402_drive.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 namespace ethercat_generic_plugins
 {
@@ -25,12 +26,37 @@ EcCiA402Drive::EcCiA402Drive()
 : GenericEcSlave() {}
 EcCiA402Drive::~EcCiA402Drive() {}
 
-bool EcCiA402Drive::initialized() const {return initialized_;}
+bool EcCiA402Drive::initialized() {return initialized_;}
 
-void EcCiA402Drive::processData(size_t index, uint8_t * domain_address)
+void EcCiA402Drive::updateState()
 {
+  if (status_word_ != last_status_word_) {
+    state_ = deviceState(status_word_);
+    if (state_ != last_state_) {
+      RCLCPP_INFO(
+        rclcpp::get_logger("EthercatDriver"),
+        "STATE: %s with status word :%d",
+        DEVICE_STATE_STR.at(state_).c_str(),
+        status_word_
+      );
+    }
+  }
+  last_status_word_ = status_word_;
+  last_state_ = state_;
+  counter_++;
+  initialized_ = is_operational_;
+}
+
+void EcCiA402Drive::processData(size_t entry_idx, uint8_t * domain_address)
+{
+  auto index = domain_map_[entry_idx];
+  ethercat_interface::EcPdoSingleInterfaceChannelManager * channel_ptr =
+    static_cast<
+    ethercat_interface::EcPdoSingleInterfaceChannelManager *>(
+    pdo_channels_info_[index]);
+  ethercat_interface::EcPdoSingleInterfaceChannelManager & channel(*channel_ptr);
   // Special case: ControlWord
-  if (pdo_channels_info_[index].index == CiA402D_RPDO_CONTROLWORD) {
+  if (channel.index == CiA402D_RPDO_CONTROLWORD) {
     if (is_operational_) {
       if (fault_reset_command_interface_index_ >= 0) {
         if (command_interface_ptr_->at(fault_reset_command_interface_index_) == 0) {
@@ -46,77 +72,64 @@ void EcCiA402Drive::processData(size_t index, uint8_t * domain_address)
       }
 
       if (auto_state_transitions_) {
-        pdo_channels_info_[index].default_value = transition(
+        channel.default_value = transition(
           state_,
-          pdo_channels_info_[index].ec_read(domain_address));
+          channel.ec_read(domain_address));
       }
     }
   }
 
   // setup current position as default position
-  if (pdo_channels_info_[index].index == CiA402D_RPDO_POSITION) {
+  if (channel.index == CiA402D_RPDO_POSITION) {
     if (mode_of_operation_display_ != ModeOfOperation::MODE_NO_MODE) {
-      pdo_channels_info_[index].default_value =
-        pdo_channels_info_[index].factor * last_position_ +
-        pdo_channels_info_[index].offset;
+      channel.default_value =
+        channel.factor * last_position_ + channel.offset;
     }
-    pdo_channels_info_[index].override_command =
+    channel.override_command =
       (mode_of_operation_display_ != ModeOfOperation::MODE_CYCLIC_SYNC_POSITION) ? true : false;
   }
 
   // setup mode of operation
-  if (pdo_channels_info_[index].index == CiA402D_RPDO_MODE_OF_OPERATION) {
+  if (channel.index == CiA402D_RPDO_MODE_OF_OPERATION) {
     if (mode_of_operation_ >= 0 && mode_of_operation_ <= 10) {
-      pdo_channels_info_[index].default_value = mode_of_operation_;
+      channel.default_value = mode_of_operation_;
     }
   }
 
-  pdo_channels_info_[index].ec_update(domain_address);
+  channel.ec_update(domain_address);
 
   // get mode_of_operation_display_
-  if (pdo_channels_info_[index].index == CiA402D_TPDO_MODE_OF_OPERATION_DISPLAY) {
-    mode_of_operation_display_ = pdo_channels_info_[index].last_value;
+  if (channel.index == CiA402D_TPDO_MODE_OF_OPERATION_DISPLAY) {
+    mode_of_operation_display_ = channel.last_value;
   }
 
-  if (pdo_channels_info_[index].index == CiA402D_TPDO_POSITION) {
-    last_position_ = pdo_channels_info_[index].last_value;
+  if (channel.index == CiA402D_TPDO_POSITION) {
+    last_position_ = channel.last_value;
   }
 
   // Special case: StatusWord
-  if (pdo_channels_info_[index].index == CiA402D_TPDO_STATUSWORD) {
-    status_word_ = pdo_channels_info_[index].last_value;
+  if (channel.index == CiA402D_TPDO_STATUSWORD) {
+    status_word_ = channel.last_value;
   }
 
 
   // CHECK FOR STATE CHANGE
-  if (index == all_channels_.size() - 1) {  // if last entry  in domain
-    if (status_word_ != last_status_word_) {
-      state_ = deviceState(status_word_);
-      if (state_ != last_state_) {
-        std::cout << "STATE: " << DEVICE_STATE_STR.at(state_)
-                  << " with status word :" << status_word_ << std::endl;
-      }
-    }
-    initialized_ = ((state_ == STATE_OPERATION_ENABLED) &&
-      (last_state_ == STATE_OPERATION_ENABLED)) ? true : false;
-
-    last_status_word_ = status_word_;
-    last_state_ = state_;
-    counter_++;
+  if (entry_idx == domain_map_.size() - 1) {  // if last entry in domain
+    updateState();
   }
 }
 
 bool EcCiA402Drive::setupSlave(
-  std::unordered_map<std::string, std::string> slave_paramters,
+  std::unordered_map<std::string, std::string> slave_parameters,
   std::vector<double> * state_interface,
   std::vector<double> * command_interface)
 {
   state_interface_ptr_ = state_interface;
   command_interface_ptr_ = command_interface;
-  paramters_ = slave_paramters;
+  parameters_ = slave_parameters;
 
-  if (paramters_.find("slave_config") != paramters_.end()) {
-    if (!setup_from_config_file(paramters_["slave_config"])) {
+  if (parameters_.find("slave_config") != parameters_.end()) {
+    if (!setup_from_config_file(parameters_["slave_config"])) {
       return false;
     }
   } else {
@@ -127,12 +140,12 @@ bool EcCiA402Drive::setupSlave(
   setup_interface_mapping();
   setup_syncs();
 
-  if (paramters_.find("mode_of_operation") != paramters_.end()) {
-    mode_of_operation_ = std::stod(paramters_["mode_of_operation"]);
+  if (parameters_.find("mode_of_operation") != parameters_.end()) {
+    mode_of_operation_ = std::stod(parameters_["mode_of_operation"]);
   }
 
-  if (paramters_.find("command_interface/reset_fault") != paramters_.end()) {
-    fault_reset_command_interface_index_ = std::stoi(paramters_["command_interface/reset_fault"]);
+  if (parameters_.find("command_interface/reset_fault") != parameters_.end()) {
+    fault_reset_command_interface_index_ = std::stoi(parameters_["command_interface/reset_fault"]);
   }
 
   return true;
@@ -157,10 +170,16 @@ bool EcCiA402Drive::setup_from_config_file(std::string config_file)
   try {
     slave_config_ = YAML::LoadFile(config_file);
   } catch (const YAML::ParserException & ex) {
-    std::cerr << "EcCiA402Drive: failed to load drive configuration: " << ex.what() << std::endl;
+    RCLCPP_ERROR(
+      rclcpp::get_logger("EthercatDriver"),
+      "EcCiA402Drive: failed to load drive configuration: %s",
+      ex.what());
     return false;
   } catch (const YAML::BadFile & ex) {
-    std::cerr << "EcCiA402Drive: failed to load drive configuration: " << ex.what() << std::endl;
+    RCLCPP_ERROR(
+      rclcpp::get_logger("EthercatDriver"),
+      "EcCiA402Drive: failed to load drive configuration: %s",
+      ex.what());
     return false;
   }
   if (!setup_from_config(slave_config_)) {

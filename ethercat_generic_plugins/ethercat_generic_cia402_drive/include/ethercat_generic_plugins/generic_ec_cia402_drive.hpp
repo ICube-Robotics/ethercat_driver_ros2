@@ -24,7 +24,7 @@
 
 #include "yaml-cpp/yaml.h"
 #include "ethercat_interface/ec_slave.hpp"
-#include "ethercat_interface/ec_pdo_channel_manager.hpp"
+#include "ethercat_interface/ec_pdo_single_interface_channel_manager.hpp"
 #include "ethercat_generic_plugins/generic_ec_slave.hpp"
 #include "ethercat_generic_plugins/cia402_common_defs.hpp"
 
@@ -38,17 +38,19 @@ public:
   virtual ~EcCiA402Drive();
   /** Returns true if drive has reached "operation enabled" state.
    *  The transition through the state machine is handled automatically. */
-  bool initialized() const;
+  bool initialized();
 
-  virtual void processData(size_t index, uint8_t * domain_address);
+  virtual void processData(size_t entry_idx, uint8_t * domain_address);
 
   virtual bool setupSlave(
-    std::unordered_map<std::string, std::string> slave_paramters,
+    std::unordered_map<std::string, std::string> slave_parameters,
     std::vector<double> * state_interface,
     std::vector<double> * command_interface);
 
   int8_t mode_of_operation_display_ = 0;
   int8_t mode_of_operation_ = -1;
+
+  void updateState();
 
 protected:
   uint32_t counter_ = 0;

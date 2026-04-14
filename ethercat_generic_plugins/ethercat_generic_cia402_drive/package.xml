@@ -4,7 +4,7 @@
   <name>ethercat_generic_cia402_drive</name>
   <version>1.2.0</version>
   <description>Plugin implementations of generic EtherCAT modules for CiA402 drives.</description>
-  <maintainer email="mcbed.robotics@gamil.com">Maciej Bednarczyk</maintainer>
+  <maintainer email="yguel.robotics@gamil.com">Manuel YGUEL</maintainer>
   <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake_ros</buildtool_depend>

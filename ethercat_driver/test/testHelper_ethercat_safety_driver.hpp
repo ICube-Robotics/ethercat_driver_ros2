@@ -1,4 +1,4 @@
-// Copyright 2023 ICUBE Laboratory, University of Strasbourg
+// Copyright 2024 ICUBE Laboratory, University of Strasbourg
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,16 +11,24 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Author: Manuel YGUEL (yguel.robotics@gmail.com)
 
-#include <gtest/gtest.h>
-#include <memory>
+#ifndef TESTHELPER_ETHERCAT_SAFETY_DRIVER_HPP_
+#define TESTHELPER_ETHERCAT_SAFETY_DRIVER_HPP_
 
-#include <pluginlib/class_loader.hpp>
-#include "ethercat_interface/ec_slave.hpp"
+#include "ethercat_driver/ethercat_driver.hpp"
 
-TEST(TestLoadGenericEcSlave, load_ec_module)
+namespace ethercat_driver
 {
-  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_(
-    "ethercat_interface", "ethercat_interface::EcSlave");
-  ASSERT_NO_THROW(ec_loader_.createSharedInstance("ethercat_generic_plugins/GenericEcSlave"));
-}
+
+class TestHelperEthercatSafetyDriver : public ethercat_driver::EthercatDriver
+{
+public:
+  using EthercatDriver::getEcTransferModuleParam;
+  using EthercatDriver::getEcTransferNets;
+};
+
+}  // namespace ethercat_driver
+
+#endif  // TESTHELPER_ETHERCAT_SAFETY_DRIVER_HPP_
