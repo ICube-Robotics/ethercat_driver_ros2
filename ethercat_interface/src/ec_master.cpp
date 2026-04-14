@@ -74,6 +74,10 @@ EcMaster::~EcMaster()
       delete domain.second;
     }
   }
+  if (master_ != NULL) {
+    ecrt_release_master(master_);
+    master_ = NULL;
+  }
 }
 
 void EcMaster::addSlave(uint16_t alias, uint16_t position, EcSlave * slave)
