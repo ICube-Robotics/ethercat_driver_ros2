@@ -75,6 +75,10 @@ EcMaster::~EcMaster()
       delete domain.second;
     }
   }
+  // Release the EtherCAT master so the kernel module can be reused
+  if (master_) {
+    ecrt_release_master(master_);
+  }
 }
 
 void EcMaster::addSlave(uint16_t alias, uint16_t position, EcSlave * slave)
