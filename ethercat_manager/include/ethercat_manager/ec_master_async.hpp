@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <ecrt.h>
 #include <errno.h>
+#include <unistd.h>
 #include <sstream>
 #include <map>
 #include <string>
