@@ -191,7 +191,7 @@ TEST_F(EcCiA402DriveTest, EcReadTPDOToStateInterface)
   ASSERT_EQ(plugin_->pdo_channels_info_[8]->state_interface_index(), 1);
   uint8_t domain_address[2];
   EC_WRITE_S16(domain_address, 42);
-  plugin_->processData(8, domain_address);
+  plugin_->processData(0, 8, domain_address);
   ASSERT_EQ(plugin_->state_interface_ptr_->at(1), 42);
 }
 
@@ -209,7 +209,7 @@ TEST_F(EcCiA402DriveTest, EcWriteRPDOFromCommandInterface)
   ASSERT_EQ(channels[2]->command_interface_index(), 1);
   plugin_->mode_of_operation_display_ = 10;
   uint8_t domain_address[2];
-  plugin_->processData(2, domain_address);
+  plugin_->processData(0, 2, domain_address);
   ASSERT_EQ(channels[2]->data().last_value, 42);
   ASSERT_EQ(EC_READ_S16(domain_address), 42);
 }
@@ -221,7 +221,7 @@ TEST_F(EcCiA402DriveTest, EcWriteRPDODefaultValue)
   plugin_->setup_interface_mapping();
   plugin_->mode_of_operation_display_ = 10;
   uint8_t domain_address[2];
-  plugin_->processData(2, domain_address);
+  plugin_->processData(0, 2, domain_address);
   auto channels = plugin_->pdo_channels_info_;
   ASSERT_EQ(channels[2]->data().last_value, -5);
   ASSERT_EQ(EC_READ_S16(domain_address), -5);
@@ -243,15 +243,15 @@ TEST_F(EcCiA402DriveTest, EcWriteRPDODefaultValue)
 //   ASSERT_FALSE(plugin_->fault_reset_);
 //   ASSERT_EQ(plugin_->command_interface_ptr_->at(
 //     plugin_->fault_reset_command_interface_index_), 1);
-//   plugin_->processData(4, &domain_address);
+//   plugin_->processData(0, 4, &domain_address);
 //   ASSERT_EQ(plugin_->pdo_channels_info_[4].default_value, 0b10000000);
 //   plugin_->pdo_channels_info_[4].last_value = 0;
-//   plugin_->processData(4, &domain_address);
+//   plugin_->processData(0, 4, &domain_address);
 //   ASSERT_EQ(plugin_->pdo_channels_info_[4].default_value, 0b00000000);
 //   command_interface[1] = 0;
-//   plugin_->processData(4, &domain_address);
+//   plugin_->processData(0, 4, &domain_address);
 //   ASSERT_EQ(plugin_->pdo_channels_info_[4].default_value, 0b00000000);
-//   command_interface[1] = 2;  plugin_->processData(4, &domain_address);
+//   command_interface[1] = 2;  plugin_->processData(0, 4, &domain_address);
 //   ASSERT_EQ(plugin_->pdo_channels_info_[4].default_value, 0b10000000);
 // }
 
@@ -268,11 +268,11 @@ TEST_F(EcCiA402DriveTest, SwitchModeOfOperation)
   plugin_->setup_interface_mapping();
   plugin_->is_operational_ = true;
   uint8_t domain_address[2];
-  plugin_->processData(5, domain_address);
+  plugin_->processData(0, 5, domain_address);
   ASSERT_EQ(EC_READ_S8(domain_address), 8);
   command_interface[1] = 9;
-  plugin_->processData(5, domain_address);
-  plugin_->processData(10, domain_address);
+  plugin_->processData(0, 5, domain_address);
+  plugin_->processData(0, 10, domain_address);
   ASSERT_EQ(EC_READ_S8(domain_address), 9);
   ASSERT_EQ(plugin_->mode_of_operation_display_, 9);
 }
@@ -293,32 +293,32 @@ TEST_F(EcCiA402DriveTest, EcWriteDefaultTargetPosition)
   uint8_t domain_address[4];
   uint8_t domain_address_moo[2];
 
-  plugin_->processData(5, domain_address_moo);  // mode_of_operation
-  plugin_->processData(10, domain_address_moo);  // mode_of_operation_display
+  plugin_->processData(0, 5, domain_address_moo);  // mode_of_operation
+  plugin_->processData(0, 10, domain_address_moo);  // mode_of_operation_display
   ASSERT_EQ(plugin_->mode_of_operation_display_, 8);
 
   EC_WRITE_S32(domain_address, 123456);
-  plugin_->processData(6, domain_address);
+  plugin_->processData(0, 6, domain_address);
   ASSERT_EQ(plugin_->last_position_, 123456);
 
   EC_WRITE_S32(domain_address, 0);
-  plugin_->processData(0, domain_address);
+  plugin_->processData(0, 0, domain_address);
   ASSERT_EQ(EC_READ_S32(domain_address), 123456);
 
   command_interface[1] = 9;
-  plugin_->processData(5, domain_address_moo);
-  plugin_->processData(10, domain_address_moo);
+  plugin_->processData(0, 5, domain_address_moo);
+  plugin_->processData(0, 10, domain_address_moo);
   ASSERT_EQ(plugin_->mode_of_operation_display_, 9);
 
   EC_WRITE_S32(domain_address, 0);
-  plugin_->processData(0, domain_address);
+  plugin_->processData(0, 0, domain_address);
   ASSERT_EQ(EC_READ_S32(domain_address), 123456);
 
   EC_WRITE_S32(domain_address, 654321);
-  plugin_->processData(6, domain_address);
+  plugin_->processData(0, 6, domain_address);
   ASSERT_EQ(plugin_->last_position_, 654321);
 
   EC_WRITE_S32(domain_address, 0);
-  plugin_->processData(0, domain_address);
+  plugin_->processData(0, 0, domain_address);
   ASSERT_EQ(EC_READ_S32(domain_address), 654321);
 }
