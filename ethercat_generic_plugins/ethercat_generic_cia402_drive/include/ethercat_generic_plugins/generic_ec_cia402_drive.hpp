@@ -40,7 +40,7 @@ public:
    *  The transition through the state machine is handled automatically. */
   bool initialized();
 
-  virtual void processData(size_t entry_idx, uint8_t * domain_address);
+  virtual void processData(unsigned int domain_index, size_t entry_idx, uint8_t * domain_address);
 
   virtual bool setupSlave(
     std::unordered_map<std::string, std::string> slave_parameters,
