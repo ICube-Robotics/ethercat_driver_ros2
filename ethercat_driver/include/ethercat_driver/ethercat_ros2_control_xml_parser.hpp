@@ -1,4 +1,4 @@
-// Copyright 2024 ICUBE Laboratory, University of Strasbourg
+// Copyright 2022 ICUBE Laboratory, University of Strasbourg
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,24 +11,26 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
-// Author: Manuel YGUEL (yguel.robotics@gmail.com)
 
-#ifndef TESTHELPER_ETHERCAT_SAFETY_DRIVER_HPP_
-#define TESTHELPER_ETHERCAT_SAFETY_DRIVER_HPP_
+#ifndef ETHERCAT_DRIVER__ETHERCAT_ROS2_CONTROL_XML_PARSER_HPP_
+#define ETHERCAT_DRIVER__ETHERCAT_ROS2_CONTROL_XML_PARSER_HPP_
 
-#include "ethercat_driver/ethercat_driver.hpp"
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace ethercat_driver
 {
 
-class TestHelperEthercatSafetyDriver : public ethercat_driver::EthercatDriver
+class EthercatRos2ControlXmlParser
 {
 public:
-  using EthercatDriver::getEcTransferModuleParam;
-  using EthercatDriver::getEcTransferNets;
+  static std::vector<std::unordered_map<std::string, std::string>> getEcModuleParam(
+    const std::string & urdf,
+    const std::string & component_name,
+    const std::string & component_type);
 };
 
 }  // namespace ethercat_driver
 
-#endif  // TESTHELPER_ETHERCAT_SAFETY_DRIVER_HPP_
+#endif  // ETHERCAT_DRIVER__ETHERCAT_ROS2_CONTROL_XML_PARSER_HPP_
