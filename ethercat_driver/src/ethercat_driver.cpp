@@ -77,7 +77,7 @@ CallbackReturn EthercatDriver::on_init(
   for (uint j = 0; j < info_.joints.size(); j++) {
     RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"), "joints");
     // check all joints for EC modules and load into ec_modules_
-    auto module_params = EthercatRos2ControlXmlParser::getEcModuleParam(
+    auto module_params = getEcModuleParam(
       info_.original_xml, info_.joints[j].name, "joint");
     for (auto i = 0ul; i < module_params.size(); i++) {
       for (auto k = 0ul; k < info_.joints[j].state_interfaces.size(); k++) {
@@ -89,8 +89,13 @@ CallbackReturn EthercatDriver::on_init(
           info_.joints[j].command_interfaces[k].name] = std::to_string(k);
       }
       configured_modules.push_back(
-        {module_params[i], &hw_joint_states_[j], &hw_joint_commands_[j],
-          info_.joints[j].name, "Joint", i + 1});
+        ConfiguredEcModule{
+          .parameters = module_params[i],
+          .state_interface = &hw_joint_states_[j],
+          .command_interface = &hw_joint_commands_[j],
+          .component_name = info_.joints[j].name,
+          .module_type = "Joint",
+          .module_number = i + 1});
     }
   }
 
@@ -98,7 +103,7 @@ CallbackReturn EthercatDriver::on_init(
   for (uint g = 0; g < info_.gpios.size(); g++) {
     RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"), "gpios");
     // check all gpios for EC modules and load into ec_modules_
-    auto module_params = EthercatRos2ControlXmlParser::getEcModuleParam(
+    auto module_params = getEcModuleParam(
       info_.original_xml, info_.gpios[g].name, "gpio");
     for (auto i = 0ul; i < module_params.size(); i++) {
       for (auto k = 0ul; k < info_.gpios[g].state_interfaces.size(); k++) {
@@ -110,8 +115,13 @@ CallbackReturn EthercatDriver::on_init(
           info_.gpios[g].command_interfaces[k].name] = std::to_string(k);
       }
       configured_modules.push_back(
-        {module_params[i], &hw_gpio_states_[g], &hw_gpio_commands_[g],
-          info_.gpios[g].name, "GPIO", i + 1});
+        ConfiguredEcModule{
+          .parameters = module_params[i],
+          .state_interface = &hw_gpio_states_[g],
+          .command_interface = &hw_gpio_commands_[g],
+          .component_name = info_.gpios[g].name,
+          .module_type = "GPIO",
+          .module_number = i + 1});
     }
   }
 
@@ -119,7 +129,7 @@ CallbackReturn EthercatDriver::on_init(
   for (uint s = 0; s < info_.sensors.size(); s++) {
     RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"), "sensors");
     // check all sensors for EC modules and load into ec_modules_
-    auto module_params = EthercatRos2ControlXmlParser::getEcModuleParam(
+    auto module_params = getEcModuleParam(
       info_.original_xml, info_.sensors[s].name, "sensor");
     for (auto i = 0ul; i < module_params.size(); i++) {
       for (auto k = 0ul; k < info_.sensors[s].state_interfaces.size(); k++) {
@@ -131,8 +141,13 @@ CallbackReturn EthercatDriver::on_init(
           info_.sensors[s].command_interfaces[k].name] = std::to_string(k);
       }
       configured_modules.push_back(
-        {module_params[i], &hw_sensor_states_[s], &hw_sensor_commands_[s],
-          info_.sensors[s].name, "Sensor", i + 1});
+        ConfiguredEcModule{
+          .parameters = module_params[i],
+          .state_interface = &hw_sensor_states_[s],
+          .command_interface = &hw_sensor_commands_[s],
+          .component_name = info_.sensors[s].name,
+          .module_type = "Sensor",
+          .module_number = i + 1});
     }
   }
 

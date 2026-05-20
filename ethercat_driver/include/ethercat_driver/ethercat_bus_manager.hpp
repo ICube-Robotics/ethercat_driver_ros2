@@ -64,18 +64,6 @@ public:
 
   EthercatCycleResult write();
 
-  uint16_t getAliasOrDefaultAlias(
-    const std::unordered_map<std::string,
-    std::string> & slave_parameters);
-
-  /** @brief Load transfer config YAML file
-   * One use case is to load transfers for FailSafe Over EtherCAT Safety
-   * @param[out] node YAML node containing the transfer configuration root
-   * @param[in] path Path to the YAML file, if empty, the file is loaded from the *fsoe_config*
-   * or *transfer_config* of the YAML document
-   */
-  void loadTransferConfigYamlFile(YAML::Node & node, const std::string & path = "");
-
   /** @brief Get transfer module parameters from YAML file
    * @param[in] config YAML node containing the transfer configuration root
    * @return Vector of maps containing transfer module parameters, each map corresponds to a module
@@ -91,6 +79,18 @@ public:
   std::vector<ethercat_interface::EcTransferNet> getEcTransferNets(const YAML::Node & config);
 
 protected:
+  uint16_t getAliasOrDefaultAlias(
+    const std::unordered_map<std::string,
+    std::string> & slave_parameters);
+
+  /** @brief Load transfer config YAML file
+   * One use case is to load transfers for FailSafe Over EtherCAT Safety
+   * @param[out] node YAML node containing the transfer configuration root
+   * @param[in] path Path to the YAML file, if empty, the file is loaded from the *fsoe_config*
+   * or *transfer_config* of the YAML document
+   */
+  void loadTransferConfigYamlFile(YAML::Node & node, const std::string & path = "");
+
   bool setupMaster();
 
   bool configNetwork();

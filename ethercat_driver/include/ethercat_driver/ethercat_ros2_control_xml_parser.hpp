@@ -22,14 +22,16 @@
 namespace ethercat_driver
 {
 
-class EthercatRos2ControlXmlParser
-{
-public:
-  static std::vector<std::unordered_map<std::string, std::string>> getEcModuleParam(
-    const std::string & urdf,
-    const std::string & component_name,
-    const std::string & component_type);
-};
+/** @brief Parse <ec_module> blocks for a given ros2_control component from a URDF/Xacro string.
+ * @param[in] urdf Full URDF/Xacro XML string (typically info_.original_xml).
+ * @param[in] component_name Name attribute of the joint, gpio or sensor element to look under.
+ * @param[in] component_type Element tag to look for: "joint", "gpio", or "sensor".
+ * @return One parameter map per <ec_module> child of the matching component.
+ */
+std::vector<std::unordered_map<std::string, std::string>> getEcModuleParam(
+  const std::string & urdf,
+  const std::string & component_name,
+  const std::string & component_type);
 
 }  // namespace ethercat_driver
 

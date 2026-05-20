@@ -22,8 +22,7 @@
 namespace ethercat_driver
 {
 
-std::vector<std::unordered_map<std::string, std::string>>
-EthercatRos2ControlXmlParser::getEcModuleParam(
+std::vector<std::unordered_map<std::string, std::string>> getEcModuleParam(
   const std::string & urdf,
   const std::string & component_name,
   const std::string & component_type)

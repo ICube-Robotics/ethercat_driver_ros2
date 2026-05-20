@@ -94,7 +94,16 @@ bool EthercatBusManager::configureModules(
   const std::vector<ConfiguredEcModule> & modules)
 {
   const std::lock_guard<std::mutex> lock(ec_mutex_);
-  activated_ = false;
+  // configureModules must be called only when the bus is not active.
+  // ros2_control's lifecycle guarantees this for on_init(); reject otherwise
+  // because clearing internal state below would orphan an active master_
+  // without going through stop().
+  if (activated_) {
+    RCLCPP_FATAL(
+      rclcpp::get_logger("EthercatBusManager"),
+      "configureModules() called while bus is active; deactivate first.");
+    return false;
+  }
   hardware_parameters_ = hardware_parameters;
   ec_modules_.clear();
   ec_module_parameters_.clear();
@@ -103,8 +112,14 @@ bool EthercatBusManager::configureModules(
   ec_transfer_slaves_.clear();
   master_.reset();
 
+  // Collect all module parameters up front so the load loop mirrors the
+  // original on_init() body structure (plugin load + setupSlave + push to ec_modules_).
+  ec_module_parameters_.reserve(modules.size());
   for (const auto & configured_module : modules) {
     ec_module_parameters_.push_back(configured_module.parameters);
+  }
+
+  for (const auto & configured_module : modules) {
     try {
       auto module = ec_loader_.createSharedInstance(configured_module.parameters.at("plugin"));
       if (!module->setupSlave(
@@ -466,7 +481,7 @@ void EthercatBusManager::loadTransferConfigYamlFile(YAML::Node & node, const std
   } catch (const YAML::ParserException & ex) {
     std::string msg =
       std::string(
-      "EthercatDriver : failed to load transfer configuration "
+      "EthercatBusManager : failed to load transfer configuration "
       "(YAML file is incorrect): ") + std::string(ex.what());
     RCLCPP_FATAL(
       rclcpp::get_logger("EthercatBusManager"), msg.c_str() );
@@ -474,7 +489,7 @@ void EthercatBusManager::loadTransferConfigYamlFile(YAML::Node & node, const std
   } catch (const YAML::BadFile & ex) {
     std::string msg =
       std::string(
-      "EthercatDriver : failed to load transfer configuration "
+      "EthercatBusManager : failed to load transfer configuration "
       "(file path is incorrect or file is damaged): " + std::string(ex.what()));
     RCLCPP_FATAL(
       rclcpp::get_logger("EthercatBusManager"), msg.c_str() );
@@ -482,7 +497,7 @@ void EthercatBusManager::loadTransferConfigYamlFile(YAML::Node & node, const std
   } catch (std::exception & e) {
     std::string msg =
       std::string(
-      "EthercatDriver : error while loading transfer configuration: ") + std::string(e.what());
+      "EthercatBusManager : error while loading transfer configuration: ") + std::string(e.what());
     RCLCPP_FATAL(
       rclcpp::get_logger("EthercatBusManager"), msg.c_str() );
     throw std::runtime_error(msg);
