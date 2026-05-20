@@ -14,8 +14,10 @@
 
 #include "ethercat_driver/ethercat_driver.hpp"
 
+#include <exception>
 #include <limits>
 #include <string>
+#include <unordered_map>
 
 #include "ethercat_driver/ethercat_ros2_control_xml_parser.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
@@ -42,6 +44,71 @@ ConfiguredEcModule make_configured_ec_module(
   module.module_type = std::move(module_type);
   module.module_number = module_number;
   return module;
+}
+
+bool configure_ethercat_bus_config(
+  const std::unordered_map<std::string, std::string> & hardware_parameters,
+  EthercatBusConfig & bus_config)
+{
+  unsigned int master_id = 666;
+  // Get master id
+  if (hardware_parameters.find("master_id") == hardware_parameters.end()) {
+    // Master id was not provided, default to 0
+    master_id = 0;
+  } else {
+    try {
+      master_id = std::stoul(hardware_parameters.at("master_id"));
+    } catch (std::exception & e) {
+      RCLCPP_FATAL(
+        rclcpp::get_logger("EthercatDriver"), "Invalid master id (%s)!", e.what());
+      return false;
+    }
+  }
+  bus_config.master_id = master_id;
+
+  // Get control frequency
+  if (hardware_parameters.find("control_frequency") == hardware_parameters.end()) {
+    // Control frequency was not provided, default to 100 Hz
+    bus_config.control_frequency = 100.0;
+  } else {
+    try {
+      bus_config.control_frequency = std::stod(hardware_parameters.at("control_frequency"));
+    } catch (std::exception & e) {
+      RCLCPP_FATAL(
+        rclcpp::get_logger("EthercatDriver"), "Invalid control frequency (%s)!", e.what());
+      return false;
+    }
+  }
+
+  const auto transfer_config = hardware_parameters.find("transfer_config");
+  const auto fsoe_config = hardware_parameters.find("fsoe_config");
+  if (transfer_config != hardware_parameters.end() && fsoe_config != hardware_parameters.end()) {
+    RCLCPP_FATAL(
+      rclcpp::get_logger("EthercatDriver"),
+      "Both transfer_config and fsoe_config parameters are provided! Please provide only one "
+      "of them.");
+    return false;
+  }
+  if (transfer_config != hardware_parameters.end() && transfer_config->second.empty()) {
+    RCLCPP_FATAL(
+      rclcpp::get_logger("EthercatDriver"), "Empty transfer_config or fsoe_config parameter!");
+    return false;
+  }
+  if (fsoe_config != hardware_parameters.end() && fsoe_config->second.empty()) {
+    RCLCPP_FATAL(
+      rclcpp::get_logger("EthercatDriver"), "Empty transfer_config or fsoe_config parameter!");
+    return false;
+  }
+
+  if (transfer_config != hardware_parameters.end()) {
+    bus_config.transfer_config = transfer_config->second;
+  }
+
+  if (fsoe_config != hardware_parameters.end()) {
+    bus_config.fsoe_config = fsoe_config->second;
+  }
+
+  return true;
 }
 
 }  // namespace
@@ -173,7 +240,12 @@ CallbackReturn EthercatDriver::on_init(
     }
   }
 
-  if (!bus_manager_.configureModules(info_.hardware_parameters, configured_modules)) {
+  EthercatBusConfig bus_config;
+  if (!configure_ethercat_bus_config(info_.hardware_parameters, bus_config)) {
+    return CallbackReturn::ERROR;
+  }
+
+  if (!bus_manager_.configureModules(bus_config, configured_modules)) {
     return CallbackReturn::ERROR;
   }
 

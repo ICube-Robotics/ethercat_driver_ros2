@@ -90,7 +90,7 @@ uint16_t EthercatBusManager::getAliasOrDefaultAlias(
 }
 
 bool EthercatBusManager::configureModules(
-  const std::unordered_map<std::string, std::string> & hardware_parameters,
+  const EthercatBusConfig & bus_config,
   const std::vector<ConfiguredEcModule> & modules)
 {
   const std::lock_guard<std::mutex> lock(ec_mutex_);
@@ -104,7 +104,7 @@ bool EthercatBusManager::configureModules(
       "configureModules() called while bus is active; deactivate first.");
     return false;
   }
-  hardware_parameters_ = hardware_parameters;
+  bus_config_ = bus_config;
   ec_modules_.clear();
   ec_module_parameters_.clear();
   ec_transfer_nets_.clear();
@@ -149,8 +149,7 @@ bool EthercatBusManager::configureModules(
   RCLCPP_INFO(rclcpp::get_logger("EthercatBusManager"), "Got %li modules", ec_modules_.size());
 
   // Check if a transfer configuration is provided
-  if (hardware_parameters_.find("fsoe_config") != hardware_parameters_.end() ||
-    hardware_parameters_.find("transfer_config") != hardware_parameters_.end())
+  if (!bus_config_.fsoe_config.empty() || !bus_config_.transfer_config.empty())
   {
     RCLCPP_INFO(rclcpp::get_logger("EthercatBusManager"), "Transfer configuration detected, ...");
 
@@ -264,43 +263,16 @@ bool EthercatBusManager::configureModules(
 
 bool EthercatBusManager::setupMaster()
 {
-  unsigned int master_id = 666;
-  // Get master id
-  if (hardware_parameters_.find("master_id") == hardware_parameters_.end()) {
-    // Master id was not provided, default to 0
-    master_id = 0;
-  } else {
-    try {
-      master_id = std::stoul(hardware_parameters_["master_id"]);
-    } catch (std::exception & e) {
-      RCLCPP_FATAL(
-        rclcpp::get_logger("EthercatBusManager"), "Invalid master id (%s)!", e.what());
-      return false;
-    }
-  }
-  master_ = std::make_shared<ethercat_interface::EcMaster>(master_id);
+  master_ = std::make_shared<ethercat_interface::EcMaster>(bus_config_.master_id);
 
   return true;
 }
 
 bool EthercatBusManager::configNetwork()
 {
-  // Get control frequency
-  if (hardware_parameters_.find("control_frequency") == hardware_parameters_.end()) {
-    // Control frequency was not provided, default to 100 Hz
-    control_frequency_ = 100.0;
-  } else {
-    try {
-      control_frequency_ = std::stod(hardware_parameters_["control_frequency"]);
-    } catch (std::exception & e) {
-      RCLCPP_FATAL(
-        rclcpp::get_logger("EthercatBusManager"), "Invalid control frequency (%s)!", e.what());
-      return false;
-    }
-  }
-
   // start EC and wait until state operative
 
+  control_frequency_ = bus_config_.control_frequency;
   master_->setCtrlFrequency(control_frequency_);
 
   for (auto i = 0ul; i < ec_modules_.size(); i++) {
@@ -442,9 +414,8 @@ void EthercatBusManager::loadTransferConfigYamlFile(YAML::Node & node, const std
 {
   std::string file_path;
   if (path.empty()) {
-    // Get the fsoe_config or transfer_config parameter of the ethercat_driver hardware plugin
-    if (hardware_parameters_.find("fsoe_config") == hardware_parameters_.end() &&
-      hardware_parameters_.find("transfer_config") == hardware_parameters_.end() )
+    // Get the fsoe_config or transfer_config path from the bus configuration
+    if (bus_config_.fsoe_config.empty() && bus_config_.transfer_config.empty())
     {
       std::string msg("transfer_config or fsoe_config parameter is missing!");
       // Transfer (or fsoe) config file was not provided
@@ -452,8 +423,7 @@ void EthercatBusManager::loadTransferConfigYamlFile(YAML::Node & node, const std
         rclcpp::get_logger("EthercatBusManager"), msg.c_str());
       throw std::runtime_error(msg);
     }
-    if (hardware_parameters_.find("fsoe_config") != hardware_parameters_.end() &&
-      hardware_parameters_.find("transfer_config") != hardware_parameters_.end())
+    if (!bus_config_.fsoe_config.empty() && !bus_config_.transfer_config.empty())
     {
       std::string msg(
         "Both transfer_config and fsoe_config parameters are provided! Please provide only one "
@@ -462,15 +432,15 @@ void EthercatBusManager::loadTransferConfigYamlFile(YAML::Node & node, const std
         rclcpp::get_logger("EthercatBusManager"), msg.c_str());
       throw std::runtime_error(msg);
     }
-    if (hardware_parameters_.find("fsoe_config") != hardware_parameters_.end() ) {
+    if (!bus_config_.fsoe_config.empty()) {
       std::string msg("The fsoe_config parameter is deprecated. "
         "Please use transfer_config instead.");
       RCLCPP_WARN(
         rclcpp::get_logger("EthercatBusManager"), msg.c_str());
-      file_path = hardware_parameters_.at("fsoe_config");
+      file_path = bus_config_.fsoe_config;
     }
-    if (hardware_parameters_.find("transfer_config") != hardware_parameters_.end()) {
-      file_path = hardware_parameters_.at("transfer_config");
+    if (!bus_config_.transfer_config.empty()) {
+      file_path = bus_config_.transfer_config;
     }
   } else {
     file_path = path;

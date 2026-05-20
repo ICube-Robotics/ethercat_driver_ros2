@@ -41,6 +41,15 @@ struct ConfiguredEcModule
   size_t module_number;
 };
 
+/** Bus-wide EtherCAT settings independent of the ros2_control HardwareInfo representation. */
+struct EthercatBusConfig
+{
+  unsigned int master_id{0};
+  double control_frequency{100.0};
+  std::string transfer_config;
+  std::string fsoe_config;
+};
+
 enum class EthercatCycleResult
 {
   kCompleted,
@@ -53,7 +62,7 @@ class EthercatBusManager
 {
 public:
   bool configureModules(
-    const std::unordered_map<std::string, std::string> & hardware_parameters,
+    const EthercatBusConfig & bus_config,
     const std::vector<ConfiguredEcModule> & modules);
 
   bool activateBus();
@@ -96,7 +105,7 @@ protected:
   bool configNetwork();
 
 protected:
-  std::unordered_map<std::string, std::string> hardware_parameters_;
+  EthercatBusConfig bus_config_;
   std::vector<std::shared_ptr<ethercat_interface::EcSlave>> ec_modules_;
   std::vector<std::unordered_map<std::string, std::string>> ec_module_parameters_;
 
