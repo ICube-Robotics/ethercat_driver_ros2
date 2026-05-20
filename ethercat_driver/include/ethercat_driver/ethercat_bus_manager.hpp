@@ -34,8 +34,8 @@ namespace ethercat_driver
 struct ConfiguredEcModule
 {
   std::unordered_map<std::string, std::string> parameters;
-  std::vector<double> * state_interface;
-  std::vector<double> * command_interface;
+  std::vector<double> * input_values;
+  std::vector<double> * output_values;
   std::string component_name;
   std::string module_type;
   size_t module_number;

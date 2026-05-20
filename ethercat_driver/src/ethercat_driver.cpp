@@ -30,16 +30,16 @@ namespace
 
 ConfiguredEcModule make_configured_ec_module(
   std::unordered_map<std::string, std::string> parameters,
-  std::vector<double> * state_interface,
-  std::vector<double> * command_interface,
+  std::vector<double> * input_values,
+  std::vector<double> * output_values,
   std::string component_name,
   std::string module_type,
   size_t module_number)
 {
   ConfiguredEcModule module;
   module.parameters = std::move(parameters);
-  module.state_interface = state_interface;
-  module.command_interface = command_interface;
+  module.input_values = input_values;
+  module.output_values = output_values;
   module.component_name = std::move(component_name);
   module.module_type = std::move(module_type);
   module.module_number = module_number;

@@ -124,8 +124,8 @@ bool EthercatBusManager::configureModules(
       auto module = ec_loader_.createSharedInstance(configured_module.parameters.at("plugin"));
       if (!module->setupSlave(
           configured_module.parameters,
-          configured_module.state_interface,
-          configured_module.command_interface))
+          configured_module.input_values,
+          configured_module.output_values))
       {
         RCLCPP_FATAL(
           rclcpp::get_logger("EthercatBusManager"),
