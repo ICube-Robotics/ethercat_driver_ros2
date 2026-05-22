@@ -14,10 +14,10 @@
 
 #include "ethercat_driver/ethercat_ros2_control_xml_parser.hpp"
 
+#include <tinyxml2.h>
+
 #include <stdexcept>
 #include <string>
-
-#include <tinyxml2.h>
 
 namespace ethercat_driver
 {

@@ -129,9 +129,9 @@ bool EthercatBusManager::configureModules(
       {
         RCLCPP_FATAL(
           rclcpp::get_logger("EthercatBusManager"),
-          "Setup of %s module %li FAILED.",
+          "Setup of %s module %zu FAILED.",
           configured_module.module_type.c_str(),
-          static_cast<unsigned long>(configured_module.module_number));
+          configured_module.module_number);
         return false;
       }
       module->setAliasAndPosition(
@@ -149,8 +149,7 @@ bool EthercatBusManager::configureModules(
   RCLCPP_INFO(rclcpp::get_logger("EthercatBusManager"), "Got %li modules", ec_modules_.size());
 
   // Check if a transfer configuration is provided
-  if (!bus_config_.fsoe_config.empty() || !bus_config_.transfer_config.empty())
-  {
+  if (!bus_config_.fsoe_config.empty() || !bus_config_.transfer_config.empty()) {
     RCLCPP_INFO(rclcpp::get_logger("EthercatBusManager"), "Transfer configuration detected, ...");
 
     YAML::Node config;
@@ -415,16 +414,14 @@ void EthercatBusManager::loadTransferConfigYamlFile(YAML::Node & node, const std
   std::string file_path;
   if (path.empty()) {
     // Get the fsoe_config or transfer_config path from the bus configuration
-    if (bus_config_.fsoe_config.empty() && bus_config_.transfer_config.empty())
-    {
+    if (bus_config_.fsoe_config.empty() && bus_config_.transfer_config.empty()) {
       std::string msg("transfer_config or fsoe_config parameter is missing!");
       // Transfer (or fsoe) config file was not provided
       RCLCPP_FATAL(
         rclcpp::get_logger("EthercatBusManager"), msg.c_str());
       throw std::runtime_error(msg);
     }
-    if (!bus_config_.fsoe_config.empty() && !bus_config_.transfer_config.empty())
-    {
+    if (!bus_config_.fsoe_config.empty() && !bus_config_.transfer_config.empty()) {
       std::string msg(
         "Both transfer_config and fsoe_config parameters are provided! Please provide only one "
         "of them.");
@@ -474,7 +471,8 @@ void EthercatBusManager::loadTransferConfigYamlFile(YAML::Node & node, const std
   }
 }
 
-std::vector<std::unordered_map<std::string, std::string>> EthercatBusManager::getEcTransferModuleParam(
+std::vector<std::unordered_map<std::string,
+  std::string>> EthercatBusManager::getEcTransferModuleParam(
   const YAML::Node & config)
 {
   if (0 == config.size() ) {
