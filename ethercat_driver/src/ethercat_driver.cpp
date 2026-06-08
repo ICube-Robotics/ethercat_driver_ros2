@@ -17,6 +17,7 @@
 #include <tinyxml2.h>
 #include <string>
 #include <regex>
+#include <rclcpp/logging.hpp>
 
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -379,7 +380,7 @@ CallbackReturn EthercatDriver::on_activate(
     clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &t, NULL);
     // update EtherCAT bus
 
-    master_->update();
+    master_->update(rclcpp::get_logger("EthercatDriver"));
     RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"), "updated!");
 
     // check if operational
@@ -430,7 +431,7 @@ hardware_interface::return_type EthercatDriver::read(
   // try to lock so we can avoid blocking the read/write loop on the lock.
   const std::unique_lock<std::mutex> lock(ec_mutex_, std::try_to_lock);
   if (lock.owns_lock() && activated_) {
-    master_->readData();
+    master_->readData(rclcpp::get_logger("EthercatDriver"));
   }
   return hardware_interface::return_type::OK;
 }

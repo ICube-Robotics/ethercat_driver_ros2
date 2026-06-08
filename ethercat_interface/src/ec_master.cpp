@@ -25,6 +25,7 @@
 #include <string.h>
 #include <iostream>
 #include <sstream>
+#include "rclcpp/rclcpp.hpp"
 
 namespace ethercat_interface
 {
@@ -269,7 +270,7 @@ bool EcMaster::activate()
   return true;
 }
 
-void EcMaster::update(uint32_t domain)
+void EcMaster::update(rclcpp::Logger logger, uint32_t domain)
 {
   // receive process data
   ecrt_master_receive(master_);
@@ -282,7 +283,7 @@ void EcMaster::update(uint32_t domain)
   ecrt_domain_process(domain_info->domain);
 
   // check process data state (optional)
-  checkDomainState(domain);
+  checkDomainState(logger, domain);
 
   // check for master and slave state change
   if (update_counter_ % check_state_frequency_ == 0) {
@@ -311,7 +312,7 @@ void EcMaster::update(uint32_t domain)
   ++update_counter_;
 }
 
-void EcMaster::readData(uint32_t domain)
+void EcMaster::readData(rclcpp::Logger logger, uint32_t domain)
 {
   // receive process data
   ecrt_master_receive(master_);
@@ -324,7 +325,7 @@ void EcMaster::readData(uint32_t domain)
   ecrt_domain_process(domain_info->domain);
 
   // check process data state (optional)
-  checkDomainState(domain);
+  checkDomainState(logger, domain);
 
   // check for master and slave state change
   if (update_counter_ % check_state_frequency_ == 0) {
@@ -392,7 +393,7 @@ void EcMaster::run(SIMPLECAT_CONTRL_CALLBACK user_callback)
     clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &t, NULL);
 
     // update EtherCAT bus
-    this->update();
+    this->update(rclcpp::get_logger("EthercatDriver"));
 
     // get actual time
     curr_t_ = std::chrono::system_clock::now();
@@ -457,7 +458,7 @@ void EcMaster::setThreadRealTime()
   memset(dummy, 0, MAX_SAFE_STACK);
 }
 
-void EcMaster::checkDomainState(uint32_t domain)
+void EcMaster::checkDomainState(rclcpp::Logger logger, uint32_t domain)
 {
   DomainInfo * domain_info = domain_info_.at(domain);
   if (domain_info == NULL) {
@@ -468,10 +469,10 @@ void EcMaster::checkDomainState(uint32_t domain)
   ecrt_domain_state(domain_info->domain, &ds);
 
   if (ds.working_counter != domain_info->domain_state.working_counter) {
-    printf("Domain: WC %u.\n", ds.working_counter);
+    RCLCPP_INFO(logger, "Domain: WC %u.\n", ds.working_counter);
   }
   if (ds.wc_state != domain_info->domain_state.wc_state) {
-    printf("Domain: State %u.\n", ds.wc_state);
+    RCLCPP_INFO(logger, "Domain: State %u.\n", ds.wc_state);
   }
   domain_info->domain_state = ds;
 }
