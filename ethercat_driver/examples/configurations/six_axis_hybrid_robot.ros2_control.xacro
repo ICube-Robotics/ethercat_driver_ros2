@@ -1,0 +1,183 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:macro name="hybrid_robot_ros2_control" params="name">
+        <ros2_control name="${name}" type="system">
+            <hardware>
+                <plugin>ethercat_driver/EthercatSafetyDriver</plugin>
+                <param name="master_id">0</param>
+                <param name="control_frequency">250</param>
+                <param name="fsoe_config">$(find weezlite_description)/config/circulo_hybrid_ethercat_safety.yaml</param>
+                <param name="number_of_physical_drives">1</param>
+            </hardware>
+
+            <gpio name="ek1914">
+                <state_interface name="safeOut_1"/>
+                <state_interface name="safeOut_2"/>
+                <state_interface name="safeIn_1"/>
+                <state_interface name="safeIn_2"/>
+                <state_interface name="input_1" />
+                <state_interface name="input_2" />
+                <state_interface name="input_3" />
+                <state_interface name="input_4" />
+                <state_interface name="output_1" />
+                <command_interface name="output_1" />
+                <state_interface name="output_2" />
+                <command_interface name="output_2" />
+                <state_interface name="output_3" />
+                <command_interface name="output_3" />
+                <state_interface name="output_4" />
+                <command_interface name="output_4" />
+                <ec_module name="ek1914">
+                    <plugin>ethercat_generic_plugins/GenericEcSlave</plugin>
+                    <param name="alias">0</param>
+                    <param name="position">0</param>
+                    <param name="slave_config">$(find weezlite_description)/config/beckhoff_ek1914.yaml</param>
+                </ec_module>
+            </gpio>
+
+            <gpio name="el1918">
+                <!-- bit 0 is safety_error_ack and bit 1 is safety_run -->
+                <command_interface name="safety_command_control"/>
+                <state_interface name="safety_command_control"/>
+                <command_interface name="safety_costant"/>
+                <state_interface name="safety_costant"/>
+                <state_interface name="circulo_status_1"/>
+                <state_interface name="circulo_status_2"/>
+                <state_interface name="circulo_status_3"/>
+                <state_interface name="circulo_status_1_2"/>
+                <state_interface name="circulo_status_2_2"/>
+                <state_interface name="circulo_status_3_2"/>
+                <state_interface name="circulo_status_1_3"/>
+                <state_interface name="circulo_status_2_3"/>
+                <state_interface name="circulo_status_3_3"/>
+                <state_interface name="circulo_status_1_4"/>
+                <state_interface name="circulo_status_2_4"/>
+                <state_interface name="circulo_status_3_4"/>
+                <state_interface name="safety_signals"/>
+                <ec_module name="el1918" type="safety_master">
+                    <plugin>ethercat_generic_plugins/GenericEcSlave</plugin>
+                    <param name="alias">0</param>
+                    <param name="position">1</param>
+                    <param name="slave_config">$(find weezlite_description)/config/beckhoff_hybrid_el1918.yaml</param>
+                </ec_module>
+            </gpio>
+
+            <joint name="J1">
+                <state_interface name="mode_of_operation" />
+                <state_interface name="position" />
+                <state_interface name="velocity" />
+                <state_interface name="effort" />
+                <state_interface name="control_word" />
+                <state_interface name="brake" />
+                <state_interface name="status_word" />
+                <state_interface name="sto_cmd_state" />
+                <state_interface name="ss1_cmd_state" />
+                <state_interface name="sls1_cmd_state" />
+                <state_interface name="sls2_cmd_state" />
+                <state_interface name="err_cmd_state" />
+                <state_interface name="ack_restart_cmd_state" />
+                <state_interface name="safe_position_valid" />
+                <state_interface name="safe_velocity_valid" />
+                <state_interface name="safe_position" />
+                <state_interface name="safe_velocity" />
+                <state_interface name="smm_state_1" />
+                <state_interface name="smm_state_2" />
+                <state_interface name="smm_state_3" />
+                <state_interface name="analog_input_2" />
+                <state_interface name="smm_digit_input_1" />
+                <state_interface name="led" />
+                <state_interface name="torque_offset" />
+                <state_interface name="fsoe_command" />
+                <command_interface name="fsoe_command" />
+                <command_interface name="torque_offset" />
+                <command_interface name="led" />
+                <command_interface name="mode_of_operation" />
+                <command_interface name="position" />
+                <command_interface name="velocity" />
+                <command_interface name="effort" />
+                <command_interface name="reset_fault" />
+                <command_interface name="control_word" />
+                <command_interface name="brake" />
+                <ec_module name="synapticon_circulo_smm_1">
+                    <plugin>ethercat_generic_plugins/EcCiA402Drive</plugin>
+                    <param name="alias">0</param>
+                    <param name="position">2</param>
+                    <!-- Available modes of operation = position 8, velocity 9, effort 10, homing 6 -->
+                    <param name="mode_of_operation">9</param>
+                    <!-- Synapticon CirculoSMM  -->
+                    <param name="slave_config">$(find weezlite_description)/config/synapticon_circulo_smm_alc10.yaml</param>
+                </ec_module>
+            </joint>
+        <joint name="J2">
+            <command_interface name="position"/>
+            <command_interface name="velocity"/>
+            <command_interface name="effort"/>
+            <command_interface name="torque_offset"/>
+            <command_interface name="control_word"/>
+            <command_interface name="mode_of_operation"/>
+            <state_interface name="mode_of_operation"/>
+            <state_interface name="control_word"/>
+            <state_interface name="torque_offset"/>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+            <state_interface name="effort" />
+        </joint>
+        <joint name="J3">
+            <command_interface name="position"/>
+            <command_interface name="velocity"/>
+            <command_interface name="effort"/>
+            <command_interface name="torque_offset"/>
+            <command_interface name="control_word"/>
+            <command_interface name="mode_of_operation"/>
+            <state_interface name="mode_of_operation"/>
+            <state_interface name="control_word"/>
+            <state_interface name="torque_offset"/>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+            <state_interface name="effort" />
+        </joint>
+        <joint name="J4">
+            <command_interface name="position"/>
+            <command_interface name="velocity"/>
+            <command_interface name="effort"/>
+            <command_interface name="torque_offset"/>
+            <command_interface name="control_word"/>
+            <command_interface name="mode_of_operation"/>
+            <state_interface name="mode_of_operation"/>
+            <state_interface name="control_word"/>
+            <state_interface name="torque_offset"/>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+            <state_interface name="effort" />
+        </joint>
+        <joint name="J5">
+            <command_interface name="position"/>
+            <command_interface name="velocity"/>
+            <command_interface name="effort"/>
+            <command_interface name="torque_offset"/>
+            <command_interface name="control_word"/>
+            <command_interface name="mode_of_operation"/>
+            <state_interface name="mode_of_operation"/>
+            <state_interface name="control_word"/>
+            <state_interface name="torque_offset"/>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+            <state_interface name="effort" />
+        </joint>
+        <joint name="J6">
+            <command_interface name="position"/>
+            <command_interface name="velocity"/>
+            <command_interface name="effort"/>
+            <command_interface name="torque_offset"/>
+            <command_interface name="control_word"/>
+            <command_interface name="mode_of_operation"/>
+            <state_interface name="mode_of_operation"/>
+            <state_interface name="control_word"/>
+            <state_interface name="torque_offset"/>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+            <state_interface name="effort" />
+        </joint>
+        </ros2_control>
+    </xacro:macro>
+</robot>

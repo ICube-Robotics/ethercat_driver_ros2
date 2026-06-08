@@ -22,6 +22,14 @@
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "rclcpp/rclcpp.hpp"
 
+namespace virtual_interface
+{
+/// Constant defining position interface
+constexpr char GPIO_IF_MODE_OF_OPERATION[] = "mode_of_operation";
+constexpr char GPIO_CONTROL_WORD[] = "control_word";
+constexpr char GPIO_TORQUE_OFFSET[] = "torque_offset";
+}  // namespace virtual_interface
+
 namespace ethercat_driver
 {
 
@@ -37,6 +45,37 @@ uint16_t EthercatDriver::getAliasOrDefaultAlias(
   }
 }
 
+void EthercatDriver::loadNumberOfPhysicalDrives()
+{
+  // Get number of physical drives declared in the configuration
+  if (info_.hardware_parameters.find("number_of_physical_drives") ==
+    info_.hardware_parameters.end())
+  {
+    // Master id was not provided, default to 6
+    number_of_physical_drives_ = 6;
+  } else {
+    try {
+      number_of_physical_drives_ =
+        std::stoul(info_.hardware_parameters["number_of_physical_drives"]);
+    } catch (std::exception & e) {
+      RCLCPP_FATAL(
+        rclcpp::get_logger(
+          "EthercatDriver"), "Invalid number_of_physical_drives (%s)! using default value",
+        e.what());
+      number_of_physical_drives_ = 6;
+    }
+  }
+  RCLCPP_INFO(
+    rclcpp::get_logger(
+      "EthercatDriver"), "number_of_physical_drives loaded: %i", number_of_physical_drives_);
+
+  // Compute the number of virtual drives to simulate
+  number_of_virtual_drives_ = info_.joints.size() - number_of_physical_drives_;
+  RCLCPP_INFO(
+    rclcpp::get_logger(
+      "EthercatDriver"), "number_of_virtual_drives loaded: %i", number_of_virtual_drives_);
+}
+
 CallbackReturn EthercatDriver::on_init(
   const hardware_interface::HardwareInfo & info)
 {
@@ -47,8 +86,55 @@ CallbackReturn EthercatDriver::on_init(
   const std::lock_guard<std::mutex> lock(ec_mutex_);
   activated_ = false;
 
-  hw_joint_states_.resize(info_.joints.size());
-  for (uint j = 0; j < info_.joints.size(); j++) {
+  // --------------------- Virtual actuators management (if any) ------------------------
+  // Load physical vs virtual drives config
+  loadNumberOfPhysicalDrives();
+
+  vt_states_positions.resize(number_of_virtual_drives_, std::numeric_limits<double>::quiet_NaN());
+  vt_states_velocities.resize(number_of_virtual_drives_, std::numeric_limits<double>::quiet_NaN());
+  vt_states_efforts.resize(number_of_virtual_drives_, std::numeric_limits<double>::quiet_NaN());
+  vt_states_mode_of_operation.resize(
+    number_of_virtual_drives_,
+    std::numeric_limits<double>::quiet_NaN());
+  vt_states_control_word.resize(
+    number_of_virtual_drives_,
+    std::numeric_limits<double>::quiet_NaN());
+  vt_states_torque_offset.resize(
+    number_of_virtual_drives_,
+    std::numeric_limits<double>::quiet_NaN());
+
+  vt_commands_velocities.resize(
+    number_of_virtual_drives_,
+    std::numeric_limits<double>::quiet_NaN());
+  vt_commands_positions.resize(number_of_virtual_drives_, std::numeric_limits<double>::quiet_NaN());
+  vt_commands_efforts.resize(number_of_virtual_drives_, std::numeric_limits<double>::quiet_NaN());
+  vt_commands_mode_of_operation.resize(
+    number_of_virtual_drives_,
+    std::numeric_limits<double>::quiet_NaN());
+  vt_commands_control_word.resize(
+    number_of_virtual_drives_,
+    std::numeric_limits<double>::quiet_NaN());
+  vt_commands_torque_offset.resize(
+    number_of_virtual_drives_,
+    std::numeric_limits<double>::quiet_NaN());
+
+  control_level_.resize(number_of_virtual_drives_, integration_level_t::UNDEFINED);
+
+  timeLastReadJointsValues_.resize(number_of_virtual_drives_);
+  // init last read joint time
+  for (std::size_t i = 0; i < vt_states_positions.size(); i++) {
+    timeLastReadJointsValues_[i] = std::chrono::steady_clock::now();
+  }
+
+  lastVelocity_.resize(number_of_virtual_drives_);
+  // init last joint velocity
+  for (std::size_t i = 0; i < vt_states_positions.size(); i++) {
+    lastVelocity_[i] = 0.0;
+  }
+  // -------------------End of virtual actuators management (if any)--------------------
+
+  hw_joint_states_.resize(number_of_physical_drives_);
+  for (uint j = 0; j < hw_joint_states_.size(); j++) {
     hw_joint_states_[j].resize(
       info_.joints[j].state_interfaces.size(),
       std::numeric_limits<double>::quiet_NaN());
@@ -65,8 +151,8 @@ CallbackReturn EthercatDriver::on_init(
       info_.gpios[g].state_interfaces.size(),
       std::numeric_limits<double>::quiet_NaN());
   }
-  hw_joint_commands_.resize(info_.joints.size());
-  for (uint j = 0; j < info_.joints.size(); j++) {
+  hw_joint_commands_.resize(number_of_physical_drives_);
+  for (uint j = 0; j < hw_joint_commands_.size(); j++) {
     hw_joint_commands_[j].resize(
       info_.joints[j].command_interfaces.size(),
       std::numeric_limits<double>::quiet_NaN());
@@ -204,6 +290,20 @@ CallbackReturn EthercatDriver::on_init(
 CallbackReturn EthercatDriver::on_configure(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
+  for (std::size_t i = 0; i < vt_states_positions.size(); i++) {
+    vt_states_positions[i] = 0.0;
+    vt_states_efforts[i] = 0.0;
+    vt_states_velocities[i] = 0.0;
+    vt_states_mode_of_operation[i] = 9.0;
+    vt_states_control_word[i] = 0.0;
+    vt_states_torque_offset[i] = 0.0;
+    vt_commands_positions[i] = 0.0;
+    vt_commands_velocities[i] = 0.0;
+    vt_commands_efforts[i] = 0.0;
+    vt_commands_mode_of_operation[i] = 9.0;
+    vt_commands_control_word[i] = 0.0;
+    vt_commands_torque_offset[i] = 0.0;
+  }
   return CallbackReturn::SUCCESS;
 }
 
@@ -212,7 +312,7 @@ EthercatDriver::export_state_interfaces()
 {
   std::vector<hardware_interface::StateInterface> state_interfaces;
   // export joint state interface
-  for (uint j = 0; j < info_.joints.size(); j++) {
+  for (uint j = 0; j < hw_joint_states_.size(); j++) {
     for (uint i = 0; i < info_.joints[j].state_interfaces.size(); i++) {
       state_interfaces.emplace_back(
         hardware_interface::StateInterface(
@@ -221,6 +321,36 @@ EthercatDriver::export_state_interfaces()
           &hw_joint_states_[j][i]));
     }
   }
+
+  // --------------------- Virtual actuators management (if any) ------------------------
+  auto hwIfPosition = hardware_interface::HW_IF_POSITION;
+  auto hwIfVelocity = hardware_interface::HW_IF_VELOCITY;
+  auto hwIfEffort = hardware_interface::HW_IF_EFFORT;
+  auto gpioIfModeOfOperation = virtual_interface::GPIO_IF_MODE_OF_OPERATION;
+  auto gpioIfControlWord = virtual_interface::GPIO_CONTROL_WORD;
+  auto gpioIfTorqueOffset = virtual_interface::GPIO_TORQUE_OFFSET;
+  for (std::size_t i = 0; i < vt_states_positions.size(); i++) {
+    state_interfaces.emplace_back(
+      info_.joints[i + number_of_physical_drives_].name, hwIfPosition,
+      &vt_states_positions[i]);
+    state_interfaces.emplace_back(
+      info_.joints[i + number_of_physical_drives_].name, hwIfVelocity,
+      &vt_states_velocities[i]);
+    state_interfaces.emplace_back(
+      info_.joints[i + number_of_physical_drives_].name, hwIfEffort,
+      &vt_states_efforts[i]);
+    state_interfaces.emplace_back(
+      info_.joints[i + number_of_physical_drives_].name, gpioIfModeOfOperation,
+      &vt_states_mode_of_operation[i]);
+    state_interfaces.emplace_back(
+      info_.joints[i + number_of_physical_drives_].name, gpioIfControlWord,
+      &vt_states_control_word[i]);
+    state_interfaces.emplace_back(
+      info_.joints[i + number_of_physical_drives_].name, gpioIfTorqueOffset,
+      &vt_states_torque_offset[i]);
+  }
+  // ------------------ End of Virtual actuators management (if any) --------------------
+
   // export sensor state interface
   for (uint s = 0; s < info_.sensors.size(); s++) {
     for (uint i = 0; i < info_.sensors[s].state_interfaces.size(); i++) {
@@ -250,7 +380,7 @@ EthercatDriver::export_command_interfaces()
   std::vector<hardware_interface::CommandInterface> command_interfaces;
   // export joint command interface
   std::vector<double> test;
-  for (uint j = 0; j < info_.joints.size(); j++) {
+  for (uint j = 0; j < hw_joint_commands_.size(); j++) {
     for (uint i = 0; i < info_.joints[j].command_interfaces.size(); i++) {
       command_interfaces.emplace_back(
         hardware_interface::CommandInterface(
@@ -259,6 +389,37 @@ EthercatDriver::export_command_interfaces()
           &hw_joint_commands_[j][i]));
     }
   }
+
+  // --------------------- Virtual actuators management (if any) ------------------------
+  auto hwIfPosition = hardware_interface::HW_IF_POSITION;
+  auto hwIfVelocity = hardware_interface::HW_IF_VELOCITY;
+  auto hwIfEffort = hardware_interface::HW_IF_EFFORT;
+  auto gpioIfModeOfOperation = virtual_interface::GPIO_IF_MODE_OF_OPERATION;
+  auto gpioIfControlWord = virtual_interface::GPIO_CONTROL_WORD;
+  auto gpioIfTorqueOffset = virtual_interface::GPIO_TORQUE_OFFSET;
+
+  for (std::size_t i = 0; i < vt_states_positions.size(); i++) {
+    command_interfaces.emplace_back(
+      info_.joints[i + number_of_physical_drives_].name, hwIfPosition,
+      &vt_commands_positions[i]);
+    command_interfaces.emplace_back(
+      info_.joints[i + number_of_physical_drives_].name, hwIfVelocity,
+      &vt_commands_velocities[i]);
+    command_interfaces.emplace_back(
+      info_.joints[i + number_of_physical_drives_].name, hwIfEffort,
+      &vt_commands_efforts[i]);
+    command_interfaces.emplace_back(
+      info_.joints[i + number_of_physical_drives_].name, gpioIfModeOfOperation,
+      &vt_commands_mode_of_operation[i]);
+    command_interfaces.emplace_back(
+      info_.joints[i + number_of_physical_drives_].name, gpioIfControlWord,
+      &vt_commands_control_word[i]);
+    command_interfaces.emplace_back(
+      info_.joints[i + number_of_physical_drives_].name, gpioIfTorqueOffset,
+      &vt_commands_torque_offset[i]);
+  }
+  // --------------------- End of Virtual actuators management (if any) ----------------
+
   // export sensor command interface
   for (uint s = 0; s < info_.sensors.size(); s++) {
     for (uint i = 0; i < info_.sensors[s].command_interfaces.size(); i++) {
@@ -280,6 +441,80 @@ EthercatDriver::export_command_interfaces()
     }
   }
   return command_interfaces;
+}
+
+// Only for virtual actuators (if any)
+hardware_interface::return_type
+EthercatDriver::prepare_command_mode_switch(
+  const std::vector<std::string> & start_interfaces,
+  const std::vector<std::string> & stop_interfaces)
+{
+  // START_INTERFACES management
+  // Prepare for new command modes
+  std::vector<integration_level_t> new_modes = {};
+  bool virtual_managed_start_interfaces = false;
+  for (std::string key : start_interfaces) {
+    for (std::size_t i = 0; i < vt_states_positions.size(); i++) {
+      if (key ==
+        info_.joints[i + number_of_physical_drives_].name + "/" +
+        hardware_interface::HW_IF_POSITION)
+      {
+        new_modes.push_back(integration_level_t::POSITION);
+        virtual_managed_start_interfaces = true;
+      }
+      if (key ==
+        info_.joints[i + number_of_physical_drives_].name + "/" +
+        hardware_interface::HW_IF_VELOCITY)
+      {
+        new_modes.push_back(integration_level_t::VELOCITY);
+        virtual_managed_start_interfaces = true;
+      }
+      if (key ==
+        info_.joints[i + number_of_physical_drives_].name + "/" +
+        hardware_interface::HW_IF_EFFORT)
+      {
+        new_modes.push_back(integration_level_t::EFFORT);
+        virtual_managed_start_interfaces = true;
+      }
+    }
+  }
+  // All joints must be given new command mode at the same time
+  if (virtual_managed_start_interfaces && new_modes.size() != vt_states_positions.size()) {
+    return hardware_interface::return_type::ERROR;
+  }
+  // Example criteria: All joints must have the same command mode
+  if (virtual_managed_start_interfaces &&
+    !std::all_of(
+      new_modes.begin() + 1, new_modes.end(),
+      [&](integration_level_t mode) {return mode == new_modes[0];}))
+  {
+    return hardware_interface::return_type::ERROR;
+  }
+
+  // Set the new command modes
+  if (virtual_managed_start_interfaces) {
+    for (std::size_t i = 0; i < vt_states_positions.size(); i++) {
+      if (control_level_[i] != integration_level_t::UNDEFINED) {
+        // Something else is using the joint! Abort!
+        return hardware_interface::return_type::ERROR;
+      }
+      control_level_[i] = new_modes[i];
+    }
+  }
+
+  // STOP_INTERFACES management
+  // Stop motion on all relevant joints that are stopping
+  for (std::string key : stop_interfaces) {
+    for (std::size_t i = 0; i < vt_states_positions.size(); i++) {
+      if (key.find(info_.joints[i + number_of_physical_drives_].name) != std::string::npos) {
+        vt_commands_velocities[i] = 0;
+        vt_commands_efforts[i] = 0;
+        control_level_[i] = integration_level_t::UNDEFINED;  // Revert to undefined
+      }
+    }
+  }
+
+  return hardware_interface::return_type::OK;
 }
 
 CallbackReturn EthercatDriver::setupMaster()
@@ -369,6 +604,48 @@ CallbackReturn EthercatDriver::on_activate(
   }
   RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"), "Activated EcMaster!");
 
+  // --------------------- Virtual actuators management (if any) ------------------------
+  for (std::size_t i = 0; i < vt_states_positions.size(); i++) {
+    // set some default values for joints
+    if (std::isnan(vt_states_positions[i])) {
+      vt_states_positions[i] = 0;
+    }
+    if (std::isnan(vt_states_velocities[i])) {
+      vt_states_velocities[i] = 0;
+    }
+    if (std::isnan(vt_states_efforts[i])) {
+      vt_states_efforts[i] = 0;
+    }
+    if (std::isnan(vt_states_mode_of_operation[i])) {
+      vt_states_mode_of_operation[i] = 9;
+    }
+    if (std::isnan(vt_states_control_word[i])) {
+      vt_states_control_word[i] = 0;
+    }
+    if (std::isnan(vt_states_torque_offset[i])) {
+      vt_states_torque_offset[i] = 0;
+    }
+    if (std::isnan(vt_commands_positions[i])) {
+      vt_commands_positions[i] = 0;
+    }
+    if (std::isnan(vt_commands_velocities[i])) {
+      vt_commands_velocities[i] = 0;
+    }
+    if (std::isnan(vt_commands_efforts[i])) {
+      vt_commands_efforts[i] = 0;
+    }
+    if (std::isnan(vt_commands_mode_of_operation[i])) {
+      vt_commands_mode_of_operation[i] = 9;
+    }
+    if (std::isnan(vt_commands_control_word[i])) {
+      vt_commands_control_word[i] = 0;
+    }
+    if (std::isnan(vt_commands_torque_offset[i])) {
+      vt_commands_torque_offset[i] = 0;
+    }
+  }
+  // --------------------- Only for Virtual actuators management (if any) ----------------
+
   // start after one second
   struct timespec t;
   clock_gettime(CLOCK_MONOTONIC, &t);
@@ -433,6 +710,62 @@ hardware_interface::return_type EthercatDriver::read(
   if (lock.owns_lock() && activated_) {
     master_->readData(rclcpp::get_logger("EthercatDriver"));
   }
+
+  // --------------------- Simulating Virtual actuators behaviour (if any) ----------------------
+  if (number_of_virtual_drives_ != 0) {
+    for (std::size_t i = 0; i < vt_states_positions.size(); i++) {
+      switch (control_level_[i]) {
+        case integration_level_t::UNDEFINED:
+          RCLCPP_DEBUG(
+            rclcpp::get_logger(
+              "MultiInterfaceHardware"), "Nothing is using the hardware interface!");
+          return hardware_interface::return_type::OK;
+        case integration_level_t::POSITION:
+          vt_states_velocities[i] = 0;
+          if (!std::isnan(vt_commands_positions[i]) && !std::isnan(vt_states_positions[i])) {
+            vt_states_positions[i] += (vt_commands_positions[i] - vt_states_positions[i]) / 2.0;
+          }
+          break;
+
+        case integration_level_t::VELOCITY:
+          timeLastReadJointsValuesDuration_ =
+            std::chrono::duration<double, std::milli>(
+            std::chrono::steady_clock::now() - timeLastReadJointsValues_[i])
+            .count();
+          timeLastReadJointsValues_[i] = std::chrono::steady_clock::now();
+
+          if (!std::isnan(vt_commands_velocities[i])) {
+            vt_states_positions[i] += vt_commands_velocities[i] *
+              (timeLastReadJointsValuesDuration_ / 1000.0);
+            vt_commands_positions[i] = vt_states_positions[i];
+            if (vt_commands_velocities[i] != 0.0) {
+              RCLCPP_DEBUG(
+                rclcpp::get_logger(
+                  "MultiInterfaceHardware"),
+                "deltaT = %f (ms),  speed = %f(rad/s), pos = %f(deg)",
+                timeLastReadJointsValuesDuration_, vt_commands_velocities[i],
+                (180.0 * vt_states_positions[i] / M_PI));
+            }
+          }
+          break;
+
+        case integration_level_t::EFFORT:
+          vt_states_efforts[i] = 0;
+          if (!std::isnan(vt_commands_efforts[i]) && !std::isnan(vt_states_efforts[i])) {
+            vt_states_efforts[i] += (vt_commands_efforts[i] - vt_states_efforts[i]) / 2.0;
+          }
+          break;
+
+        default:
+          RCLCPP_INFO(
+            rclcpp::get_logger(
+              "MultiInterfaceHardware"), "Nothing is using the hardware interface!");
+          return hardware_interface::return_type::OK;
+      }
+    }
+  }
+  // --------------------- End of Simulating Virtual actuators behaviour (if any) ----------------
+
   return hardware_interface::return_type::OK;
 }
 
@@ -445,6 +778,22 @@ hardware_interface::return_type EthercatDriver::write(
   if (lock.owns_lock() && activated_) {
     master_->writeData();
   }
+
+  // --------------------- Simulating Virtual actuators behaviour (if any) ----------------------
+  if (number_of_virtual_drives_ != 0) {
+    for (std::size_t i = 0; i < vt_states_positions.size(); i++) {
+      if (vt_commands_velocities[i] != lastVelocity_[i]) {
+        RCLCPP_DEBUG(
+          rclcpp::get_logger(
+            "MultiInterfaceHardware"),
+          "Command velocity has changed: new value = %.5f for joint '%s'!",
+          vt_commands_velocities[i], info_.joints[i + number_of_physical_drives_].name.c_str());
+        lastVelocity_[i] = vt_commands_velocities[i];
+      }
+    }
+  }
+  // --------------------- ENd of Simulating Virtual actuators behaviour (if any) ----------------
+
   return hardware_interface::return_type::OK;
 }
 

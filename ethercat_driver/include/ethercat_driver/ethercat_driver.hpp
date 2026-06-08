@@ -54,6 +54,11 @@ public:
   std::vector<hardware_interface::CommandInterface> export_command_interfaces() override;
 
   ETHERCAT_DRIVER_PUBLIC
+  hardware_interface::return_type prepare_command_mode_switch(
+    const std::vector<std::string> & start_interfaces,
+    const std::vector<std::string> & stop_interfaces) override;
+
+  ETHERCAT_DRIVER_PUBLIC
   CallbackReturn on_activate(const rclcpp_lifecycle::State & previous_state) override;
 
   ETHERCAT_DRIVER_PUBLIC
@@ -79,6 +84,8 @@ protected:
 
   CallbackReturn configNetwork();
 
+  void loadNumberOfPhysicalDrives();
+
 protected:
   std::vector<std::shared_ptr<ethercat_interface::EcSlave>> ec_modules_;
   std::vector<std::unordered_map<std::string, std::string>> ec_module_parameters_;
@@ -98,6 +105,35 @@ protected:
   std::shared_ptr<ethercat_interface::EcMaster> master_;
   std::mutex ec_mutex_;
   bool activated_;
+
+private:
+  // Store the command for the simulated robot (if any)
+  int number_of_physical_drives_ = 6;
+  int number_of_virtual_drives_ = 0;
+  std::vector<double> vt_states_positions;
+  std::vector<double> vt_states_efforts;
+  std::vector<double> vt_states_velocities;
+  std::vector<double> vt_states_mode_of_operation;
+  std::vector<double> vt_states_control_word;
+  std::vector<double> vt_states_torque_offset;
+
+  std::vector<double> vt_commands_positions;
+  std::vector<double> vt_commands_efforts;
+  std::vector<double> vt_commands_velocities;
+  std::vector<double> vt_commands_mode_of_operation;
+  std::vector<double> vt_commands_control_word;
+  std::vector<double> vt_commands_torque_offset;
+
+  // Enum defining at which control level we are
+  // Dumb way of maintaining the command_interface type per joint.
+  enum integration_level_t : std::uint8_t {UNDEFINED = 0, POSITION = 1, VELOCITY = 2, EFFORT = 3};
+
+  // Active control mode for each actuator
+  std::vector<integration_level_t> control_level_;
+
+  std::vector<std::chrono::time_point<std::chrono::steady_clock>> timeLastReadJointsValues_;
+  double timeLastReadJointsValuesDuration_ = 0.0;
+  std::vector<double> lastVelocity_;
 };
 }  // namespace ethercat_driver
 
