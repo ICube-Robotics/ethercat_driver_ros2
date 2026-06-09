@@ -387,7 +387,7 @@ CallbackReturn CLASSM::on_activate(
     clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &t, NULL);
     // update EtherCAT bus
 
-    master_->update();
+    master_->update(rclcpp::get_logger("EthercatSafetyDriver"));
     RCLCPP_INFO(rclcpp::get_logger("EthercatSafetyDriver"), "updated!");
 
     // check if operational

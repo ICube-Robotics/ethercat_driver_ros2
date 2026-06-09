@@ -21,6 +21,7 @@
 
 #include <string>
 #include <vector>
+#include <rclcpp/logger.hpp>
 
 #include "ethercat_interface/ec_master.hpp"
 #include "ethercat_interface/ec_transfer.hpp"
@@ -105,9 +106,9 @@ public:
   void transferAll();
 
   /** perform one EtherCAT cycle, passing the domain to the slaves */
-  void update(uint32_t domain = 0);
+  void update(rclcpp::Logger logger, uint32_t domain = 0);
 
-  void readData(uint32_t domain = 0);
+  void readData(rclcpp::Logger logger, uint32_t domain = 0);
   // TODO(yguel) investigate readData and writeData specifications
   // both functions are called but process all the data in the domain
   //  not only the data rpdos for the write and the tpdos for the read

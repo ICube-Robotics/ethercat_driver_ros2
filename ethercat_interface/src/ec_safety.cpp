@@ -168,7 +168,7 @@ void EcSafety::transferAll()
   }
 }
 
-void EcSafety::update(uint32_t domain)
+void EcSafety::update(rclcpp::Logger logger, uint32_t domain)
 {
   // receive process data
   ecrt_master_receive(master_);
@@ -184,7 +184,7 @@ void EcSafety::update(uint32_t domain)
   transferAll();
 
   // check process data state (optional)
-  checkDomainState(domain);
+  checkDomainState(logger, domain);
 
   // check for master and slave state change
   if (update_counter_ % check_state_frequency_ == 0) {
@@ -221,7 +221,7 @@ inline std::string word2Str(uint16_t word)
   return ss.str();
 }
 
-void EcSafety::readData(uint32_t domain)
+void EcSafety::readData(rclcpp::Logger logger, uint32_t domain)
 {
   // receive process data
   ecrt_master_receive(master_);
@@ -237,7 +237,7 @@ void EcSafety::readData(uint32_t domain)
   transferAll();
 
   // check process data state (optional)
-  checkDomainState(domain);
+  checkDomainState(logger, domain);
 
   // check for master and slave state change
   if (update_counter_ % check_state_frequency_ == 0) {
