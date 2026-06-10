@@ -182,6 +182,22 @@ int EcMaster::configSlaveSdo(
   return ret;
 }
 
+int EcMaster::uploadSlaveSdo(
+  uint16_t slave_position, uint16_t index, uint8_t sub_index,
+  uint8_t * target, size_t target_size, size_t * result_size, uint32_t * abort_code)
+{
+  return ecrt_master_sdo_upload(
+    master_,
+    slave_position,
+    index,
+    sub_index,
+    target,
+    target_size,
+    result_size,
+    abort_code
+  );
+}
+
 void EcMaster::registerPDOInDomain(
   std::vector<uint32_t> & channel_indices,
   DomainInfo * domain_info,

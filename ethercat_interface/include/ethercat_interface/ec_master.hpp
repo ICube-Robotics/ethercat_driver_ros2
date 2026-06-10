@@ -140,6 +140,13 @@ public:
     */
   int configSlaveSdo(uint16_t slave_position, SdoConfigEntry sdo_config, uint32_t * abort_code);
 
+  /** \brief read a slave SDO entry (CoE upload). Usable before or after activate.
+    * \return 0 on success (see ecrt_master_sdo_upload).
+    */
+  int uploadSlaveSdo(
+    uint16_t slave_position, uint16_t index, uint8_t sub_index,
+    uint8_t * target, size_t target_size, size_t * result_size, uint32_t * abort_code);
+
   /** call after adding all slaves, and before update */
   bool activate();
 
