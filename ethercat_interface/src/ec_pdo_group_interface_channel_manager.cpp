@@ -318,8 +318,8 @@ bool CLASSM::load_from_config(YAML::Node channel_config)
         id = add_data_without_interface();
       }
 
-      if (map["default_value"]) {
-        v_data[id].default_value = map["default_value"].as<double>();
+      if (map["default"]) {
+        v_data[id].default_value = map["default"].as<double>();
       } else {
         if (RPDO == pdo_type) {
           char ec_addr[16];
