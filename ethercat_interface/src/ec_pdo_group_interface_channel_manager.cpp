@@ -307,9 +307,6 @@ bool CLASSM::load_from_config(YAML::Node channel_config)
       if (map["command_interface"]) {
         auto command_interface_name = map["command_interface"].as<std::string>();
         id = add_command_interface(command_interface_name);
-        if (map["default_value"]) {
-          v_data[id].default_value = map["default_value"].as<double>();
-        }
       }
 
       if (map["state_interface"]) {
@@ -319,6 +316,10 @@ bool CLASSM::load_from_config(YAML::Node channel_config)
 
       if (std::numeric_limits<size_t>::max() == id) {
         id = add_data_without_interface();
+      }
+
+      if (map["default_value"]) {
+        v_data[id].default_value = map["default_value"].as<double>();
       }
 
       if (map["addr_offset"]) {

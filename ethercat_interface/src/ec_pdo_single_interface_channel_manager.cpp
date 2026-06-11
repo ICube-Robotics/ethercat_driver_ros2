@@ -98,10 +98,10 @@ bool CLASSM::load_from_config(YAML::Node channel_config)
     auto command_interface_name = channel_config["command_interface"].as<std::string>();
     command_interface_name_idx_ = all_command_interface_names.size();
     all_command_interface_names.push_back(command_interface_name);
-    // default value
-    if (channel_config["default"]) {
-      default_value = channel_config["default"].as<double>();
-    }
+  }
+
+  if (channel_config["default"]) {
+    default_value = channel_config["default"].as<double>();
   }
 
   if (channel_config["state_interface"]) {
