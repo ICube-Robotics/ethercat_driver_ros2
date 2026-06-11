@@ -171,12 +171,8 @@ void CLASSM::ec_write(uint8_t * domain_address, double value, size_t /*i*/)
     last_value = factor * value + offset;
     write_function_(domain_address, last_value, mask);
   } else {
-    if (!std::isnan(default_value)) {
-      last_value = default_value;
-      write_function_(domain_address, last_value, mask);
-    } else {  // Do nothing
-      return;
-    }
+    last_value = default_value;
+    write_function_(domain_address, last_value, mask);
   }
 }
 
@@ -186,7 +182,7 @@ void CLASSM::ec_write_from_interface(uint8_t * domain_address)
     const auto value = command_interface_ptr_->at(command_interface_index_);
     ec_write(domain_address, value);
   } else {
-    if ( (RPDO == pdo_type) && allow_ec_write && !std::isnan(default_value)) {
+    if (RPDO == pdo_type && allow_ec_write) {
       last_value = default_value;
       write_function_(domain_address, last_value, mask);
     }
