@@ -274,6 +274,13 @@ protected:
     RCLCPP_WARN(rclcpp::get_logger("EthercatDriver"), "WARNING. Master. %s", message.c_str());
   }
 
+  /** print error message to terminal */
+  inline
+  static void printError(const std::string & message)
+  {
+    RCLCPP_ERROR(rclcpp::get_logger("EthercatDriver"), "ERROR. Master. %s", message.c_str());
+  }
+
 
   /** @brief Check the validity of the domain info and the ec_pdo_entry_reg_t
    * and throw an exception if not valid.

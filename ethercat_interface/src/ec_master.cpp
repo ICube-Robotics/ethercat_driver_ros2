@@ -101,6 +101,45 @@ void EcMaster::addSlave(EcSlave * slave)
     throw std::runtime_error(error_message);
   }
 
+  // Verify the drive actually on the bus matches what the slave_config declares
+  // (vendor + product). IgH would otherwise leave a mismatched slave unconfigured
+  // and it would silently never reach OPERATIONAL; surface it loudly and refuse to
+  // configure the drive instead. ecrt_master_get_slave() addresses by ABSOLUTE ring
+  // position, which equals slave->position_ only for alias 0 (for a non-zero alias,
+  // position_ is relative to that alias), so the identity check is enforced for
+  // alias-0 slaves and skipped for aliased ones.
+  if (slave->alias_ == 0) {
+    ec_slave_info_t info{};
+    if (ecrt_master_get_slave(master_, slave->position_, &info) != 0) {
+      std::ostringstream msg;
+      // position prints decimal (default base); std::hex then applies to the codes.
+      msg << "Add slave. No slave found at ring position " << slave->position_ << std::hex
+          << " (slave_config expects vendor=0x" << slave->vendor_id_
+          << ", product=0x" << slave->product_id_
+          << "). Refusing to configure this drive.";
+      printError(msg.str());
+      return;
+    }
+    if (info.vendor_id != slave->vendor_id_ || info.product_code != slave->product_id_) {
+      std::ostringstream msg;
+      // position prints decimal (default base); std::hex then applies to the codes.
+      msg << "Add slave. Identity mismatch at ring position " << slave->position_
+          << std::hex << ": the drive on the bus is vendor=0x" << info.vendor_id
+          << ", product=0x" << info.product_code << " (revision 0x" << info.revision_number
+          << ", \"" << info.name << "\"), but the slave_config expects vendor=0x"
+          << slave->vendor_id_ << ", product=0x" << slave->product_id_
+          << ". Refusing to configure this drive — check the slave_config matches your hardware.";
+      printError(msg.str());
+      return;
+    }
+  } else {
+    std::ostringstream msg;
+    msg << "Add slave at alias " << slave->alias_ << " position " << slave->position_
+        << ": skipping the vendor/product identity check (only enforced for alias-0 "
+           "slaves addressed by absolute ring position).";
+    printWarning(msg.str());
+  }
+
   // configure slave in master
   SlaveInfo slave_info;
   slave_info.slave = slave;
