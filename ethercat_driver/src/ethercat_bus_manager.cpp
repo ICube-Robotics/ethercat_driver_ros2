@@ -265,6 +265,19 @@ bool EthercatBusManager::setupMaster()
 {
   master_ = std::make_shared<ethercat_interface::EcMaster>(bus_config_.master_id);
 
+  // ecrt_request_master() can fail (master not running, or /dev/EtherCATx not
+  // accessible to this process). The EcMaster ctor only warns in that case and
+  // leaves a null master handle.
+  if (!master_ || !master_->isValid()) {
+    RCLCPP_ERROR(
+      rclcpp::get_logger("EthercatBusManager"),
+      "Failed to obtain EtherCAT master %u. Is the master running and is "
+      "/dev/EtherCAT%u accessible to this process (permissions)?",
+      bus_config_.master_id, bus_config_.master_id);
+    master_.reset();
+    return false;
+  }
+
   return true;
 }
 

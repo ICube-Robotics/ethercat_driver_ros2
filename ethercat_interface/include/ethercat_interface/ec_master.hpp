@@ -123,6 +123,12 @@ public:
   explicit EcMaster(const unsigned int master = 0);
   virtual ~EcMaster();
 
+  /** \brief whether the underlying EtherCAT master was successfully obtained.
+    * Callers MUST check this before using the master; using an
+    * EcMaster whose master was not obtained would dereference a null handle.
+    */
+  bool isValid() const {return master_ != NULL;}
+
   /** \brief add a slave device to the master
     * alias and position can be found by running the following command
     * /opt/etherlab/bin$ sudo ./ethercat slaves

@@ -89,6 +89,12 @@ void EcMaster::addSlave(uint16_t alias, uint16_t position, EcSlave * slave)
 
 void EcMaster::addSlave(EcSlave * slave)
 {
+  // Defense-in-depth: the master may not have been obtained (see EcMaster ctor / isValid()).
+  if (master_ == NULL) {
+    printWarning("Add slave. Master not obtained; cannot configure slave.");
+    return;
+  }
+
   if (false == slave->isAliasAndPositionSet()) {
     std::string error_message = "Alias and position not set for slave (vendor id=" + std::to_string(
       slave->vendor_id_) + ",product_code=" + std::to_string(slave->product_id_) + ").";
