@@ -47,6 +47,11 @@ void EcCiA402Drive::updateState()
   initialized_ = is_operational_;
 }
 
+bool EcCiA402Drive::targetPositionPassthrough() const
+{
+  return mode_of_operation_display_ == ModeOfOperation::MODE_CYCLIC_SYNC_POSITION;
+}
+
 void EcCiA402Drive::processData(size_t entry_idx, uint8_t * domain_address)
 {
   auto index = domain_map_[entry_idx];
@@ -85,8 +90,7 @@ void EcCiA402Drive::processData(size_t entry_idx, uint8_t * domain_address)
       channel.default_value =
         channel.factor * last_position_ + channel.offset;
     }
-    channel.override_command =
-      (mode_of_operation_display_ != ModeOfOperation::MODE_CYCLIC_SYNC_POSITION) ? true : false;
+    channel.override_command = !targetPositionPassthrough();
   }
 
   // setup mode of operation
