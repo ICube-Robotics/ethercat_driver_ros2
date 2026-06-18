@@ -35,7 +35,7 @@ void EcCiA402Drive::updateState()
     if (state_ != last_state_) {
       RCLCPP_INFO(
         rclcpp::get_logger("EthercatDriver"),
-        "STATE: %s with status word :%d",
+        "STATE: %s with status word :0x%04X",
         DEVICE_STATE_STR.at(state_).c_str(),
         status_word_
       );
