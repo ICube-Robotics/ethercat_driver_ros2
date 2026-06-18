@@ -289,7 +289,15 @@ bool EthercatBusManager::configNetwork()
   master_->setCtrlFrequency(control_frequency_);
 
   for (auto i = 0ul; i < ec_modules_.size(); i++) {
-    master_->addSlave(ec_modules_[i].get());
+    if (!master_->addSlave(ec_modules_[i].get())) {
+      RCLCPP_ERROR(
+        rclcpp::get_logger("EthercatBusManager"),
+        "Failed to add slave for module at position %s; refusing to configure the bus. "
+        "Check the drive is powered and present on the bus and that the slave_config "
+        "matches the hardware (see the EcMaster error above for the exact cause).",
+        ec_module_parameters_[i]["position"].c_str());
+      return false;
+    }
   }
 
   // configure SDO
@@ -301,7 +309,7 @@ bool EthercatBusManager::configNetwork()
         sdo,
         &abort_code);
       if (ret) {
-        RCLCPP_INFO(
+        RCLCPP_ERROR(
           rclcpp::get_logger("EthercatBusManager"),
           "Failed to download config SDO for module at position %s with Error: %d",
           ec_module_parameters_[i]["position"].c_str(),

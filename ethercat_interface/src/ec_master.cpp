@@ -81,18 +81,18 @@ EcMaster::~EcMaster()
   }
 }
 
-void EcMaster::addSlave(uint16_t alias, uint16_t position, EcSlave * slave)
+bool EcMaster::addSlave(uint16_t alias, uint16_t position, EcSlave * slave)
 {
   slave->setAliasAndPosition(alias, position);
-  addSlave(slave);
+  return addSlave(slave);
 }
 
-void EcMaster::addSlave(EcSlave * slave)
+bool EcMaster::addSlave(EcSlave * slave)
 {
   // Defense-in-depth: the master may not have been obtained (see EcMaster ctor / isValid()).
   if (master_ == NULL) {
-    printWarning("Add slave. Master not obtained; cannot configure slave.");
-    return;
+    printError("Add slave. Master not obtained; cannot configure slave.");
+    return false;
   }
 
   if (false == slave->isAliasAndPositionSet()) {
@@ -116,9 +116,10 @@ void EcMaster::addSlave(EcSlave * slave)
       msg << "Add slave. No slave found at ring position " << slave->position_ << std::hex
           << " (slave_config expects vendor=0x" << slave->vendor_id_
           << ", product=0x" << slave->product_id_
-          << "). Refusing to configure this drive.";
+          << "). Refusing to configure this drive."
+          << " Is the drive powered and connected on the bus?";
       printError(msg.str());
-      return;
+      return false;
     }
     if (info.vendor_id != slave->vendor_id_ || info.product_code != slave->product_id_) {
       std::ostringstream msg;
@@ -130,7 +131,7 @@ void EcMaster::addSlave(EcSlave * slave)
           << slave->vendor_id_ << ", product=0x" << slave->product_id_
           << ". Refusing to configure this drive — check the slave_config matches your hardware.";
       printError(msg.str());
-      return;
+      return false;
     }
   } else {
     std::ostringstream msg;
@@ -148,8 +149,8 @@ void EcMaster::addSlave(EcSlave * slave)
     slave->alias_, slave->position_,
     slave->vendor_id_, slave->product_id_);
   if (slave_info.config == NULL) {
-    printWarning("Add slave. Failed to get slave configuration.");
-    return;
+    printError("Add slave. Failed to get slave configuration.");
+    return false;
   }
 
   // check and setup dc
@@ -179,8 +180,8 @@ void EcMaster::addSlave(EcSlave * slave)
     // configure pdos in slave
     int pdos_status = ecrt_slave_config_pdos(slave_info.config, num_syncs, syncs);
     if (pdos_status) {
-      printWarning("Add slave. Failed to configure PDOs");
-      return;
+      printError("Add slave. Failed to configure PDOs");
+      return false;
     }
   } else {
     printWarning(
@@ -207,6 +208,7 @@ void EcMaster::addSlave(EcSlave * slave)
       iter.second, domain,
       slave);
   }
+  return true;
 }
 
 int EcMaster::configSlaveSdo(

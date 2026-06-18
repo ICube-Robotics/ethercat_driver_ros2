@@ -133,14 +133,18 @@ public:
     * alias and position can be found by running the following command
     * /opt/etherlab/bin$ sudo ./ethercat slaves
     * look for the "A B:C STATUS DEVICE" (e.g. B=alias, C=position)
+    * \return true on success, false if the slave could not be configured
+    *         (e.g. no matching drive on the bus, identity mismatch, PDO setup failure).
     */
-  void addSlave(uint16_t alias, uint16_t position, EcSlave * slave);
+  bool addSlave(uint16_t alias, uint16_t position, EcSlave * slave);
 
   /** \brief add a slave device to the master
     * alias and position should have been set
     * before calling this function.
+    * \return true on success, false if the slave could not be configured
+    *         (e.g. no matching drive on the bus, identity mismatch, PDO setup failure).
     */
-  void addSlave(EcSlave * slave);
+  bool addSlave(EcSlave * slave);
 
   /** \brief configure slave using SDO
     */
