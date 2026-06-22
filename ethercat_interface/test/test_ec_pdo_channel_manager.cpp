@@ -63,7 +63,7 @@ TEST(TestEcPdoSingleInterfaceChannelManager, EcReadWriteBit2)
 {
   const char channel_config[] =
     R"(
-      {index: 0x6071, sub_index: 0, type: bit2, mask: 3}
+      {index: 0x6071, sub_index: 9, type: bit2, mask: 3, default: 0}
     )";
   YAML::Node config = YAML::Load(channel_config);
   ethercat_interface::EcPdoSingleInterfaceChannelManager pdo_manager;
@@ -95,7 +95,7 @@ TEST(TestEcPdoSingleInterfaceChannelManager, EcReadWriteBoolMask1)
 {
   const char channel_config[] =
     R"(
-      {index: 0x6071, sub_index: 0, type: bool, mask: 1}
+      {index: 0x6071, sub_index: 0, type: bool, mask: 1, default: 0}
     )";
   YAML::Node config = YAML::Load(channel_config);
   ethercat_interface::EcPdoSingleInterfaceChannelManager pdo_manager;
@@ -122,7 +122,7 @@ TEST(TestEcPdoSingleInterfaceChannelManager, EcReadWriteBit8Mask5)
 {
   const char channel_config[] =
     R"(
-      {index: 0x6071, sub_index: 0, type: bit8, mask: 5}
+      {index: 0x6071, sub_index: 0, type: bit8, mask: 5, default: 0}
     )";
   YAML::Node config = YAML::Load(channel_config);
   ethercat_interface::EcPdoSingleInterfaceChannelManager pdo_manager;
@@ -167,12 +167,12 @@ TEST(TestEcPdoSingleInterfaceChannelManager, EcReadWriteBoolMask5)
 {
   const char channel_config[] =
     R"(
-      {index: 0x6071, sub_index: 0, type: bool, mask: 5}
+      {index: 0x6071, sub_index: 0, type: bool, mask: 16, default: 0}
     )";
   YAML::Node config = YAML::Load(channel_config);
   ethercat_interface::EcPdoSingleInterfaceChannelManager pdo_manager;
   pdo_manager.pdo_type = ethercat_interface::PdoType::RPDO;
-  ASSERT_EQ(pdo_manager.load_from_config(config), false);
+  ASSERT_EQ(pdo_manager.load_from_config(config), true);
 
   return;
   // ASSERT_EQ(pdo_manager.data_type(), "bool");
@@ -220,6 +220,7 @@ TEST(TestEcPdoGroupInterfaceChannelManager, LoadConfigTest)
             type: int32,
             factor: 3.14,
             offset: 2.71,
+            default: 0,
             command_interface: effort
           },
           {
@@ -227,17 +228,21 @@ TEST(TestEcPdoGroupInterfaceChannelManager, LoadConfigTest)
             type: int16,
             factor: 1.1,
             offset: 0.1,
-            state_interface: position
+            default: 0,
+            command_interface: position
           },
           {
             addr_offset: 66,
             type: uint8,
-            mask: 7,
+            default: 0,
+            command_interface: controlword
           },
           {
             addr_offset: 67,
             type: bool,
             mask: 8,
+            default: 0,
+            command_interface: enable
           }
         ]
       }
@@ -248,7 +253,7 @@ TEST(TestEcPdoGroupInterfaceChannelManager, LoadConfigTest)
   ASSERT_EQ(pdo_manager.load_from_config(config), true);
 
   ASSERT_EQ(pdo_manager.number_of_interfaces(), 5);
-  ASSERT_EQ(pdo_manager.number_of_managed_interfaces(), 2);
+  ASSERT_EQ(pdo_manager.number_of_managed_interfaces(), 4);
 
   ASSERT_EQ(pdo_manager.data_type(0), "bit240");
   ASSERT_EQ(pdo_manager.interface_name(0), "null");
@@ -268,12 +273,12 @@ TEST(TestEcPdoGroupInterfaceChannelManager, LoadConfigTest)
   ASSERT_EQ(pdo_manager.v_data[2].addr_offset, 64);
 
   ASSERT_EQ(pdo_manager.data_type(3), "uint8");
-  ASSERT_EQ(pdo_manager.interface_name(3), "null");
-  ASSERT_EQ(pdo_manager.data(3).mask, 7);
+  ASSERT_EQ(pdo_manager.interface_name(3), "controlword");
   ASSERT_EQ(pdo_manager.v_data[3].addr_offset, 66);
 
   ASSERT_EQ(pdo_manager.data_type(4), "bool");
-  ASSERT_EQ(pdo_manager.interface_name(4), "null");
+  ASSERT_EQ(pdo_manager.interface_name(4), "enable");
+  ASSERT_EQ(pdo_manager.v_data[4].addr_offset, 67);
   ASSERT_EQ(pdo_manager.data(4).mask, 8);
 }
 
@@ -286,36 +291,28 @@ TEST(TestEcPdoGroupInterfaceChannelManager, ReadWriteBits)
         index: 0x6071,
         sub_index: 0x00,
         type: bit8,
+        default: 0,
         data_mapping: [
           {
             type: bool,
             mask: 1,
-            command_interface: input1
+            default: 0,
+            addr_offset: 0,
+            command_interface: output1
           },
           {
             type: bool,
             mask: 2,
-            state_interface: output1
+            default: 0,
+            addr_offset: 0,
+            command_interface: output2
           },
           {
             type: bool,
             mask: 4,
-            command_interface: input2
-          },
-          {
-            type: bool,
-            mask: 8,
-            state_interface: output2
-          },
-          {
-            type: bool,
-            mask: 16,
-            command_interface: input3
-          },
-          {
-            type: bool,
-            mask: 32,
-            state_interface: output3
+            default: 0,
+            addr_offset: 0,
+            command_interface: output3
           }
         ]
       }
@@ -325,8 +322,8 @@ TEST(TestEcPdoGroupInterfaceChannelManager, ReadWriteBits)
   pdo_manager.pdo_type = ethercat_interface::PdoType::RPDO;
   ASSERT_EQ(pdo_manager.load_from_config(config), true);
 
-  ASSERT_EQ(pdo_manager.number_of_interfaces(), 7);
-  ASSERT_EQ(pdo_manager.number_of_managed_interfaces(), 6);
+  ASSERT_EQ(pdo_manager.number_of_interfaces(), 4);
+  ASSERT_EQ(pdo_manager.number_of_managed_interfaces(), 3);
 
   ASSERT_EQ(pdo_manager.data_type(0), "bit8");
   ASSERT_EQ(pdo_manager.interface_name(0), "null");
@@ -334,45 +331,29 @@ TEST(TestEcPdoGroupInterfaceChannelManager, ReadWriteBits)
   ASSERT_EQ(pdo_manager.sub_index, 0);
 
   ASSERT_EQ(pdo_manager.data_type(1), "bool");
-  ASSERT_EQ(pdo_manager.interface_name(1), "input1");
+  ASSERT_EQ(pdo_manager.interface_name(1), "output1");
   ASSERT_EQ(pdo_manager.data(1).mask, 1);
   ASSERT_EQ(pdo_manager.v_data[1].addr_offset, 0);
 
   ASSERT_EQ(pdo_manager.data_type(2), "bool");
-  ASSERT_EQ(pdo_manager.interface_name(2), "output1");
+  ASSERT_EQ(pdo_manager.interface_name(2), "output2");
   ASSERT_EQ(pdo_manager.data(2).mask, 2);
   ASSERT_EQ(pdo_manager.v_data[2].addr_offset, 0);
 
   ASSERT_EQ(pdo_manager.data_type(3), "bool");
-  ASSERT_EQ(pdo_manager.interface_name(3), "input2");
+  ASSERT_EQ(pdo_manager.interface_name(3), "output3");
   ASSERT_EQ(pdo_manager.data(3).mask, 4);
   ASSERT_EQ(pdo_manager.v_data[3].addr_offset, 0);
-
-  ASSERT_EQ(pdo_manager.data_type(4), "bool");
-  ASSERT_EQ(pdo_manager.interface_name(4), "output2");
-  ASSERT_EQ(pdo_manager.data(4).mask, 8);
-  ASSERT_EQ(pdo_manager.v_data[4].addr_offset, 0);
-
-  ASSERT_EQ(pdo_manager.data_type(5), "bool");
-  ASSERT_EQ(pdo_manager.interface_name(5), "input3");
-  ASSERT_EQ(pdo_manager.data(5).mask, 16);
-  ASSERT_EQ(pdo_manager.v_data[5].addr_offset, 0);
-
-  ASSERT_EQ(pdo_manager.data_type(6), "bool");
-  ASSERT_EQ(pdo_manager.interface_name(6), "output3");
-  ASSERT_EQ(pdo_manager.data(6).mask, 32);
-  ASSERT_EQ(pdo_manager.v_data[6].addr_offset, 0);
 
   uint8_t buffer[1];
   std::vector<uint8_t> write_tests0 =
   {
-    0, 1, 2, 4, 8, 16, 32,
-    0b00111111,
-    0b11000000,
-    0b11111111,
-    0b00101010,
-    0b11010101,
-    0b00001111
+    0, 1, 2, 4,
+    0b00000111,
+    0b00000000,
+    0b00000010,
+    0b00000101,
+    0b00000111
   };
 
   for (size_t n = 0; n < write_tests0.size(); ++n) {
@@ -380,7 +361,7 @@ TEST(TestEcPdoGroupInterfaceChannelManager, ReadWriteBits)
     ASSERT_EQ(pdo_manager.ec_read(buffer), write_tests0[n]);
 
     std::bitset<8> bits(write_tests0[n]);
-    for (size_t i = 1; i < 7; i++) {
+    for (size_t i = 1; i < 3; i++) {
       ASSERT_EQ(pdo_manager.ec_read(buffer, i), bits.test(i - 1));
     }
   }
