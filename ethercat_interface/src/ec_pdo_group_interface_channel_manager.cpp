@@ -333,6 +333,12 @@ bool CLASSM::load_from_config(YAML::Node channel_config)
 
       if (map["addr_offset"]) {
         v_data[id].addr_offset = map["addr_offset"].as<size_t>();
+      } else {
+        char ec_addr[16];
+        std::snprintf(ec_addr, sizeof(ec_addr), "0x%04X:%02i", index, sub_index);
+        std::string msg = "channel: " + std::string(ec_addr) +
+          "' has no addr_offset, it is mandatory on data_mapping entries";
+        throw std::runtime_error(msg);
       }
       if (map["type"]) {
         data_type = map["type"].as<std::string>();
