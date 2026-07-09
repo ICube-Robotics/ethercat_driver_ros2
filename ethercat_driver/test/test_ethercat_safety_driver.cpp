@@ -22,12 +22,13 @@
 #include <fstream>
 #include <sstream>
 #include <filesystem>
+#include <set>
 
-#include "testHelper_ethercat_safety_driver.hpp"
+#include "ethercat_driver/ethercat_bus_manager.hpp"
 
 TEST(TestEthercatSafetyDriver, getEcTransferModuleParam)
 {
-  ethercat_driver::TestHelperEthercatSafetyDriver driver;
+  ethercat_driver::EthercatBusManager driver;
   std::filesystem::path dir = TEST_RESOURCES_DIRECTORY;
   const std::string test_config_path = dir / "test_config_ethercat_safety.yaml";
 
@@ -52,7 +53,7 @@ TEST(TestEthercatSafetyDriver, getEcTransferModuleParam)
 
 TEST(TestEthercatSafetyDriver, getEcTransferNet)
 {
-  ethercat_driver::TestHelperEthercatSafetyDriver driver;
+  ethercat_driver::EthercatBusManager driver;
   std::string yaml;
   {
     std::filesystem::path dir = TEST_RESOURCES_DIRECTORY;
@@ -162,7 +163,7 @@ TEST(TestEthercatSafetyDriver, getEcTransferNet)
 
 TEST(TestEthercatSafetyDriver, estopParseConfigFile)
 {
-  ethercat_driver::TestHelperEthercatSafetyDriver driver;
+  ethercat_driver::EthercatBusManager driver;
   std::string yaml;
   {
     std::filesystem::path dir = TEST_RESOURCES_DIRECTORY;
