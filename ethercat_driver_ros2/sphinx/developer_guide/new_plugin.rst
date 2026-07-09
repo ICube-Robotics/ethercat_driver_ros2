@@ -137,10 +137,9 @@ Modify your :code:`CMakeLists.txt` file so that it looks like this:
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
   )
-  ament_target_dependencies(
-    ${PROJECT_NAME}
-    "ethercat_interface"
-    "pluginlib"
+  target_link_libraries(${PROJECT_NAME} PUBLIC
+    ethercat_interface::ethercat_interface
+    pluginlib::pluginlib
   )
   pluginlib_export_plugin_description_file(ethercat_interface ethercat_plugins.xml)
   install(

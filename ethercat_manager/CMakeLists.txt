@@ -31,8 +31,11 @@ target_include_directories(
   include
   ${ETHERLAB_DIR}/include
 )
-target_link_libraries(ethercat_sdo_srv_server ${ETHERCAT_LIB})
-ament_target_dependencies(ethercat_sdo_srv_server rclcpp ethercat_msgs)
+target_link_libraries(ethercat_sdo_srv_server PUBLIC
+  ${ETHERCAT_LIB}
+  rclcpp::rclcpp
+  ${ethercat_msgs_TARGETS}
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

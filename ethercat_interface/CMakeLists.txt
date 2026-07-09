@@ -23,11 +23,6 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 find_library(ETHERCAT_LIB ethercat HINTS ${ETHERLAB_DIR}/lib)
 
-ament_export_include_directories(
-  include
-  ${ETHERLAB_DIR}/include
-)
-
 add_library(
   ${PROJECT_NAME}
   SHARED
@@ -37,28 +32,29 @@ add_library(
   src/ec_pdo_group_interface_channel_manager.cpp
 )
 
-target_include_directories(
-  ${PROJECT_NAME}
-  PRIVATE
-  include
+target_include_directories(${PROJECT_NAME} PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
   ${ETHERLAB_DIR}/include
 )
 
-target_link_libraries(${PROJECT_NAME} ${ETHERCAT_LIB})
-
-ament_target_dependencies(
-  ${PROJECT_NAME}
-  rclcpp
+target_link_libraries(${PROJECT_NAME}
+  ${ETHERCAT_LIB}
+  rclcpp::rclcpp
 )
 
 # INSTALL
 install(
   TARGETS ${PROJECT_NAME}
-  DESTINATION lib
+  EXPORT export_${PROJECT_NAME}
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
 )
+
 install(
   DIRECTORY include/
-  DESTINATION include
+  DESTINATION include/${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)
@@ -66,7 +62,9 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
 
   find_package(yaml_cpp_vendor REQUIRED)
-  find_package(yaml-cpp REQUIRED)
+  # Find system yaml-cpp for proper linking
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(YAML_CPP REQUIRED yaml-cpp)
 
   ament_lint_auto_find_test_dependencies()
 
@@ -75,21 +73,20 @@ if(BUILD_TESTING)
     test_ec_pdo_channel_manager
     test/test_ec_pdo_channel_manager.cpp
   )
-  target_include_directories(test_ec_pdo_channel_manager PRIVATE include ${ETHERLAB_DIR}/include)
+  target_include_directories(test_ec_pdo_channel_manager PRIVATE
+    include
+    ${ETHERLAB_DIR}/include
+    ${YAML_CPP_INCLUDE_DIRS}
+  )
 
   target_link_libraries(test_ec_pdo_channel_manager
     ${PROJECT_NAME}
-    yaml-cpp)
+    ${YAML_CPP_LIBRARIES}
+  )
 endif()
 
 ## EXPORTS
-ament_export_include_directories(
-  include
-)
-ament_export_libraries(
-  ${PROJECT_NAME}
-  ${ETHERCAT_LIBRARY}
-)
+ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
   rclcpp
 )
