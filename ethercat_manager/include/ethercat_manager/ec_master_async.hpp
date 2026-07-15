@@ -81,13 +81,8 @@ public:
       }
 
       getModule(&module_data);
-      if (module_data.ioctl_version_magic != EC_IOCTL_VERSION_MAGIC) {
-        std::stringstream err;
-        err << "ioctl() version magic is differing: "
-            << deviceName.str() << ": " << module_data.ioctl_version_magic
-            << ", ethercat tool: " << EC_IOCTL_VERSION_MAGIC;
-        throw MasterException(err.str());
-      }
+      // No check for ioctl_version_magic here, check the documentation
+      // to see which version is supported.
       mcount_ = module_data.master_count;
     }
   }
