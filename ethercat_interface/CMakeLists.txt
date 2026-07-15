@@ -17,16 +17,17 @@ find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_ros REQUIRED)
 find_package(rclcpp REQUIRED)
 
-# EtherLab / IgH EtherCAT master. Works with a source install under
-# /usr/local/etherlab OR in standard paths (e.g. from custom Debian packages).
-set(ETHERLAB_DIR /usr/local/etherlab)
+# EtherLab
+set(ETHERLAB_LOCAL_DIR /usr/local/etherlab)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-find_path(ETHERCAT_INCLUDE_DIR ecrt.h HINTS ${ETHERLAB_DIR}/include)
-find_library(ETHERCAT_LIB ethercat HINTS ${ETHERLAB_DIR}/lib)
+find_path(ETHERCAT_INCLUDE_DIR NAMES ecrt.h PATHS ${ETHERLAB_LOCAL_DIR}/include)
+find_library(ETHERCAT_LIB NAMES ethercat PATHS ${ETHERLAB_LOCAL_DIR}/lib)
+
 if(NOT ETHERCAT_INCLUDE_DIR OR NOT ETHERCAT_LIB)
-  message(FATAL_ERROR "IgH EtherCAT master not found (ecrt.h / libethercat). "
-    "Install it as a source build under /usr/local/etherlab or via the 'ethercat' package.")
+  message(FATAL_ERROR
+    "Could not find the IgH EtherCAT master (ecrt.h / libethercat). "
+    "Looked in standard system paths and in ${ETHERLAB_LOCAL_DIR}.")
 endif()
 
 ament_export_include_directories(
