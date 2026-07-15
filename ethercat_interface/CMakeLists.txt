@@ -17,15 +17,21 @@ find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_ros REQUIRED)
 find_package(rclcpp REQUIRED)
 
-# EtherLab
+# EtherLab / IgH EtherCAT master. Works with a source install under
+# /usr/local/etherlab OR in standard paths (e.g. from custom Debian packages).
 set(ETHERLAB_DIR /usr/local/etherlab)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
+find_path(ETHERCAT_INCLUDE_DIR ecrt.h HINTS ${ETHERLAB_DIR}/include)
 find_library(ETHERCAT_LIB ethercat HINTS ${ETHERLAB_DIR}/lib)
+if(NOT ETHERCAT_INCLUDE_DIR OR NOT ETHERCAT_LIB)
+  message(FATAL_ERROR "IgH EtherCAT master not found (ecrt.h / libethercat). "
+    "Install it as a source build under /usr/local/etherlab or via the 'ethercat' package.")
+endif()
 
 ament_export_include_directories(
   include
-  ${ETHERLAB_DIR}/include
+  ${ETHERCAT_INCLUDE_DIR}
 )
 
 add_library(
@@ -41,7 +47,7 @@ target_include_directories(
   ${PROJECT_NAME}
   PRIVATE
   include
-  ${ETHERLAB_DIR}/include
+  ${ETHERCAT_INCLUDE_DIR}
 )
 
 target_link_libraries(${PROJECT_NAME} ${ETHERCAT_LIB})
@@ -75,7 +81,7 @@ if(BUILD_TESTING)
     test_ec_pdo_channel_manager
     test/test_ec_pdo_channel_manager.cpp
   )
-  target_include_directories(test_ec_pdo_channel_manager PRIVATE include ${ETHERLAB_DIR}/include)
+  target_include_directories(test_ec_pdo_channel_manager PRIVATE include ${ETHERCAT_INCLUDE_DIR})
 
   target_link_libraries(test_ec_pdo_channel_manager
     ${PROJECT_NAME}
