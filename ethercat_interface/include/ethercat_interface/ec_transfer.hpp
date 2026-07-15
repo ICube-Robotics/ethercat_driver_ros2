@@ -28,8 +28,8 @@ struct DomainInfo;
 
 struct EcTransferInfo
 {
-  const DomainInfo * input_domain;
-  const DomainInfo * output_domain;
+  const void * input_domain;
+  const void * output_domain;
 
   /** Pointer into the input process domain, equal to
    * domain process data pointer + the offset

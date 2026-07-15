@@ -23,7 +23,7 @@
 #include <limits>
 
 #include "yaml-cpp/yaml.h"
-#include "ethercat_interface/ec_slave.hpp"
+#include "ethercat_interface/ec_slave_base.hpp"
 #include "ethercat_interface/ec_pdo_single_interface_channel_manager.hpp"
 #include "ethercat_generic_plugins/generic_ec_slave.hpp"
 #include "ethercat_generic_plugins/cia402_common_defs.hpp"
@@ -40,9 +40,10 @@ public:
    *  The transition through the state machine is handled automatically. */
   bool initialized();
 
-  virtual void processData(size_t entry_idx, uint8_t * domain_address);
+  //virtual void process_data(size_t entry_idx, uint8_t * domain_address);
+  virtual void process_data(int index, uint8_t * domain_address);
 
-  virtual bool setupSlave(
+  virtual bool setup_slave(
     std::unordered_map<std::string, std::string> slave_parameters,
     std::vector<double> * state_interface,
     std::vector<double> * command_interface);

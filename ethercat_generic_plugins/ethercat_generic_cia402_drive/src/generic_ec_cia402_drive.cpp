@@ -28,6 +28,7 @@ EcCiA402Drive::~EcCiA402Drive() {}
 
 bool EcCiA402Drive::initialized() {return initialized_;}
 
+
 void EcCiA402Drive::updateState()
 {
   if (status_word_ != last_status_word_) {
@@ -47,9 +48,29 @@ void EcCiA402Drive::updateState()
   initialized_ = is_operational_;
 }
 
-void EcCiA402Drive::processData(size_t entry_idx, uint8_t * domain_address)
+
+//void EcCiA402Drive::process_data(size_t entry_idx, uint8_t * domain_address)
+void EcCiA402Drive::process_data(int index, uint8_t * domain_address)
 {
-  auto index = domain_map_[entry_idx];
+  //auto index = domain_map_[entry_idx];
+  
+  // Bounds check to prevent out-of-bounds access
+  if (index < 0 || static_cast<size_t>(index) >= pdo_channels_info_.size()) {
+    RCLCPP_ERROR(
+      rclcpp::get_logger("EthercatDriver"),
+      "EcCiA402Drive::process_data() - index %d out of bounds (pdo_channels_info size: %zu)",
+      index, pdo_channels_info_.size());
+    return;
+  }
+  
+  if (!pdo_channels_info_[index]) {
+    RCLCPP_ERROR(
+      rclcpp::get_logger("EthercatDriver"),
+      "EcCiA402Drive::process_data() - null pointer at index %d",
+      index);
+    return;
+  }
+  
   ethercat_interface::EcPdoSingleInterfaceChannelManager * channel_ptr =
     static_cast<
     ethercat_interface::EcPdoSingleInterfaceChannelManager *>(
@@ -114,12 +135,12 @@ void EcCiA402Drive::processData(size_t entry_idx, uint8_t * domain_address)
 
 
   // CHECK FOR STATE CHANGE
-  if (entry_idx == domain_map_.size() - 1) {  // if last entry in domain
+  /*if (entry_idx == domain_map_.size() - 1) {  // if last entry in domain
     updateState();
-  }
+  }*/
 }
 
-bool EcCiA402Drive::setupSlave(
+bool EcCiA402Drive::setup_slave(
   std::unordered_map<std::string, std::string> slave_parameters,
   std::vector<double> * state_interface,
   std::vector<double> * command_interface)
@@ -138,7 +159,7 @@ bool EcCiA402Drive::setupSlave(
   }
 
   setup_interface_mapping();
-  setup_syncs();
+  //setup_syncs();
 
   if (parameters_.find("mode_of_operation") != parameters_.end()) {
     mode_of_operation_ = std::stod(parameters_["mode_of_operation"]);
@@ -153,6 +174,10 @@ bool EcCiA402Drive::setupSlave(
 
 bool EcCiA402Drive::setup_from_config(YAML::Node drive_config)
 {
+  RCLCPP_INFO(
+    rclcpp::get_logger("EtherCATDriver"),
+    "setup_from_config start");
+
   if (!GenericEcSlave::setup_from_config(drive_config)) {return false;}
   // additional configuration parameters for CiA402 Drives
   if (drive_config["auto_fault_reset"]) {
@@ -161,6 +186,9 @@ bool EcCiA402Drive::setup_from_config(YAML::Node drive_config)
   if (drive_config["auto_state_transitions"]) {
     auto_state_transitions_ = drive_config["auto_state_transitions"].as<bool>();
   }
+  RCLCPP_INFO(
+    rclcpp::get_logger("EtherCATDriver"),
+    "setup_from_config end");
   return true;
 }
 
@@ -248,4 +276,4 @@ uint16_t EcCiA402Drive::transition(DeviceState state, uint16_t control_word)
 
 #include <pluginlib/class_list_macros.hpp>
 
-PLUGINLIB_EXPORT_CLASS(ethercat_generic_plugins::EcCiA402Drive, ethercat_interface::EcSlave)
+PLUGINLIB_EXPORT_CLASS(ethercat_generic_plugins::EcCiA402Drive, ethercat_interface::EcSlaveBase)

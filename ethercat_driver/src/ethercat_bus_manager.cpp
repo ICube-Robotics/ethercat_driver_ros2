@@ -121,8 +121,8 @@ bool EthercatBusManager::configureModules(
 
   for (const auto & configured_module : modules) {
     try {
-      auto module = ec_loader_.createSharedInstance(configured_module.parameters.at("plugin"));
-      if (!module->setupSlave(
+      auto module = ec_slave_loader_.createSharedInstance(configured_module.parameters.at("plugin"));
+      if (!module->setup_slave(
           configured_module.parameters,
           configured_module.input_values,
           configured_module.output_values))
@@ -173,8 +173,8 @@ bool EthercatBusManager::configureModules(
     // Append the transfer modules to the list of modules and load them
     for (const auto & transfer_module_param : transfer_module_params) {
       try {
-        auto ec_module = ec_loader_.createSharedInstance(transfer_module_param.at("plugin"));
-        if (!ec_module->setupSlave(
+        auto ec_module = ec_slave_loader_.createSharedInstance(transfer_module_param.at("plugin"));
+        if (!ec_module->setup_slave(
             transfer_module_param, &empty_interface_, &empty_interface_))
         {
           const std::string & module_name = transfer_module_param.at("name");
@@ -245,10 +245,10 @@ bool EthercatBusManager::configureModules(
         const auto & input_module = ec_modules_[in_idx];
         const auto & output_module = ec_modules_[out_idx];
 
-        transfer.input.alias = input_module->alias_;
-        transfer.input.position = input_module->position_;
-        transfer.output.alias = output_module->alias_;
-        transfer.output.position = output_module->position_;
+        transfer.input.alias = input_module->get_alias();
+        transfer.input.position = input_module->get_position();
+        transfer.output.alias = output_module->get_alias();
+        transfer.output.position = output_module->get_position();
       }
     }
 
@@ -262,7 +262,23 @@ bool EthercatBusManager::configureModules(
 
 bool EthercatBusManager::setupMaster()
 {
-  master_ = std::make_shared<ethercat_interface::EcMaster>(bus_config_.master_id);
+  
+  // Dynamically load master plugin
+  try {
+    master_ = ec_master_loader_.createSharedInstance(bus_config_.master_plugin);
+  } catch (pluginlib::PluginlibException & ex) {
+    RCLCPP_FATAL(
+      rclcpp::get_logger("EthercatDriver"),
+      "The master plugin %s failed to load for some reason. Error: %s\n",
+      bus_config_.master_plugin.c_str(), ex.what());
+    return false;
+  }
+  if (!master_->init(bus_config_.master_iface)) {
+    RCLCPP_FATAL(
+      rclcpp::get_logger("EthercatDriver"),
+      "Failed to initialize Master. Aborting.");
+    return false;
+  }
 
   return true;
 }
@@ -272,17 +288,25 @@ bool EthercatBusManager::configNetwork()
   // start EC and wait until state operative
 
   control_frequency_ = bus_config_.control_frequency;
-  master_->setCtrlFrequency(control_frequency_);
+  master_->set_ctrl_frequency(control_frequency_);
 
   for (auto i = 0ul; i < ec_modules_.size(); i++) {
-    master_->addSlave(ec_modules_[i].get());
+    master_->add_slave(ec_modules_[i]);
   }
 
+  if (!master_->configure_slaves()) {
+    RCLCPP_FATAL(
+      rclcpp::get_logger("EthercatDriver"),
+      "Failed to configure Slaves. Aborting.");
+    return false;
+  }
+
+
   // configure SDO
-  for (auto i = 0ul; i < ec_modules_.size(); i++) {
-    for (auto & sdo : ec_modules_[i]->sdo_config) {
+  /*for (auto i = 0ul; i < ec_modules_.size(); i++) {
+    for (auto & sdo : ec_modules_[i]->get_sdo_config()) {
       uint32_t abort_code;
-      int ret = master_->configSlaveSdo(
+      int ret = master_->configure_slave(
         std::stod(ec_module_parameters_[i]["position"]),
         sdo,
         &abort_code);
@@ -294,7 +318,7 @@ bool EthercatBusManager::configNetwork()
           abort_code);
       }
     }
-  }
+  }*/
 
   return true;
 }
@@ -317,7 +341,7 @@ bool EthercatBusManager::activateBus()
     return false;
   }
 
-  if (!master_->activate()) {
+  if (!master_->start()) {
     RCLCPP_ERROR(rclcpp::get_logger("EthercatBusManager"), "Activate EcMaster failed");
     return false;
   }
@@ -330,40 +354,18 @@ bool EthercatBusManager::activateBus()
     RCLCPP_INFO(rclcpp::get_logger("EthercatBusManager"), "Transfer network configured!");
   }
 
-  // start after one second
-  struct timespec t;
-  clock_gettime(CLOCK_MONOTONIC, &t);
-  t.tv_sec++;
-
-  bool running = true;
-  while (running) {
-    // wait until next shot
-    clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &t, NULL);
-    // update EtherCAT bus
-
-    master_->update();
-
-    // check if operational
-    bool isAllInit = true;
-    for (auto & module : ec_modules_) {
-      isAllInit = isAllInit && module->initialized();
-    }
-    if (isAllInit) {
-      running = false;
-    }
-    // calculate next shot. carry over nanoseconds into microseconds.
-    t.tv_nsec += master_->getInterval();
-    while (t.tv_nsec >= 1000000000) {
-      t.tv_nsec -= 1000000000;
-      t.tv_sec++;
-    }
+  if (!master_->spin_slaves_until_operational()) {
+    RCLCPP_FATAL(
+      rclcpp::get_logger("EthercatDriver"),
+      "Failed to bring all slaves into OPERATIONAL state");
+    return false;
   }
-
   RCLCPP_INFO(
-    rclcpp::get_logger("EthercatBusManager"), "System Successfully started!");
+      rclcpp::get_logger("EthercatDriver"),
+      "All Slaves are in OPERATIONAL state. System Successfully started!");
 
   activated_ = true;
-
+      
   return true;
 }
 
@@ -389,7 +391,7 @@ EthercatCycleResult EthercatBusManager::read()
     return EthercatCycleResult::kSkippedBusy;
   }
   if (activated_) {
-    master_->readData();
+    master_->read_process_data();
     return EthercatCycleResult::kCompleted;
   }
   return EthercatCycleResult::kSkippedInactive;
@@ -403,7 +405,7 @@ EthercatCycleResult EthercatBusManager::write()
     return EthercatCycleResult::kSkippedBusy;
   }
   if (activated_) {
-    master_->writeData();
+    master_->write_process_data();
     return EthercatCycleResult::kCompleted;
   }
   return EthercatCycleResult::kSkippedInactive;

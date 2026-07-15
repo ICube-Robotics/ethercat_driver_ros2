@@ -55,7 +55,7 @@ TEST(TestEcPdoSingleInterfaceChannelManager, EcReadS16)
   pdo_manager.load_from_config(config);
 
   uint8_t buffer[16];
-  EC_WRITE_S16(buffer, 42);
+  write_s16(buffer, 42);
   ASSERT_EQ(pdo_manager.ec_read(buffer), 2 * 42 + 10);
 }
 
@@ -75,20 +75,20 @@ TEST(TestEcPdoSingleInterfaceChannelManager, EcReadWriteBit2)
   ASSERT_EQ(ethercat_interface::type2bits(pdo_manager.data_type()), 2);
 
   uint8_t buffer[1];
-  EC_WRITE_U8(buffer, 0);
+  write_u8(buffer, 0);
   ASSERT_EQ(pdo_manager.ec_read(buffer), 0);
-  EC_WRITE_U8(buffer, 3);
+  write_u8(buffer, 3);
   ASSERT_EQ(pdo_manager.ec_read(buffer), 3);
-  EC_WRITE_U8(buffer, 5);
+  write_u8(buffer, 5);
   ASSERT_EQ(pdo_manager.ec_read(buffer), 1);
 
   pdo_manager.ec_write(buffer, 0);
-  ASSERT_EQ(EC_READ_U8(buffer), 4);
+  ASSERT_EQ(read_u8(buffer), 4);
   pdo_manager.ec_write(buffer, 2);
-  ASSERT_EQ(EC_READ_U8(buffer), 6);
-  EC_WRITE_U8(buffer, 0);
+  ASSERT_EQ(read_u8(buffer), 6);
+  write_u8(buffer, 0);
   pdo_manager.ec_write(buffer, 5);
-  ASSERT_EQ(EC_READ_U8(buffer), 1);
+  ASSERT_EQ(read_u8(buffer), 1);
 }
 
 TEST(TestEcPdoSingleInterfaceChannelManager, EcReadWriteBoolMask1)
@@ -107,15 +107,15 @@ TEST(TestEcPdoSingleInterfaceChannelManager, EcReadWriteBoolMask1)
   ASSERT_EQ(ethercat_interface::type2bits(pdo_manager.data_type()), 1);
 
   uint8_t buffer[1];
-  EC_WRITE_U8(buffer, 3);
+  write_u8(buffer, 3);
   ASSERT_EQ(pdo_manager.ec_read(buffer), 1);
-  EC_WRITE_U8(buffer, 0);
+  write_u8(buffer, 0);
   ASSERT_EQ(pdo_manager.ec_read(buffer), 0);
 
   pdo_manager.ec_write(buffer, 0);
-  ASSERT_EQ(EC_READ_U8(buffer), 0);
+  ASSERT_EQ(read_u8(buffer), 0);
   pdo_manager.ec_write(buffer, 5);
-  ASSERT_EQ(EC_READ_U8(buffer), 1);
+  ASSERT_EQ(read_u8(buffer), 1);
 }
 
 TEST(TestEcPdoSingleInterfaceChannelManager, EcReadWriteBit8Mask5)
@@ -135,28 +135,28 @@ TEST(TestEcPdoSingleInterfaceChannelManager, EcReadWriteBit8Mask5)
 
   uint8_t buffer[1];
   // Should only soft read the bit 5 and 1 that is both in the mask and in the buffer
-  EC_WRITE_U8(buffer, 7);  // < Hard write 0b00000111
+  write_u8(buffer, 7);  // < Hard write 0b00000111
   ASSERT_EQ(pdo_manager.ec_read(buffer), 5);
 
   // Hard write 0, should soft read 0
-  EC_WRITE_U8(buffer, 0);
+  write_u8(buffer, 0);
   ASSERT_EQ(pdo_manager.ec_read(buffer), 0);
 
   // Soft write 0, should hard read 0
   pdo_manager.ec_write(buffer, 0);
-  ASSERT_EQ(EC_READ_U8(buffer), 0);
+  ASSERT_EQ(read_u8(buffer), 0);
 
   // Soft write 3 (with mask applied is 1) should hard read 0b00000001
   pdo_manager.ec_write(buffer, 3);
-  ASSERT_EQ(EC_READ_U8(buffer), 1);
+  ASSERT_EQ(read_u8(buffer), 1);
 
   // Soft write 7 (with mask applied is 5) should hard read 0b00000101
   pdo_manager.ec_write(buffer, 7);
-  ASSERT_EQ(EC_READ_U8(buffer), 5);
+  ASSERT_EQ(read_u8(buffer), 5);
 
   // Soft write 5 (with mask applied is 5) should hard read 0b00000101
   pdo_manager.ec_write(buffer, 5);
-  ASSERT_EQ(EC_READ_U8(buffer), 5);
+  ASSERT_EQ(read_u8(buffer), 5);
 }
 
 
@@ -376,7 +376,7 @@ TEST(TestEcPdoGroupInterfaceChannelManager, ReadWriteBits)
   };
 
   for (size_t n = 0; n < write_tests0.size(); ++n) {
-    EC_WRITE_U8(buffer, write_tests0[n]);
+    write_u8(buffer, write_tests0[n]);
     ASSERT_EQ(pdo_manager.ec_read(buffer), write_tests0[n]);
 
     std::bitset<8> bits(write_tests0[n]);

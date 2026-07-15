@@ -20,7 +20,7 @@
 #define ETHERCAT_INTERFACE__EC_PDO_CHANNEL_MANAGER_HPP_
 
 #include <yaml-cpp/yaml.h>
-#include <ecrt.h>
+#include "ethercat_interface/ec_buffer_tools.h"
 
 #include <string>
 #include <vector>
@@ -173,12 +173,13 @@ public:
 
 public:
   /** @brief Get the PDO entry info as it should be recorded by the master*/
-  ec_pdo_entry_info_t get_pdo_entry_info();
+  /*pdo_entry_info_t get_pdo_entry_info();*/
 
 public:
   PdoType pdo_type;
   uint16_t index;
   uint8_t sub_index;
+
 
   inline
   std::string index_hex_str() const

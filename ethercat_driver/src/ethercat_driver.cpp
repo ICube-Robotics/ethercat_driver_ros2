@@ -51,21 +51,41 @@ bool configure_ethercat_bus_config(
   const std::unordered_map<std::string, std::string> & hardware_parameters,
   EthercatBusConfig & bus_config)
 {
-  unsigned int master_id = 666;
+  std::string master_iface = "666";
+
   // Get master id
   if (hardware_parameters.find("master_id") == hardware_parameters.end()) {
     // Master id was not provided, default to 0
-    master_id = 0;
+    master_iface.assign("0");
   } else {
     try {
-      master_id = std::stoul(hardware_parameters.at("master_id"));
+      master_iface = hardware_parameters.at("master_id");
     } catch (std::exception & e) {
       RCLCPP_FATAL(
         rclcpp::get_logger("EthercatDriver"), "Invalid master id (%s)!", e.what());
       return false;
     }
   }
-  bus_config.master_id = master_id;
+
+  // Get master plugin from hardware description parameter "master_plugin".
+  // Default master plugin is EtherlabMaster
+  std::string master_plugin_name = "ethercat_master/EtherlabMaster";
+  if (hardware_parameters.find("master_plugin") == hardware_parameters.end()) {
+    // Master plugin was not provided, default to EtherlabMaster
+    master_plugin_name.assign("ethercat_master/EtherlabMaster");
+  } else {
+    try {
+      master_plugin_name = hardware_parameters.at("master_plugin");
+    } catch (std::exception & e) {
+      RCLCPP_FATAL(
+        rclcpp::get_logger("EthercatDriver"), "Invalid master plugin (%s)!", e.what());
+      return false;
+    }
+  }
+
+  bus_config.master_iface = master_iface;
+  bus_config.master_plugin = master_plugin_name;
+
 
   // Get control frequency
   if (hardware_parameters.find("control_frequency") == hardware_parameters.end()) {

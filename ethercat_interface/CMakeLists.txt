@@ -31,7 +31,6 @@ ament_export_include_directories(
 add_library(
   ${PROJECT_NAME}
   SHARED
-  src/ec_master.cpp
   src/ec_pdo_channel_manager.cpp
   src/ec_pdo_single_interface_channel_manager.cpp
   src/ec_pdo_group_interface_channel_manager.cpp

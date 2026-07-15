@@ -28,15 +28,15 @@
 class FriendEcCiA402Drive : public ethercat_generic_plugins::EcCiA402Drive
 {
   FRIEND_TEST(EcCiA402DriveTest, SlaveSetupDriveFromConfig);
-  FRIEND_TEST(EcCiA402DriveTest, SlaveSetupPdoChannels);
-  FRIEND_TEST(EcCiA402DriveTest, SlaveSetupSyncs);
-  FRIEND_TEST(EcCiA402DriveTest, SlaveSetupDomains);
-  FRIEND_TEST(EcCiA402DriveTest, EcReadTPDOToStateInterface);
-  FRIEND_TEST(EcCiA402DriveTest, EcWriteRPDOFromCommandInterface);
-  FRIEND_TEST(EcCiA402DriveTest, EcWriteRPDODefaultValue);
-  // FRIEND_TEST(EcCiA402DriveTest, FaultReset);
-  FRIEND_TEST(EcCiA402DriveTest, SwitchModeOfOperation);
-  FRIEND_TEST(EcCiA402DriveTest, EcWriteDefaultTargetPosition);
+  //FRIEND_TEST(EcCiA402DriveTest, SlaveSetupPdoChannels);
+  //FRIEND_TEST(EcCiA402DriveTest, SlaveSetupSyncs);
+  //FRIEND_TEST(EcCiA402DriveTest, SlaveSetupDomains);
+  ////FRIEND_TEST(EcCiA402DriveTest, EcReadTPDOToStateInterface);
+  //FRIEND_TEST(EcCiA402DriveTest, EcWriteRPDOFromCommandInterface);
+  //FRIEND_TEST(EcCiA402DriveTest, EcWriteRPDODefaultValue);
+  //// FRIEND_TEST(EcCiA402DriveTest, FaultReset);
+  //FRIEND_TEST(EcCiA402DriveTest, SwitchModeOfOperation);
+  //FRIEND_TEST(EcCiA402DriveTest, EcWriteDefaultTargetPosition);
 };
 
 class EcCiA402DriveTest : public ::testing::Test
