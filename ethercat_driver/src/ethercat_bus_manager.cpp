@@ -121,7 +121,8 @@ bool EthercatBusManager::configureModules(
 
   for (const auto & configured_module : modules) {
     try {
-      auto module = ec_slave_loader_.createSharedInstance(configured_module.parameters.at("plugin"));
+      auto module =
+        ec_slave_loader_.createSharedInstance(configured_module.parameters.at("plugin"));
       if (!module->setup_slave(
           configured_module.parameters,
           configured_module.input_values,
@@ -262,7 +263,6 @@ bool EthercatBusManager::configureModules(
 
 bool EthercatBusManager::setupMaster()
 {
-  
   // Dynamically load master plugin
   try {
     master_ = ec_master_loader_.createSharedInstance(bus_config_.master_plugin);
@@ -365,7 +365,7 @@ bool EthercatBusManager::activateBus()
       "All Slaves are in OPERATIONAL state. System Successfully started!");
 
   activated_ = true;
-      
+
   return true;
 }
 

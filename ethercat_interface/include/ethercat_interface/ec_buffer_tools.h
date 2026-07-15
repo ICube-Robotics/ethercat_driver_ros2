@@ -22,7 +22,7 @@
 /*typedef struct {
     uint16_t index;
     uint8_t subindex;
-    uint8_t bit_length; 
+    uint8_t bit_length;
 } pdo_entry_info_t;*/
 
 /******************************************************************************

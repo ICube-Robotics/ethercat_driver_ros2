@@ -49,11 +49,11 @@ void EcCiA402Drive::updateState()
 }
 
 
-//void EcCiA402Drive::process_data(size_t entry_idx, uint8_t * domain_address)
+// void EcCiA402Drive::process_data(size_t entry_idx, uint8_t * domain_address)
 void EcCiA402Drive::process_data(int index, uint8_t * domain_address)
 {
-  //auto index = domain_map_[entry_idx];
-  
+  // auto index = domain_map_[entry_idx];
+
   // Bounds check to prevent out-of-bounds access
   if (index < 0 || static_cast<size_t>(index) >= pdo_channels_info_.size()) {
     RCLCPP_ERROR(
@@ -62,7 +62,7 @@ void EcCiA402Drive::process_data(int index, uint8_t * domain_address)
       index, pdo_channels_info_.size());
     return;
   }
-  
+
   if (!pdo_channels_info_[index]) {
     RCLCPP_ERROR(
       rclcpp::get_logger("EthercatDriver"),
@@ -70,7 +70,7 @@ void EcCiA402Drive::process_data(int index, uint8_t * domain_address)
       index);
     return;
   }
-  
+
   ethercat_interface::EcPdoSingleInterfaceChannelManager * channel_ptr =
     static_cast<
     ethercat_interface::EcPdoSingleInterfaceChannelManager *>(
@@ -159,7 +159,7 @@ bool EcCiA402Drive::setup_slave(
   }
 
   setup_interface_mapping();
-  //setup_syncs();
+  // setup_syncs();
 
   if (parameters_.find("mode_of_operation") != parameters_.end()) {
     mode_of_operation_ = std::stod(parameters_["mode_of_operation"]);

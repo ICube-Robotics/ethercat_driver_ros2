@@ -40,7 +40,7 @@ public:
    *  The transition through the state machine is handled automatically. */
   bool initialized();
 
-  //virtual void process_data(size_t entry_idx, uint8_t * domain_address);
+  // virtual void process_data(size_t entry_idx, uint8_t * domain_address);
   virtual void process_data(int index, uint8_t * domain_address);
 
   virtual bool setup_slave(

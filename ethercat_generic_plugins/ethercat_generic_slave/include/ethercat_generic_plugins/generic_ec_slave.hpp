@@ -53,7 +53,6 @@ public:
     return sm_config_;
   }*/
 
-
 protected:
 //  uint32_t counter_ = 0;
 //  std::vector<ec_pdo_info_t> rpdos_;

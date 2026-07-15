@@ -76,9 +76,9 @@ public:
   }
 
   uint8_t index;
-  int type; // 0=output, 1=input;
+  int type;  //  0=output, 1=input;
   std::string pdo_name = "null";
-  int watchdog = 0; // 0=default, 1=enable, -1=disable
+  int watchdog = 0;  //  0=default, 1=enable, -1=disable
 };
 
 }  // namespace ethercat_interface

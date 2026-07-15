@@ -45,7 +45,6 @@ struct ConfiguredEcModule
 /** Bus-wide EtherCAT settings independent of the ros2_control HardwareInfo representation. */
 struct EthercatBusConfig
 {
-
   std::string master_iface{"0"};
   std::string master_plugin{"ethercat_master/EtherlabMaster"};
   double control_frequency{100.0};
@@ -64,9 +63,8 @@ enum class EthercatCycleResult
 class EthercatBusManager
 {
 public:
-
   EthercatBusManager() {}
-  ~EthercatBusManager() { master_.reset(); ec_modules_.clear();}
+  ~EthercatBusManager() {master_.reset(); ec_modules_.clear();}
 
   bool configureModules(
     const EthercatBusConfig & bus_config,

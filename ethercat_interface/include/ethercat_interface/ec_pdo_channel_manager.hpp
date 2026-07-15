@@ -20,7 +20,7 @@
 #define ETHERCAT_INTERFACE__EC_PDO_CHANNEL_MANAGER_HPP_
 
 #include <yaml-cpp/yaml.h>
-#include "ethercat_interface/ec_buffer_tools.h"
+
 
 #include <string>
 #include <vector>
@@ -28,6 +28,9 @@
 #include <stdexcept>
 #include <utility>
 #include <sstream>
+
+#include "ethercat_interface/ec_buffer_tools.h"
+
 
 namespace ethercat_interface
 {

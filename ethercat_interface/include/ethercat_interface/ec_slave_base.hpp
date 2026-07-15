@@ -33,28 +33,25 @@
 namespace ethercat_interface
 {
 
-//typedef std::vector<ethercat_interface::EcPdoChannelManager> pdo_channels_t;
-//typedef std::vector<ethercat_interface::SMConfig> sm_config_t;
-//typedef std::vector<ethercat_interface::SdoConfigEntry> sdo_config_t;
-/*typedef struct
+// typedef std::vector<ethercat_interface::EcPdoChannelManager> pdo_channels_t;
+// typedef std::vector<ethercat_interface::SMConfig> sm_config_t;
+// typedef std::vector<ethercat_interface::SdoConfigEntry> sdo_config_t;
+/* typedef struct
 {
   uint16_t index;
   ethercat_interface::PdoType pdo_type;
   std::vector<ethercat_interface::EcPdoChannelManager*> pdo_channel_config;
-} pdo_mapping_t;*/
+} pdo_mapping_t; */
 
-typedef struct 
+typedef struct
 {
-    uint16_t index; /**< PDO index. */
-    unsigned int n_entries; /**< Number of PDO entries in \a entries to map. */
-    PdoType pdo_type;
-
+  uint16_t index;   /**< PDO index. */
+  unsigned int n_entries;   /**< Number of PDO entries in \a entries to map. */
+  PdoType pdo_type;
 } pdo_info_t;
 
 
-
-
-//typedef std::vector<pdo_mapping_t> pdo_config_t;
+// typedef std::vector<pdo_mapping_t> pdo_config_t;
 
 class EcSlaveBase
 {
@@ -92,7 +89,6 @@ public:
   }
 
 
-
   virtual bool setup_slave(
     std::unordered_map<std::string, std::string> slave_paramters,
     std::vector<double> * state_interface,
@@ -102,7 +98,7 @@ public:
     command_interface_ptr_ = command_interface;
     parameters_ = slave_paramters;
     is_initialized_ = true;
-    //setup_interface_mapping();
+    // setup_interface_mapping();
     return true;
   }
 
@@ -111,7 +107,7 @@ public:
   uint16_t get_alias() {return alias_;}
   uint16_t get_position() {return position_;}
 
-  //pdo_config_t get_pdo_config() {return pdo_config_;}
+  // pdo_config_t get_pdo_config() {return pdo_config_;}
 
   std::vector<SMConfig> get_sm_config()
   {
@@ -123,9 +119,9 @@ public:
     return sdo_config_;
   }
 
-  std::vector<ethercat_interface::EcPdoChannelManager *> get_pdo_channels_info() 
+  std::vector<ethercat_interface::EcPdoChannelManager *> get_pdo_channels_info()
   {
-    return pdo_channels_info_;  
+    return pdo_channels_info_;
   }
 
   std::vector<pdo_info_t> get_pdo_info()
@@ -138,26 +134,26 @@ public:
     return paramters_;
   }*/
 
-  //std::vector<double> * get_state_interface_ptr()
-  //{
+  // std::vector<double> * get_state_interface_ptr()
+  // {
   //  return state_interface_ptr_;
-  //}
+  // }
 
-  //std::vector<double> * get_command_interface_ptr()
-  //{
-   // return command_interface_ptr_;
-  //}
+  // std::vector<double> * get_command_interface_ptr()
+  // {
+  //  return command_interface_ptr_;
+  // }
 
 protected:
   std::vector<double> * state_interface_ptr_;
   std::vector<double> * command_interface_ptr_;
   std::unordered_map<std::string, std::string> parameters_;
   bool is_initialized_ = true;
-  //bool is_operational_ = false;
-  uint16_t alias_;        //< Slave alias.
-  uint16_t position_;     //< Index after alias. If alias is zero, stores the ring position.
-  uint32_t vendor_id_;   //< Slave vendor ID.
-  uint32_t product_id_;  //< Slave product code.
+  // bool is_operational_ = false;
+  uint16_t alias_;        // < Slave alias.
+  uint16_t position_;     // < Index after alias. If alias is zero, stores the ring position.
+  uint32_t vendor_id_;   // < Slave vendor ID.
+  uint32_t product_id_;  // < Slave product code.
 
   bool is_operational_ = false;
   bool is_alias_and_position_set_ = false;
@@ -167,9 +163,9 @@ protected:
   std::vector<SMConfig> sm_config_;
   std::vector<ethercat_interface::EcPdoChannelManager *> pdo_channels_info_;
   std::vector<pdo_info_t> pdo_info_;
-  //pdo_config_t pdo_config_;
+  // pdo_config_t pdo_config_;
 
-  //virtual void setup_interface_mapping() = 0;
+  // virtual void setup_interface_mapping() = 0;
 
   /*void setup_interface_mapping()
   {
