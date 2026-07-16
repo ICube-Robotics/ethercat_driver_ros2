@@ -74,9 +74,6 @@ public:
 
   bool add_slave(std::shared_ptr<ethercat_interface::EcSlaveBase> slave);
 
-  /* int configure_slave(uint16_t slave_position,
-                          ethercat_interface::SdoConfigEntry sdo_config,
-                          uint32_t * abort_code);*/
 
   bool configure_slaves();
 
@@ -91,8 +88,6 @@ public:
   /** stop the control loop.
    */
   bool stop();
-
-  // uint32_t get_interval() {return interval_;}
 
   bool read_process_data();
   bool write_process_data();
@@ -143,27 +138,16 @@ protected:
     std::ostream & os = std::cout);*/
 
 protected:
-  /** true if running */
-  // volatile bool running_ = false;
-
   /** start and current time */
   // std::chrono::time_point<std::chrono::system_clock> start_t_, curr_t_;
-
-  // EtherCAT Control
 
 private:
   // EtherCAT Control
 
-  /** register a domain of the slave */
-  // struct DomainInfo;
-  /*void registerPDOInDomain(
-    //uint16_t alias, uint16_t position,
-    std::vector<uint32_t> & channel_indices,
-    DomainInfo * domain_info,
-    std::shared_ptr<EtherlabSlave> slave);*/
   uint32_t get_interval() {return interval_;}
 
 
+  /** register a domain of the slave */
   void registerPDOInDomain(
     std::vector<uint32_t> & channel_indices,
     DomainInfo *domain_info,

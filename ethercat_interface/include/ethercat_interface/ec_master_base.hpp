@@ -89,10 +89,6 @@ public:
   virtual bool add_slave(std::shared_ptr<EcSlaveBase> slave) = 0;
 
   /** \brief configure slave using SDO */
-  /* virtual int configure_slave(uint16_t slave_position,
-                                SdoConfigEntry sdo_config,
-                                uint32_t * abort_code) = 0;*/
-
   virtual bool configure_slaves() = 0;
 
   virtual bool init(std::string iface) = 0;
