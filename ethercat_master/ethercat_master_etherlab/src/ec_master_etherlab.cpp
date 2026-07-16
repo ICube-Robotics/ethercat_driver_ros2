@@ -594,7 +594,7 @@ void EtherlabMaster::registerTransferInDomain(
             domain_reg.index == transfer.input.index &&
             domain_reg.subindex == transfer.input.subindex)
           {
-            transfer_info.input_domain = reinterpret_cast<void *>(&domain);
+            transfer_info.input_domain = reinterpret_cast<const void *>(&domain);
               // 3. Compute the pointer arithmetic and store the result in the EcTransferInfo object
             transfer_info.in_ptr = domain.domain_pd + *(domain_reg.offset);
             RCLCPP_INFO(
@@ -611,7 +611,7 @@ void EtherlabMaster::registerTransferInDomain(
             domain_reg.index == transfer.output.index &&
             domain_reg.subindex == transfer.output.subindex)
           {
-            transfer_info.output_domain = reinterpret_cast<void *>(&domain);
+            transfer_info.output_domain = reinterpret_cast<const void *>(&domain);
               // 3. Compute the pointer arithmetic and store the result in the EcTransferInfo object
             transfer_info.out_ptr = domain.domain_pd + *(domain_reg.offset);
             RCLCPP_INFO(

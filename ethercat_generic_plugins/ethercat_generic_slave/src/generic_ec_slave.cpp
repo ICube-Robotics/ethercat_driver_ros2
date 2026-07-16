@@ -122,10 +122,6 @@ bool GenericEcSlave::setup_slave(
 
 bool GenericEcSlave::setup_from_config(YAML::Node slave_config)
 {
-  RCLCPP_INFO(
-    rclcpp::get_logger("EtherCATDriver"),
-    "setup_from_config - GenericEcSlave start");
-
   if (slave_config.size() != 0) {
     if (slave_config["vendor_id"]) {
       vendor_id_ = slave_config["vendor_id"].as<uint32_t>();
@@ -266,9 +262,6 @@ bool GenericEcSlave::setup_from_config(YAML::Node slave_config)
           domain_map_.push_back(i);
         }
       }*/
-    RCLCPP_INFO(
-    rclcpp::get_logger("EtherCATDriver"),
-    "setup_from_config - GenericEcSlave end");
 
     return true;
   } else {

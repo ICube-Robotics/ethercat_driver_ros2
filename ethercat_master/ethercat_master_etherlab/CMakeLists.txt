@@ -16,8 +16,8 @@ find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_ros REQUIRED)
 find_package(ethercat_interface REQUIRED)
 find_package(pluginlib REQUIRED)
-#find_package(yaml_cpp_vendor REQUIRED)
-#find_package(yaml-cpp REQUIRED)
+# find_package(yaml_cpp_vendor REQUIRED)
+# find_package(yaml-cpp REQUIRED)
 
 # EtherLab
 set(ETHERLAB_DIR /usr/local/etherlab)
@@ -32,7 +32,7 @@ add_library(${PROJECT_NAME} ${PLUGINS_SRC})
 
 target_compile_features(${PROJECT_NAME} PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
 
-#ament_export_include_directories(
+# ament_export_include_directories(
 #  include
 #  ${ETHERLAB_DIR}/include
 #)
@@ -43,7 +43,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   ${ETHERCAT_DIR}/include
 )
 
-#target_include_directories(
+# target_include_directories(
 #  ${PROJECT_NAME}
 #  PRIVATE
 #  include
@@ -79,15 +79,46 @@ install(
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
-  # the following line skips the linter which checks for copyrights
-  # comment the line when a copyright and license is added to all source files
-  set(ament_cmake_copyright_FOUND TRUE)
-  # the following line skips cpplint (only works in a git repo)
-  # comment the line when this package is in a git repo and when
-  # a copyright and license is added to all source files
-  set(ament_cmake_cpplint_FOUND TRUE)
+  find_package(pluginlib REQUIRED)
+  find_package(ethercat_interface REQUIRED)
+  find_package(yaml_cpp_vendor REQUIRED)
+  find_package(yaml-cpp REQUIRED)
   ament_lint_auto_find_test_dependencies()
+
+  # Test Load EtherCAT modules
+  ament_add_gmock(
+    test_load_${PROJECT_NAME}
+    test/test_load_ec_master_etherlab.cpp
+  )
+  target_include_directories(test_load_${PROJECT_NAME} PRIVATE include ${ETHERLAB_DIR}/include)
+  ament_target_dependencies(test_load_${PROJECT_NAME}
+    pluginlib
+    ethercat_interface
+    rclcpp
+  )
+  # Test Etherlab EtherCAT Slave
+  ament_add_gmock(
+    test_etherlab_slave
+    test/test_etherlab_slave.cpp
+  )
+  target_include_directories(test_etherlab_slave PRIVATE
+    include
+    ${ETHERLAB_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../ethercat_generic_plugins/ethercat_generic_slave/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../ethercat_interface/include
+  )
+  target_link_libraries(test_etherlab_slave
+    ${PROJECT_NAME}
+    ${CMAKE_BINARY_DIR}/../ethercat_generic_slave/libethercat_generic_slave.so
+    yaml-cpp
+  )
+  ament_target_dependencies(test_etherlab_slave
+    pluginlib
+    ethercat_interface
+    yaml_cpp_vendor
+  )
 endif()
+
 
 ament_export_include_directories(
   include

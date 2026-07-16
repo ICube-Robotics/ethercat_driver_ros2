@@ -178,7 +178,7 @@ TEST_F(GenericEcSlaveTest, SlaveSetupPdoChannels)
   ASSERT_EQ(domains[0][12], 12);
 }*/
 
-/*TEST_F(GenericEcSlaveTest, EcReadTPDOToStateInterface)
+TEST_F(GenericEcSlaveTest, EcReadTPDOToStateInterface)
 {
   SetUp();
   std::unordered_map<std::string, std::string> slave_parameters;
@@ -190,12 +190,12 @@ TEST_F(GenericEcSlaveTest, SlaveSetupPdoChannels)
   plugin_->setup_interface_mapping();
   ASSERT_EQ(plugin_->get_pdo_channels_info()[8]->state_interface_index(), 1);
   uint8_t domain_address[2];
-  EC_WRITE_S16(domain_address, 42);
+  write_s16(domain_address, 42);
   plugin_->process_data(8, domain_address);
   ASSERT_EQ(plugin_->state_interface_ptr_->at(1), 5 * 42 + 15);
-}*/
+}
 
-/*TEST_F(GenericEcSlaveTest, EcWriteRPDOFromCommandInterface)
+TEST_F(GenericEcSlaveTest, EcWriteRPDOFromCommandInterface)
 {
   SetUp();
   std::unordered_map<std::string, std::string> slave_parameters;
@@ -210,10 +210,10 @@ TEST_F(GenericEcSlaveTest, SlaveSetupPdoChannels)
   uint8_t domain_address[2];
   plugin_->process_data(2, domain_address);
   ASSERT_EQ(channels[2]->data().last_value, 2 * 42 + 10);
-  ASSERT_EQ(EC_READ_S16(domain_address), 2 * 42 + 10);
-}*/
+  ASSERT_EQ(read_s16(domain_address), 2 * 42 + 10);
+}
 
-/*TEST_F(GenericEcSlaveTest, EcWriteRPDODefaultValue)
+TEST_F(GenericEcSlaveTest, EcWriteRPDODefaultValue)
 {
   SetUp();
   plugin_->setup_from_config(YAML::Load(test_slave_config));
@@ -221,10 +221,10 @@ TEST_F(GenericEcSlaveTest, SlaveSetupPdoChannels)
   uint8_t domain_address[2];
   plugin_->process_data(2, domain_address);
   ASSERT_EQ(plugin_->get_pdo_channels_info()[2]->data().last_value, -5);
-  ASSERT_EQ(EC_READ_S16(domain_address), -5);
-}*/
+  ASSERT_EQ(read_s16(domain_address), -5);
+}
 
-/*TEST_F(GenericEcSlaveTest, SlaveSetupSDOConfig)
+TEST_F(GenericEcSlaveTest, SlaveSetupSDOConfig)
 {
   SetUp();
   plugin_->setup_from_config(YAML::Load(test_slave_config));
@@ -237,7 +237,7 @@ TEST_F(GenericEcSlaveTest, SlaveSetupPdoChannels)
   ASSERT_EQ(sdos[2].index, 0x6098);
   ASSERT_EQ(sdos[3].data_type, "int32");
   ASSERT_EQ(sdos[3].data_size(), 4);
-}*/
+}
 
 TEST_F(GenericEcSlaveTest, SlaveSetupSyncManagerConfig)
 {
