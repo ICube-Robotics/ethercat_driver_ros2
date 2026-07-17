@@ -114,12 +114,8 @@ protected:
   std::vector<std::shared_ptr<ethercat_interface::EcSlaveBase>> ec_modules_;
   std::vector<std::unordered_map<std::string, std::string>> ec_module_parameters_;
 
-
-  pluginlib::ClassLoader<ethercat_interface::EcSlaveBase> ec_slave_loader_{
-    "ethercat_interface", "ethercat_interface::EcSlaveBase"};
-  pluginlib::ClassLoader<ethercat_interface::EcMasterBase> ec_master_loader_{
-    "ethercat_interface", "ethercat_interface::EcMasterBase"};
-
+  static pluginlib::ClassLoader<ethercat_interface::EcMasterBase> ec_master_loader_;
+  static pluginlib::ClassLoader<ethercat_interface::EcSlaveBase> ec_slave_loader_;
 
   double control_frequency_;
 

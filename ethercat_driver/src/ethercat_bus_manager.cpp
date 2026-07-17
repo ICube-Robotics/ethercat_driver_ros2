@@ -25,6 +25,12 @@
 namespace ethercat_driver
 {
 
+pluginlib::ClassLoader<ethercat_interface::EcMasterBase>
+EthercatBusManager::ec_master_loader_{"ethercat_interface", "ethercat_interface::EcMasterBase"};
+pluginlib::ClassLoader<ethercat_interface::EcSlaveBase>
+EthercatBusManager::ec_slave_loader_{"ethercat_interface", "ethercat_interface::EcSlaveBase"};
+
+
 unsigned int uint_from_string(const std::string & str)
 {
   // Strip leading and trailing whitespaces
