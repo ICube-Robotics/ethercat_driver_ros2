@@ -10,6 +10,7 @@
   <buildtool_depend>ament_cmake_ros</buildtool_depend>
 
   <depend>ethercat_interface</depend>
+  <depend>ethercat_generic_slave</depend>
   <depend>pluginlib</depend>
 
 

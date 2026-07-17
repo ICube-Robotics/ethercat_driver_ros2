@@ -20,10 +20,17 @@ find_package(pluginlib REQUIRED)
 # find_package(yaml-cpp REQUIRED)
 
 # EtherLab
-set(ETHERLAB_DIR /usr/local/etherlab)
+set(ETHERLAB_LOCAL_DIR /usr/local/etherlab)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-find_library(ETHERCAT_LIB ethercat HINTS ${ETHERLAB_DIR}/lib)
+find_path(ETHERCAT_INCLUDE_DIR NAMES ecrt.h PATHS ${ETHERLAB_LOCAL_DIR}/include)
+find_library(ETHERCAT_LIB NAMES ethercat PATHS ${ETHERLAB_LOCAL_DIR}/lib)
+
+if(NOT ETHERCAT_INCLUDE_DIR OR NOT ETHERCAT_LIB)
+  message(FATAL_ERROR
+    "Could not find the IgH EtherCAT master (ecrt.h / libethercat). "
+    "Looked in standard system paths and in ${ETHERLAB_LOCAL_DIR}.")
+endif()
 
 
 file(GLOB_RECURSE PLUGINS_SRC src/*.cpp)
@@ -32,23 +39,23 @@ add_library(${PROJECT_NAME} ${PLUGINS_SRC})
 
 target_compile_features(${PROJECT_NAME} PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
 
-# ament_export_include_directories(
-#  include
-#  ${ETHERLAB_DIR}/include
-#)
+ament_export_include_directories(
+  include
+  ${ETHERCAT_INCLUDE_DIR}
+)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
-  ${ETHERCAT_DIR}/include
+  ${ETHERCAT_INCLUDE_DIR}
 )
 
-# target_include_directories(
-#  ${PROJECT_NAME}
-#  PRIVATE
-#  include
-#  ${ETHERLAB_DIR}/include
-#)
+target_include_directories(
+  ${PROJECT_NAME}
+  PRIVATE
+  include
+  ${ETHERCAT_INCLUDE_DIR}
+)
 
 ament_target_dependencies( ${PROJECT_NAME}
   ethercat_interface
@@ -80,6 +87,7 @@ install(
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   find_package(pluginlib REQUIRED)
+  find_package(ethercat_generic_slave REQUIRED)
   find_package(ethercat_interface REQUIRED)
   find_package(yaml_cpp_vendor REQUIRED)
   find_package(yaml-cpp REQUIRED)
@@ -90,7 +98,7 @@ if(BUILD_TESTING)
     test_load_${PROJECT_NAME}
     test/test_load_ec_master_etherlab.cpp
   )
-  target_include_directories(test_load_${PROJECT_NAME} PRIVATE include ${ETHERLAB_DIR}/include)
+  target_include_directories(test_load_${PROJECT_NAME} PRIVATE include ${ETHERCAT_INCLUDE_DIR})
   ament_target_dependencies(test_load_${PROJECT_NAME}
     pluginlib
     ethercat_interface
@@ -103,18 +111,16 @@ if(BUILD_TESTING)
   )
   target_include_directories(test_etherlab_slave PRIVATE
     include
-    ${ETHERLAB_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../ethercat_generic_plugins/ethercat_generic_slave/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../ethercat_interface/include
+    ${ETHERCAT_INCLUDE_DIR}
   )
   target_link_libraries(test_etherlab_slave
     ${PROJECT_NAME}
-    ${CMAKE_BINARY_DIR}/../ethercat_generic_slave/libethercat_generic_slave.so
     yaml-cpp
   )
   ament_target_dependencies(test_etherlab_slave
     pluginlib
     ethercat_interface
+    ethercat_generic_slave
     yaml_cpp_vendor
   )
 endif()
@@ -122,7 +128,7 @@ endif()
 
 ament_export_include_directories(
   include
-  ${ETHERLAB_DIR}/include
+  ${ETHERCAT_INCLUDE_DIR}
 )
 ament_export_libraries(
   ${PROJECT_NAME}
