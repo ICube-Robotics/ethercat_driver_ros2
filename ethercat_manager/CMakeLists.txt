@@ -15,7 +15,6 @@ find_package(ethercat_msgs REQUIRED)
 set(ETHERLAB_LOCAL_DIR /usr/local/etherlab)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-# find_library(ETHERCAT_LIB ethercat HINTS ${ETHERLAB_DIR}/lib)
 find_path(ETHERCAT_INCLUDE_DIR NAMES ecrt.h PATHS ${ETHERLAB_LOCAL_DIR}/include)
 find_library(ETHERCAT_LIB NAMES ethercat PATHS ${ETHERLAB_LOCAL_DIR}/lib)
 

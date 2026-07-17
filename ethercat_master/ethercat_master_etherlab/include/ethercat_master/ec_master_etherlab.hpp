@@ -207,7 +207,6 @@ private:
    *  state checked every frequency_ control loops */
   uint32_t check_state_frequency_ = 10;
 
-  uint32_t interval_;
 
   /** Data transfers (necessary for transfer communication) */
   std::vector<ethercat_interface::EcTransferInfo> transfers_;

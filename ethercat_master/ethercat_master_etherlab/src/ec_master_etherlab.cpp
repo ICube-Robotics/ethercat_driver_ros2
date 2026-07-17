@@ -122,7 +122,7 @@ bool EtherlabMaster::add_slave(std::shared_ptr<ethercat_interface::EcSlaveBase> 
           slave_info.config,
           slave_info.slave->assign_activate_dc_sync(),
           interval_,
-          interval_ - (t.tv_nsec % (interval_)),
+          interval_ / 2,
           0,
           0);
   }
@@ -367,7 +367,7 @@ bool EtherlabMaster::spin_slaves_until_operational()
     // update EtherCAT bus
     update();
 
-    RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"), "updated!");
+    // RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"), "updated!");
 
     // check if operational
     bool isAllInit = true;
