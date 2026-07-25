@@ -25,6 +25,21 @@
 namespace ethercat_driver
 {
 
+// Parse an optional per-module boolean parameter ("true"/"false"/"1"/"0",
+// case-insensitive). Returns false when the key is absent or unrecognised.
+bool bool_param_or_false(
+  const std::unordered_map<std::string, std::string> & params, const std::string & key)
+{
+  const auto it = params.find(key);
+  if (it == params.end()) {
+    return false;
+  }
+  std::string v = it->second;
+  std::transform(
+    v.begin(), v.end(), v.begin(), [](unsigned char c) {return static_cast<char>(std::tolower(c));});
+  return v == "true" || v == "1";
+}
+
 unsigned int uint_from_string(const std::string & str)
 {
   // Strip leading and trailing whitespaces
@@ -106,6 +121,7 @@ bool EthercatBusManager::configureModules(
   }
   bus_config_ = bus_config;
   ec_modules_.clear();
+  module_optional_.clear();
   ec_module_parameters_.clear();
   ec_transfer_nets_.clear();
   ec_transfer_masters_.clear();
@@ -139,6 +155,7 @@ bool EthercatBusManager::configureModules(
         getAliasOrDefaultAlias(configured_module.parameters),
         std::stoul(configured_module.parameters.at("position")));
       ec_modules_.push_back(module);
+      module_optional_.push_back(bool_param_or_false(configured_module.parameters, "optional"));
     } catch (pluginlib::PluginlibException & ex) {
       RCLCPP_FATAL(
         rclcpp::get_logger("EthercatBusManager"),
@@ -190,6 +207,7 @@ bool EthercatBusManager::configureModules(
           getAliasOrDefaultAlias(transfer_module_param),
           std::stoul(transfer_module_param.at("position")));
         ec_modules_.push_back(ec_module);
+        module_optional_.push_back(bool_param_or_false(transfer_module_param, "optional"));
         ec_transfer_slaves_.push_back(idx);
       } catch (const pluginlib::PluginlibException & ex) {
         const std::string & module_name = transfer_module_param.at("name");
@@ -389,7 +407,15 @@ bool EthercatBusManager::activateBusLocked()
   clock_gettime(CLOCK_MONOTONIC, &t);
   t.tv_sec++;
 
+  // Timeout: give up waiting after activation_timeout_s so a slave that never
+  // reaches OP cannot hang activation forever.
+  // Optional modules are skipped in the readiness check below and so never gate this at all.
+  struct timespec deadline;
+  clock_gettime(CLOCK_MONOTONIC, &deadline);
+  deadline.tv_sec += static_cast<time_t>(bus_config_.activation_timeout_s);
+
   bool running = true;
+  bool all_ready = false;
   while (running) {
     // wait until next shot
     clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &t, NULL);
@@ -397,13 +423,25 @@ bool EthercatBusManager::activateBusLocked()
 
     master_->update();
 
-    // check if operational
+    // check if every REQUIRED module is operational (optional ones do not gate activation)
     bool isAllInit = true;
-    for (auto & module : ec_modules_) {
-      isAllInit = isAllInit && module->initialized();
+    for (size_t i = 0; i < ec_modules_.size(); ++i) {
+      if (module_optional_[i]) {
+        continue;
+      }
+      isAllInit = isAllInit && ec_modules_[i]->initialized();
     }
     if (isAllInit) {
+      all_ready = true;
       running = false;
+    } else {
+      struct timespec now;
+      clock_gettime(CLOCK_MONOTONIC, &now);
+      if (now.tv_sec > deadline.tv_sec ||
+        (now.tv_sec == deadline.tv_sec && now.tv_nsec >= deadline.tv_nsec))
+      {
+        running = false;  // timed out (reported below)
+      }
     }
     // calculate next shot. carry over nanoseconds into microseconds.
     t.tv_nsec += master_->getInterval();
@@ -411,6 +449,19 @@ bool EthercatBusManager::activateBusLocked()
       t.tv_nsec -= 1000000000;
       t.tv_sec++;
     }
+  }
+
+  if (!all_ready) {
+    for (size_t i = 0; i < ec_modules_.size(); ++i) {
+      if (!module_optional_[i] && !ec_modules_[i]->initialized()) {
+        RCLCPP_ERROR(
+          rclcpp::get_logger("EthercatBusManager"),
+          "Required slave (alias: %d, pos: %d) did not reach OP within %.1fs. Aborting activation. "
+          "Mark it optional to let the bus start without it.",
+          ec_modules_[i]->alias_, ec_modules_[i]->position_, bus_config_.activation_timeout_s);
+      }
+    }
+    return false;
   }
 
   RCLCPP_INFO(

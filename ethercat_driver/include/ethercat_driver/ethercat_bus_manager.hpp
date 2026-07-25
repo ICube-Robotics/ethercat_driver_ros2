@@ -48,6 +48,11 @@ struct EthercatBusConfig
   double control_frequency{100.0};
   std::string transfer_config;
   std::string fsoe_config;
+  /** Backstop timeout for activateBus(): the maximum time to wait for the required
+   * slaves to reach OP before giving up. Without it, a slave that never reaches OP
+   * would hang activation forever. Optional slaves (see the per-module "optional"
+   * parameter) are excluded from the wait entirely. */
+  double activation_timeout_s{30.0};
 };
 
 enum class EthercatCycleResult
@@ -134,6 +139,10 @@ protected:
   EthercatBusConfig bus_config_;
   std::vector<std::shared_ptr<ethercat_interface::EcSlave>> ec_modules_;
   std::vector<std::unordered_map<std::string, std::string>> ec_module_parameters_;
+  /** Per-module "optional" flag, index-aligned with ec_modules_. An optional module
+   * does not gate bus activation: activateBus() does not wait for it to reach
+   * OP (default false). */
+  std::vector<bool> module_optional_;
 
   pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{
     "ethercat_interface", "ethercat_interface::EcSlave"};
