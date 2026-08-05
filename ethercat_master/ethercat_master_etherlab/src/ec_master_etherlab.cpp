@@ -68,6 +68,13 @@ EtherlabMaster::~EtherlabMaster()
       slave_info_[i].slave.reset();
     }
   }
+
+  // Release the EtherCAT master so the kernel module can be reused — without this the
+  // master stays locked after the process exits, preventing re-initialization on restart
+  // without unloading the kernel module (critical in multi-master setups).
+  if (master_) {
+    ecrt_release_master(master_);
+  }
 }
 
 bool EtherlabMaster::init(std::string master_interface)
