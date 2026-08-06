@@ -18,6 +18,8 @@
 #define ETHERCAT_INTERFACE__EC_SDO_MANAGER_HPP_
 
 #include <ecrt.h>
+#include <cstdint>
+#include <cstring>
 #include <string>
 #include <vector>
 #include <limits>
@@ -47,6 +49,13 @@ public:
       EC_WRITE_U32(buffer, static_cast<uint32_t>(data));
     } else if (data_type == "int32") {
       EC_WRITE_S32(buffer, static_cast<int32_t>(data));
+    } else if (data_type == "float32" || data_type == "real32") {
+      // Store IEEE-754 float bits; "data" holds the numeric float value as int when
+      // used for whole-number SDO setup, or bit pattern if configured that way.
+      const float f = static_cast<float>(data);
+      uint32_t bits = 0;
+      std::memcpy(&bits, &f, sizeof(bits));
+      EC_WRITE_U32(buffer, bits);
     } else if (data_type == "uint64") {
       EC_WRITE_U64(buffer, static_cast<uint64_t>(data));
     } else if (data_type == "int64") {
@@ -105,11 +114,12 @@ private:
       return 1;
     } else if (type == "int16" || type == "uint16") {
       return 2;
-    } else if (type == "int32" || type == "uint32") {
+    } else if (type == "int32" || type == "uint32" || type == "float32" || type == "real32") {
       return 4;
     } else if (type == "int64" || type == "uint64") {
       return 8;
     }
+    return 0;
   }
 };
 

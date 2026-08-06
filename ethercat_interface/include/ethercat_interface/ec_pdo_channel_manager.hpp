@@ -21,6 +21,8 @@
 #define ETHERCAT_INTERFACE__EC_PDO_CHANNEL_MANAGER_HPP_
 
 #include <ecrt.h>
+#include <cstdint>
+#include <cstring>
 #include <string>
 #include <vector>
 #include <limits>
@@ -35,6 +37,26 @@ enum PdoType
   RPDO = 0,
   TPDO = 1
 };
+
+inline bool is_float32_type(const std::string & type)
+{
+  return type == "float32" || type == "real32";
+}
+
+inline double uint32_bits_to_float32(uint32_t bits)
+{
+  float value = 0.0f;
+  std::memcpy(&value, &bits, sizeof(value));
+  return static_cast<double>(value);
+}
+
+inline uint32_t float32_to_uint32_bits(double value)
+{
+  const float f = static_cast<float>(value);
+  uint32_t bits = 0;
+  std::memcpy(&bits, &f, sizeof(bits));
+  return bits;
+}
 
 class EcPdoChannelManager
 {
@@ -65,6 +87,9 @@ public:
       last_value = static_cast<double>(EC_READ_U32(domain_address));
     } else if (data_type == "int32") {
       last_value = static_cast<double>(EC_READ_S32(domain_address));
+    } else if (is_float32_type(data_type)) {
+      // CiA REAL32 / IEEE-754 float: read raw bits then reinterpret.
+      last_value = uint32_bits_to_float32(EC_READ_U32(domain_address));
     } else if (data_type == "uint64") {
       last_value = static_cast<double>(EC_READ_U64(domain_address));
     } else if (data_type == "int64") {
@@ -92,6 +117,8 @@ public:
       EC_WRITE_U32(domain_address, static_cast<uint32_t>(value));
     } else if (data_type == "int32") {
       EC_WRITE_S32(domain_address, static_cast<int32_t>(value));
+    } else if (is_float32_type(data_type)) {
+      EC_WRITE_U32(domain_address, float32_to_uint32_bits(value));
     } else if (data_type == "uint64") {
       EC_WRITE_U64(domain_address, static_cast<uint64_t>(value));
     } else if (data_type == "int64") {
@@ -216,7 +243,7 @@ public:
       return 8;
     } else if (type == "int16" || type == "uint16") {
       return 16;
-    } else if (type == "int32" || type == "uint32") {
+    } else if (type == "int32" || type == "uint32" || is_float32_type(type)) {
       return 32;
     } else if (type == "int64" || type == "uint64") {
       return 64;
