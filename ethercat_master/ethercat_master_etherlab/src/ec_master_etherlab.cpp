@@ -238,6 +238,64 @@ bool EtherlabMaster::configure_slaves()
         return false;
       }
     }
+
+    // One-shot read + allowed-value check of a hardware precondition (e.g. a commissioned
+    // sensor type) that must already be true on the physical drive — unlike the sdo: block
+    // above, this never writes anything. Runs after this slave's sdo: writes so a check can
+    // validate their result if it needs to.
+    for (auto & check : slave_info_[i].slave->get_slave()->get_sdo_check_config()) {
+      uint8_t buffer[8] = {0};
+      size_t result_size = 0;
+      uint32_t abort_code = 0;
+      const int ret = ecrt_master_sdo_upload(
+            master_,
+            slave_info_[i].slave->get_slave()->get_position(),
+            check.index,
+            check.sub_index,
+            buffer,
+            sizeof(buffer),
+            &result_size,
+            &abort_code);
+      if (ret) {
+        RCLCPP_FATAL(
+              rclcpp::get_logger("EtherlabMaster"),
+              "Failed to read check SDO 0x%04X:%u (%s) for module at position %i with "
+              "Error: %d",
+              check.index, check.sub_index,
+              check.description.empty() ? "sdo_check" : check.description.c_str(),
+              slave_info_[i].slave->get_slave()->get_position(),
+              abort_code);
+        return false;
+      }
+      if (result_size != check.data_size()) {
+        RCLCPP_FATAL(
+              rclcpp::get_logger("EtherlabMaster"),
+              "Check SDO 0x%04X:%u (%s) for module at position %i returned %zu byte(s), "
+              "expected %zu.",
+              check.index, check.sub_index,
+              check.description.empty() ? "sdo_check" : check.description.c_str(),
+              slave_info_[i].slave->get_slave()->get_position(),
+              result_size, check.data_size());
+        return false;
+      }
+      if (!check.matches(buffer)) {
+        std::ostringstream allowed;
+        for (std::size_t v = 0; v < check.allowed_values.size(); ++v) {
+          if (v) {allowed << ", ";}
+          allowed << check.allowed_values[v];
+        }
+        RCLCPP_FATAL(
+              rclcpp::get_logger("EtherlabMaster"),
+              "Check SDO 0x%04X:%u (%s) for module at position %i read %ld, expected one "
+              "of [%s]. Refusing to configure: the drive is not commissioned as this "
+              "slave_config requires.",
+              check.index, check.sub_index,
+              check.description.empty() ? "sdo_check" : check.description.c_str(),
+              slave_info_[i].slave->get_slave()->get_position(),
+              check.decode(buffer), allowed.str().c_str());
+        return false;
+      }
+    }
   }
 
   return true;

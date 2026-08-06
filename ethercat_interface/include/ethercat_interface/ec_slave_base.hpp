@@ -97,6 +97,11 @@ public:
     return sdo_config_;
   }
 
+  std::vector<SdoCheckEntry> get_sdo_check_config()
+  {
+    return sdo_check_config_;
+  }
+
   std::vector<ethercat_interface::EcPdoChannelManager *> get_pdo_channels_info()
   {
     return pdo_channels_info_;
@@ -122,6 +127,7 @@ protected:
 
 
   std::vector<SdoConfigEntry> sdo_config_;
+  std::vector<SdoCheckEntry> sdo_check_config_;
   std::vector<SMConfig> sm_config_;
   std::vector<ethercat_interface::EcPdoChannelManager *> pdo_channels_info_;
   std::vector<pdo_info_t> pdo_info_;
