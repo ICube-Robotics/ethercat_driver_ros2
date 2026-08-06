@@ -111,6 +111,7 @@ bool EthercatBusManager::configureModules(
   ec_transfer_masters_.clear();
   ec_transfer_slaves_.clear();
   master_.reset();
+  configured_ = false;
 
   // Collect all module parameters up front so the load loop mirrors the
   // original on_init() body structure (plugin load + setupSlave + push to ec_modules_).
@@ -264,6 +265,19 @@ bool EthercatBusManager::setupMaster()
 {
   master_ = std::make_shared<ethercat_interface::EcMaster>(bus_config_.master_id);
 
+  // ecrt_request_master() can fail (master not running, or /dev/EtherCATx not
+  // accessible to this process). The EcMaster ctor only warns in that case and
+  // leaves a null master handle.
+  if (!master_ || !master_->isValid()) {
+    RCLCPP_ERROR(
+      rclcpp::get_logger("EthercatBusManager"),
+      "Failed to obtain EtherCAT master %u. Is the master running and is "
+      "/dev/EtherCAT%u accessible to this process (permissions)?",
+      bus_config_.master_id, bus_config_.master_id);
+    master_.reset();
+    return false;
+  }
+
   return true;
 }
 
@@ -275,7 +289,15 @@ bool EthercatBusManager::configNetwork()
   master_->setCtrlFrequency(control_frequency_);
 
   for (auto i = 0ul; i < ec_modules_.size(); i++) {
-    master_->addSlave(ec_modules_[i].get());
+    if (!master_->addSlave(ec_modules_[i].get())) {
+      RCLCPP_ERROR(
+        rclcpp::get_logger("EthercatBusManager"),
+        "Failed to add slave for module at position %s; refusing to configure the bus. "
+        "Check the drive is powered and present on the bus and that the slave_config "
+        "matches the hardware (see the EcMaster error above for the exact cause).",
+        ec_module_parameters_[i]["position"].c_str());
+      return false;
+    }
   }
 
   // configure SDO
@@ -287,7 +309,7 @@ bool EthercatBusManager::configNetwork()
         sdo,
         &abort_code);
       if (ret) {
-        RCLCPP_INFO(
+        RCLCPP_ERROR(
           rclcpp::get_logger("EthercatBusManager"),
           "Failed to download config SDO for module at position %s with Error: %d",
           ec_module_parameters_[i]["position"].c_str(),
@@ -299,23 +321,55 @@ bool EthercatBusManager::configNetwork()
   return true;
 }
 
-bool EthercatBusManager::activateBus()
+bool EthercatBusManager::configureBus()
 {
   const std::lock_guard<std::mutex> lock(ec_mutex_);
+  return configureBusLocked();
+}
+
+bool EthercatBusManager::configureBusLocked()
+{
   if (activated_) {
-    RCLCPP_FATAL(rclcpp::get_logger("EthercatBusManager"), "Double on_activate()");
+    RCLCPP_FATAL(
+      rclcpp::get_logger("EthercatBusManager"), "configureBus() called while active.");
     return false;
   }
-  RCLCPP_INFO(rclcpp::get_logger("EthercatBusManager"), "Starting ...please wait...");
+  if (configured_) {
+    return true;  // idempotent: master already requested and network configured
+  }
 
   // setup master
   if (!setupMaster()) {
     return false;
   }
-  // configure network
+  // configure network (leaves the bus in the idle/PRE-OP phase)
   if (!configNetwork()) {
     return false;
   }
+  configured_ = true;
+  return true;
+}
+
+bool EthercatBusManager::activateBus()
+{
+  const std::lock_guard<std::mutex> lock(ec_mutex_);
+  // Configure first if a caller skipped the explicit configureBus() step (keeps
+  // the original single-call contract for existing consumers like EthercatDriver).
+  if (!configured_) {
+    if (!configureBusLocked()) {
+      return false;
+    }
+  }
+  return activateBusLocked();
+}
+
+bool EthercatBusManager::activateBusLocked()
+{
+  if (activated_) {
+    RCLCPP_FATAL(rclcpp::get_logger("EthercatBusManager"), "Double on_activate()");
+    return false;
+  }
+  RCLCPP_INFO(rclcpp::get_logger("EthercatBusManager"), "Starting ...please wait...");
 
   if (!master_->activate()) {
     RCLCPP_ERROR(rclcpp::get_logger("EthercatBusManager"), "Activate EcMaster failed");
@@ -407,6 +461,18 @@ EthercatCycleResult EthercatBusManager::write()
     return EthercatCycleResult::kCompleted;
   }
   return EthercatCycleResult::kSkippedInactive;
+}
+
+int EthercatBusManager::readSlaveSdo(
+  uint16_t slave_position, uint16_t index, uint8_t sub_index,
+  uint8_t * target, size_t target_size, size_t * result_size, uint32_t * abort_code)
+{
+  const std::lock_guard<std::mutex> lock(ec_mutex_);
+  if (!master_) {
+    return -1;
+  }
+  return master_->uploadSlaveSdo(
+    slave_position, index, sub_index, target, target_size, result_size, abort_code);
 }
 
 void EthercatBusManager::loadTransferConfigYamlFile(YAML::Node & node, const std::string & path)

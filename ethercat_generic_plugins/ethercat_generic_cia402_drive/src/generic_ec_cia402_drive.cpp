@@ -35,7 +35,7 @@ void EcCiA402Drive::updateState()
     if (state_ != last_state_) {
       RCLCPP_INFO(
         rclcpp::get_logger("EthercatDriver"),
-        "STATE: %s with status word :%d",
+        "STATE: %s with status word :0x%04X",
         DEVICE_STATE_STR.at(state_).c_str(),
         status_word_
       );
@@ -45,6 +45,11 @@ void EcCiA402Drive::updateState()
   last_state_ = state_;
   counter_++;
   initialized_ = is_operational_;
+}
+
+bool EcCiA402Drive::targetPositionPassthrough() const
+{
+  return mode_of_operation_display_ == ModeOfOperation::MODE_CYCLIC_SYNC_POSITION;
 }
 
 void EcCiA402Drive::processData(size_t entry_idx, uint8_t * domain_address)
@@ -85,8 +90,7 @@ void EcCiA402Drive::processData(size_t entry_idx, uint8_t * domain_address)
       channel.default_value =
         channel.factor * last_position_ + channel.offset;
     }
-    channel.override_command =
-      (mode_of_operation_display_ != ModeOfOperation::MODE_CYCLIC_SYNC_POSITION) ? true : false;
+    channel.override_command = !targetPositionPassthrough();
   }
 
   // setup mode of operation

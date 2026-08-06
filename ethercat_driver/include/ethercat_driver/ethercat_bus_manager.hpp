@@ -65,6 +65,15 @@ public:
     const EthercatBusConfig & bus_config,
     const std::vector<ConfiguredEcModule> & modules);
 
+  /** @brief Request the master and configure the network, leaving the bus in the
+   * idle/PRE-OP phase (not yet activated). Idempotent. This is the phase in which
+   * blocking SDO access (configSlaveSdo, readSlaveSdo) is valid — once the bus is
+   * activated the application must drive the cyclic loop and blocking SDO calls
+   * would stall. activateBus() calls this automatically if not already configured,
+   * so existing callers are unaffected.
+   */
+  bool configureBus();
+
   bool activateBus();
 
   void deactivateBus();
@@ -72,6 +81,17 @@ public:
   EthercatCycleResult read();
 
   EthercatCycleResult write();
+
+  /** @brief Read a slave SDO entry (CoE upload). Must be called in the idle/PRE-OP
+   * phase — i.e. after configureBus() but BEFORE activateBus(). This is a blocking
+   * mailbox call; after the bus is activated the application owns the cyclic loop
+   * and a blocking upload would stall the master (and the calling thread).
+   * @return 0 on success, negative if the master does not exist, else the
+   * ecrt_master_sdo_upload return code.
+   */
+  int readSlaveSdo(
+    uint16_t slave_position, uint16_t index, uint8_t sub_index,
+    uint8_t * target, size_t target_size, size_t * result_size, uint32_t * abort_code);
 
   /** @brief Get transfer module parameters from YAML file
    * @param[in] config YAML node containing the transfer configuration root
@@ -104,6 +124,12 @@ protected:
 
   bool configNetwork();
 
+  /** Implementations of configureBus()/activateBus() that assume ec_mutex_ is
+   * already held by the caller (avoids recursive locking when activateBus()
+   * needs to configure first). */
+  bool configureBusLocked();
+  bool activateBusLocked();
+
 protected:
   EthercatBusConfig bus_config_;
   std::vector<std::shared_ptr<ethercat_interface::EcSlave>> ec_modules_;
@@ -116,6 +142,7 @@ protected:
 
   std::shared_ptr<ethercat_interface::EcMaster> master_;
   std::mutex ec_mutex_;
+  bool configured_{false};
   bool activated_{false};
 
   /** Transfer nets */

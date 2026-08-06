@@ -123,22 +123,39 @@ public:
   explicit EcMaster(const unsigned int master = 0);
   virtual ~EcMaster();
 
+  /** \brief whether the underlying EtherCAT master was successfully obtained.
+    * Callers MUST check this before using the master; using an
+    * EcMaster whose master was not obtained would dereference a null handle.
+    */
+  bool isValid() const {return master_ != NULL;}
+
   /** \brief add a slave device to the master
     * alias and position can be found by running the following command
     * /opt/etherlab/bin$ sudo ./ethercat slaves
     * look for the "A B:C STATUS DEVICE" (e.g. B=alias, C=position)
+    * \return true on success, false if the slave could not be configured
+    *         (e.g. no matching drive on the bus, identity mismatch, PDO setup failure).
     */
-  void addSlave(uint16_t alias, uint16_t position, EcSlave * slave);
+  bool addSlave(uint16_t alias, uint16_t position, EcSlave * slave);
 
   /** \brief add a slave device to the master
     * alias and position should have been set
     * before calling this function.
+    * \return true on success, false if the slave could not be configured
+    *         (e.g. no matching drive on the bus, identity mismatch, PDO setup failure).
     */
-  void addSlave(EcSlave * slave);
+  bool addSlave(EcSlave * slave);
 
   /** \brief configure slave using SDO
     */
   int configSlaveSdo(uint16_t slave_position, SdoConfigEntry sdo_config, uint32_t * abort_code);
+
+  /** \brief read a slave SDO entry (CoE upload). Usable before or after activate.
+    * \return 0 on success (see ecrt_master_sdo_upload).
+    */
+  int uploadSlaveSdo(
+    uint16_t slave_position, uint16_t index, uint8_t sub_index,
+    uint8_t * target, size_t target_size, size_t * result_size, uint32_t * abort_code);
 
   /** call after adding all slaves, and before update */
   bool activate();
@@ -259,6 +276,13 @@ protected:
   static void printWarning(const std::string & message)
   {
     RCLCPP_WARN(rclcpp::get_logger("EthercatDriver"), "WARNING. Master. %s", message.c_str());
+  }
+
+  /** print error message to terminal */
+  inline
+  static void printError(const std::string & message)
+  {
+    RCLCPP_ERROR(rclcpp::get_logger("EthercatDriver"), "ERROR. Master. %s", message.c_str());
   }
 
 
