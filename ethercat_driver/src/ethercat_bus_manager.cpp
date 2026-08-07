@@ -393,8 +393,11 @@ bool EthercatBusManager::configureBusLocked()
     return true;  // idempotent: master already requested and network configured
   }
 
-  // setup master
-  if (!setupMaster()) {
+  // Request the master at most once for the lifetime of this EthercatBusManager: a
+  // deactivate -> reactivate cycle must reconfigure the network below (deactivateBus() clears
+  // configured_ and drops the domain/slave-config objects via EcMasterBase::deactivate()), but
+  // must NOT re-request the master itself — gate on master_ existing, not on configured_.
+  if (!master_ && !setupMaster()) {
     return false;
   }
   // configure network (leaves the bus in the idle/PRE-OP phase)
@@ -461,8 +464,17 @@ void EthercatBusManager::deactivateBus()
 
   RCLCPP_INFO(rclcpp::get_logger("EthercatBusManager"), "Stopping ...please wait...");
 
-  // stop EC and disconnect
+  // Stop our own cyclic send/receive, then formally deactivate the EtherCAT master (per spec,
+  // this is what makes the slaves' Sync Manager Watchdog drop them OP -> Safe-OP instead of
+  // leaving them stuck at OP with a dead master indefinitely). This frees the domain/slave-config
+  // objects the master plugin holds, so a subsequent activation must re-register the network —
+  // the master reservation itself (master_) is untouched and stays valid for reuse.
   master_->stop();
+  if (!master_->deactivate()) {
+    RCLCPP_ERROR(
+      rclcpp::get_logger("EthercatBusManager"), "Failed to deactivate EtherCAT master");
+  }
+  configured_ = false;
 
   RCLCPP_INFO(
     rclcpp::get_logger("EthercatBusManager"), "System successfully stopped!");
