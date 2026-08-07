@@ -416,6 +416,10 @@ CallbackReturn EthercatDriver::on_init(
 
   resizeIoBuffers();
 
+  if (!info_.transmissions.empty() && !loadTransmissions()) {
+    return CallbackReturn::ERROR;
+  }
+
   std::vector<ConfiguredEcModule> configured_modules;
 
   // Setup slave modules defined per joints in the URDF
@@ -614,6 +618,7 @@ hardware_interface::return_type EthercatDriver::read(
   if (bus_manager_.read() == EthercatCycleResult::kError) {
     return hardware_interface::return_type::ERROR;
   }
+  propagateTransmissionStates();
   return hardware_interface::return_type::OK;
 }
 
@@ -621,6 +626,7 @@ hardware_interface::return_type EthercatDriver::write(
   const rclcpp::Time & /*time*/,
   const rclcpp::Duration & /*period*/)
 {
+  applyTransmissionCommands();
   if (bus_manager_.write() == EthercatCycleResult::kError) {
     return hardware_interface::return_type::ERROR;
   }
