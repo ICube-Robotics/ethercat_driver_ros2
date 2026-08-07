@@ -14,6 +14,7 @@ find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(ethercat_interface REQUIRED)
+find_package(transmission_interface REQUIRED)
 find_package(yaml_cpp_vendor REQUIRED)
 
 # Find system yaml-cpp for proper linking
@@ -38,6 +39,7 @@ ament_target_dependencies(
   rclcpp
   rclcpp_lifecycle
   ethercat_interface
+  transmission_interface
   yaml_cpp_vendor
 )
 
@@ -164,6 +166,7 @@ ament_export_dependencies(
   rclcpp
   rclcpp_lifecycle
   ethercat_interface
+  transmission_interface
   yaml_cpp_vendor
 )
 ament_package()
