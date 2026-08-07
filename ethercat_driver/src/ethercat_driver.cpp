@@ -14,6 +14,8 @@
 
 #include "ethercat_driver/ethercat_driver.hpp"
 
+#include <algorithm>
+#include <cmath>
 #include <exception>
 #include <limits>
 #include <string>
@@ -329,6 +331,80 @@ bool EthercatDriver::loadTransmissions()
     transmissions_.push_back(std::move(rt));
   }
   return true;
+}
+
+void EthercatDriver::propagateTransmissionStates()
+{
+  for (auto & tx : transmissions_) {
+    for (auto & role : tx.actuators) {
+      const auto & hw = hw_joint_states_[role.joint_index];
+      for (const auto & m : role.state_index_map) {
+        role.buffer[m.buffer_index] = hw[m.component_index];
+      }
+    }
+    tx.transmission->actuator_to_joint();
+    for (auto & role : tx.joints) {
+      if (role.has_ec_module) {continue;}  // drive-backed: keep the measured state
+      auto & hw = hw_joint_states_[role.joint_index];
+      for (const auto & m : role.state_index_map) {
+        hw[m.component_index] = role.buffer[m.buffer_index];
+      }
+    }
+  }
+}
+
+void EthercatDriver::applyTransmissionCommands()
+{
+  constexpr double kNan = std::numeric_limits<double>::quiet_NaN();
+  for (auto & tx : transmissions_) {
+    std::fill(tx.commanded_by_name.begin(), tx.commanded_by_name.end(), false);
+    std::fill(tx.dropped_by_name.begin(), tx.dropped_by_name.end(), false);
+
+    // Stage transmission-only joints' commands. A joint that also has its own <ec_module> is
+    // commanded directly and is not routed through the transmission.
+    for (auto & role : tx.joints) {
+      if (role.has_ec_module) {continue;}
+      const auto & hw = hw_joint_commands_[role.joint_index];
+      for (const auto & m : role.command_index_map) {
+        const double v = hw[m.component_index];
+        role.buffer[m.buffer_index] = v;
+        tx.commanded_by_name[m.name_id] = tx.commanded_by_name[m.name_id] || std::isfinite(v);
+      }
+    }
+
+    // NaN-seed the actuator roles' command slots: whatever is still NaN after
+    // joint_to_actuator() was not projected by the loaded transmission plugin.
+    for (auto & role : tx.actuators) {
+      for (const auto & m : role.command_index_map) {role.buffer[m.buffer_index] = kNan;}
+    }
+
+    tx.transmission->joint_to_actuator();
+
+    // Destage: only overwrite hw_joint_commands_ for finite results. A still-NaN slot holds
+    // its previous commanded value instead of being clobbered.
+    bool any_dropped = false;
+    for (auto & role : tx.actuators) {
+      auto & hw = hw_joint_commands_[role.joint_index];
+      for (const auto & m : role.command_index_map) {
+        const double v = role.buffer[m.buffer_index];
+        if (std::isfinite(v)) {
+          hw[m.component_index] = v;
+        } else {
+          tx.dropped_by_name[m.name_id] = true;
+        }
+      }
+    }
+    for (std::size_t id = 0; id < tx.num_command_names; ++id) {
+      any_dropped = any_dropped || (tx.commanded_by_name[id] && tx.dropped_by_name[id]);
+    }
+    if (any_dropped && !tx.warned_command_fallback) {
+      tx.warned_command_fallback = true;
+      RCLCPP_WARN(rclcpp::get_logger("EthercatDriver"),
+        "Transmission '%s': at least one commanded joint-space interface was not projected to "
+        "actuator space by the loaded transmission plugin. The affected actuator command(s) "
+        "hold their previous value. Warned once.", tx.name.c_str());
+    }
+  }
 }
 
 CallbackReturn EthercatDriver::on_init(
