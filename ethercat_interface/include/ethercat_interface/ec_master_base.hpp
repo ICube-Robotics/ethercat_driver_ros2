@@ -163,8 +163,6 @@ public:
 
   virtual bool reset() = 0;
 
-  virtual bool spin_slaves_until_operational() = 0;
-
   /** \brief Blocking CoE SDO upload (read). ONLY valid during the "configure" phase — after
    *  configure_slaves() and before start() (or after stop(), before the next start()). Must
    *  NEVER be called while the master is activated (cyclic process-data exchange running):

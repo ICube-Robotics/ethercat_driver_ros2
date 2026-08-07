@@ -469,15 +469,16 @@ bool EthercatBusManager::activateBusLocked()
     RCLCPP_INFO(rclcpp::get_logger("EthercatBusManager"), "Transfer network configured!");
   }
 
-  if (!master_->spin_slaves_until_operational()) {
-    RCLCPP_FATAL(
-      rclcpp::get_logger("EthercatDriver"),
-      "Failed to bring all slaves into OPERATIONAL state");
-    return false;
-  }
+  // Deliberately NOT waiting here for slaves to reach OPERATIONAL: that walk happens
+  // autonomously, one AL state at a time, driven purely by the ordinary cyclic
+  // read()/write() exchange (see EtherlabMaster::read_process_data()/write_process_data(),
+  // which already run the DC sync and state checks on every call, starting with the very
+  // first cycle after this returns). Blocking here would mean running that wait on a
+  // hand-timed loop outside the real RT cycle instead of inside it. Callers that need to
+  // know readiness use slaveStates()/masterState() (see EthercatBusMonitorController).
   RCLCPP_INFO(
       rclcpp::get_logger("EthercatDriver"),
-      "All Slaves are in OPERATIONAL state. System Successfully started!");
+      "System Successfully started! Slaves will reach OPERATIONAL over the following cycles.");
 
   activated_ = true;
 
