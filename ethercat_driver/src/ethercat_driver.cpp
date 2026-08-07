@@ -23,6 +23,7 @@
 #include "ethercat_driver/ethercat_ros2_control_xml_parser.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "transmission_interface/handle.hpp"
 
 namespace ethercat_driver
 {
@@ -189,6 +190,145 @@ void EthercatDriver::resizeIoBuffers()
       info_.gpios[g].command_interfaces.size(),
       std::numeric_limits<double>::quiet_NaN());
   }
+}
+
+bool EthercatDriver::buildTransmissionRole(
+  const std::unordered_map<std::string, std::size_t> & joint_index,
+  std::unordered_map<std::string, std::size_t> & command_name_ids,
+  const std::string & joint_name, bool is_actuator, TransmissionRole & role_out)
+{
+  const auto it = joint_index.find(joint_name);
+  if (it == joint_index.end()) {
+    RCLCPP_ERROR(rclcpp::get_logger("EthercatDriver"),
+      "Transmission references unknown joint '%s'.", joint_name.c_str());
+    return false;
+  }
+  const std::size_t j = it->second;
+  const bool has_ec_module = !getEcModuleParam(info_.original_xml, joint_name, "joint").empty();
+  if (is_actuator && !has_ec_module) {
+    RCLCPP_ERROR(rclcpp::get_logger("EthercatDriver"),
+      "Transmission actuator '%s' must name a joint with an <ec_module> (drive-backed).",
+      joint_name.c_str());
+    return false;
+  }
+
+  role_out.joint_index = j;
+  role_out.has_ec_module = has_ec_module;
+
+  // The staging buffer is the union of this joint's declared state and command interface
+  // names, in first-seen order - not a fixed list. A transmission plugin that needs an
+  // interface no other joint uses gets it automatically, as soon as the URDF declares it here.
+  std::unordered_map<std::string, std::size_t> name_to_slot;
+  const auto & sci = info_.joints[j].state_interfaces;
+  const auto & cci = info_.joints[j].command_interfaces;
+  role_out.state_index_map.reserve(sci.size());
+  role_out.command_index_map.reserve(cci.size());
+
+  for (std::size_t k = 0; k < sci.size(); ++k) {
+    const auto [slot_it, inserted] = name_to_slot.try_emplace(sci[k].name, name_to_slot.size());
+    (void)inserted;
+    role_out.state_index_map.push_back({k, slot_it->second});
+  }
+  for (std::size_t k = 0; k < cci.size(); ++k) {
+    const auto [slot_it, inserted] = name_to_slot.try_emplace(cci[k].name, name_to_slot.size());
+    (void)inserted;
+    const auto [id_it, id_inserted] = command_name_ids.try_emplace(
+      cci[k].name, command_name_ids.size());
+    (void)id_inserted;
+    role_out.command_index_map.push_back({k, slot_it->second, id_it->second});
+  }
+
+  role_out.buffer.assign(name_to_slot.size(), 0.0);
+  role_out.interface_names.resize(name_to_slot.size());
+  for (const auto & [name, slot] : name_to_slot) {role_out.interface_names[slot] = name;}
+  return true;
+}
+
+bool EthercatDriver::loadTransmissions()
+{
+  std::unordered_map<std::string, std::size_t> joint_index;
+  joint_index.reserve(info_.joints.size());
+  for (std::size_t j = 0; j < info_.joints.size(); ++j) {
+    joint_index.emplace(info_.joints[j].name, j);
+  }
+
+  transmission_loader_ = std::make_unique<
+    pluginlib::ClassLoader<transmission_interface::TransmissionLoader>>(
+    "transmission_interface", "transmission_interface::TransmissionLoader");
+  transmissions_.clear();
+  transmissions_.reserve(info_.transmissions.size());
+
+  for (auto tx_info : info_.transmissions) {  // by value: a parameter is injected below
+    // Transmission loaders that extract linkage geometry (e.g. a four-bar-linkage type)
+    // parse this from the URDF kinematic tree.
+    tx_info.parameters["__robot_description"] = info_.original_xml;
+
+    TransmissionRuntime rt;
+    rt.name = tx_info.name;
+
+    try {
+      const auto loader = transmission_loader_->createSharedInstance(tx_info.type);
+      rt.transmission = loader->load(tx_info);
+    } catch (const std::exception & e) {
+      RCLCPP_ERROR(rclcpp::get_logger("EthercatDriver"),
+        "Loading transmission '%s' (type '%s') failed: %s",
+        tx_info.name.c_str(), tx_info.type.c_str(), e.what());
+      return false;
+    }
+    if (!rt.transmission) {
+      RCLCPP_ERROR(rclcpp::get_logger("EthercatDriver"),
+        "Transmission loader for '%s' returned null.", tx_info.name.c_str());
+      return false;
+    }
+
+    std::unordered_map<std::string, std::size_t> command_name_ids;
+
+    for (const auto & jt : tx_info.joints) {
+      TransmissionRole role;
+      if (!buildTransmissionRole(joint_index, command_name_ids, jt.name, false, role)) {
+        return false;
+      }
+      rt.joints.push_back(std::move(role));
+    }
+    for (const auto & act : tx_info.actuators) {
+      TransmissionRole role;
+      if (!buildTransmissionRole(joint_index, command_name_ids, act.name, true, role)) {
+        return false;
+      }
+      rt.actuators.push_back(std::move(role));
+    }
+    rt.num_command_names = command_name_ids.size();
+    rt.commanded_by_name.assign(rt.num_command_names, false);
+    rt.dropped_by_name.assign(rt.num_command_names, false);
+
+    // Handles: one per buffer slot, in declaration order. No interface name is hardcoded -
+    // the set offered to the plugin is exactly what buildTransmissionRole() resolved above.
+    std::vector<transmission_interface::JointHandle> joint_handles;
+    for (auto & role : rt.joints) {
+      const std::string & name = info_.joints[role.joint_index].name;
+      for (std::size_t s = 0; s < role.buffer.size(); ++s) {
+        joint_handles.emplace_back(name, role.interface_names[s], &role.buffer[s]);
+      }
+    }
+    std::vector<transmission_interface::ActuatorHandle> actuator_handles;
+    for (auto & role : rt.actuators) {
+      const std::string & name = info_.joints[role.joint_index].name;
+      for (std::size_t s = 0; s < role.buffer.size(); ++s) {
+        actuator_handles.emplace_back(name, role.interface_names[s], &role.buffer[s]);
+      }
+    }
+
+    try {
+      rt.transmission->configure(joint_handles, actuator_handles);
+    } catch (const std::exception & e) {
+      RCLCPP_ERROR(rclcpp::get_logger("EthercatDriver"),
+        "Configuring transmission '%s' failed: %s", tx_info.name.c_str(), e.what());
+      return false;
+    }
+
+    transmissions_.push_back(std::move(rt));
+  }
+  return true;
 }
 
 CallbackReturn EthercatDriver::on_init(
