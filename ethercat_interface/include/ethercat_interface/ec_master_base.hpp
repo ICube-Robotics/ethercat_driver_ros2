@@ -149,6 +149,18 @@ public:
 
   virtual bool stop() = 0;
 
+  /** @brief Deactivate the master (releasing the domain/slave-config objects it created for
+   *  add_slave()/registerTransferInDomain()) so the bus drops out of cyclic exchange without
+   *  releasing the master reservation itself. Per the EtherCAT spec, loss of cyclic process
+   *  data should make each slave's Sync Manager Watchdog autonomously drop OP -> Safe-OP
+   *  (still allowing mailbox/SDO access), rather than leaving slaves stuck at OP indefinitely
+   *  as merely stopping the local cyclic loop (stop()) would.
+   *  A subsequent add_slave()/start() cycle must rebuild the registration this frees; config
+   *  SDOs already sent via configure_slaves() must NOT be resent.
+   *  Must not be called in realtime context (blocking).
+   *  \return true on success. */
+  virtual bool deactivate() = 0;
+
   virtual bool reset() = 0;
 
   virtual bool spin_slaves_until_operational() = 0;

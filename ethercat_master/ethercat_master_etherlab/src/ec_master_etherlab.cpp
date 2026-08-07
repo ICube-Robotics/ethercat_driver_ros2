@@ -571,6 +571,33 @@ bool EtherlabMaster::stop()
   return true;
 }
 
+bool EtherlabMaster::deactivate()
+{
+  if (master_ == NULL) {
+    printError("Deactivate. Master not obtained.");
+    return false;
+  }
+
+  int ret = ecrt_master_deactivate(master_);
+  if (ret != 0) {
+    printWarning("Deactivate. ecrt_master_deactivate() failed with code " + std::to_string(ret));
+    return false;
+  }
+
+  // ecrt_master_deactivate() frees everything created by ecrt_master_create_domain() /
+  // ecrt_master_slave_config() / ecrt_domain_data(); drop everything that referenced those
+  // objects so a subsequent add_slave()/registerTransferInDomain() cycle starts clean instead
+  // of appending onto or dereferencing stale entries.
+  for (auto & domain : domain_info_) {
+    delete domain.second;
+  }
+  domain_info_.clear();
+  slave_info_.clear();
+  transfers_.clear();
+
+  return true;
+}
+
 bool EtherlabMaster::read_process_data()
 {
   uint32_t domain = 0;

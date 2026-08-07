@@ -93,6 +93,9 @@ public:
    */
   bool stop();
 
+  /** see EcMasterBase::deactivate() */
+  bool deactivate();
+
   bool read_process_data();
   bool write_process_data();
 
