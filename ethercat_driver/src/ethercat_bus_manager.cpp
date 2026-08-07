@@ -95,6 +95,16 @@ uint16_t EthercatBusManager::getAliasOrDefaultAlias(
   }
 }
 
+bool EthercatBusManager::getRequiredOrDefault(
+  const std::unordered_map<std::string,
+  std::string> & slave_parameters)
+{
+  const auto it = slave_parameters.find("required");
+  // Absent (the overwhelmingly common case today) or "true": today's behavior, unchanged —
+  // a failing module refuses to configure the whole bus.
+  return it == slave_parameters.end() || it->second != "false";
+}
+
 bool EthercatBusManager::configureModules(
   const EthercatBusConfig & bus_config,
   const std::vector<ConfiguredEcModule> & modules)
@@ -310,7 +320,41 @@ bool EthercatBusManager::configNetwork()
   control_frequency_ = bus_config_.control_frequency;
   master_->set_ctrl_frequency(control_frequency_);
 
+  // Phase 1: validate every module (identity + sdo_check:) with no side effects, before any
+  // module is registered — both checks are addressed by ring position at the master level and
+  // need no prior slave configuration. A module that fails and is required (absent "required"
+  // param, or "required: true" — today's default and only behavior) refuses to configure the
+  // whole bus, exactly as before. A module explicitly marked "required: false" is excluded
+  // instead: it's simply never added in phase 2 below, so it's absent from the cyclic domain
+  // and reads as offline (EthercatClient::slaveHealth() / motor_drive_controller's existing
+  // slave_online handling already treats "no matching entry in get_slave_states()" as offline
+  // — no new state or interface needed for this).
+  std::vector<bool> module_ok(ec_modules_.size(), false);
   for (auto i = 0ul; i < ec_modules_.size(); i++) {
+    module_ok[i] = master_->check_slave(ec_modules_[i]);
+    if (!module_ok[i]) {
+      if (getRequiredOrDefault(ec_module_parameters_[i])) {
+        RCLCPP_ERROR(
+          rclcpp::get_logger("EthercatBusManager"),
+          "Module at position %s failed validation and is required (the default); refusing "
+          "to configure the bus (see the master plugin's error above for the exact cause). "
+          "Mark it 'required: false' in the URDF to let the rest of the bus come up without "
+          "it instead.",
+          ec_module_parameters_[i]["position"].c_str());
+        return false;
+      }
+      RCLCPP_WARN(
+        rclcpp::get_logger("EthercatBusManager"),
+        "Module at position %s failed validation and is marked 'required: false'; excluding "
+        "it from the bus — it will not be readable or writable (see the master plugin's "
+        "error above for the exact cause). The rest of the bus will still configure.",
+        ec_module_parameters_[i]["position"].c_str());
+    }
+  }
+
+  // Phase 2: register (PDO/domain mapping) only the modules that passed phase 1.
+  for (auto i = 0ul; i < ec_modules_.size(); i++) {
+    if (!module_ok[i]) {continue;}
     if (!master_->add_slave(ec_modules_[i])) {
       RCLCPP_ERROR(
         rclcpp::get_logger("EthercatBusManager"),
