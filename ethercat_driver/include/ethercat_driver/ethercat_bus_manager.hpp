@@ -134,6 +134,13 @@ protected:
     const std::unordered_map<std::string,
     std::string> & slave_parameters);
 
+  /** @brief Whether a module's absence/misconfiguration should refuse to configure the whole
+   *  bus (true, the default when the "required" param is absent — today's behavior, unchanged)
+   *  or just exclude that module while the rest of the bus still comes up (false). */
+  bool getRequiredOrDefault(
+    const std::unordered_map<std::string,
+    std::string> & slave_parameters);
+
   /** @brief Load transfer config YAML file
    * One use case is to load transfers for FailSafe Over EtherCAT Safety
    * @param[out] node YAML node containing the transfer configuration root

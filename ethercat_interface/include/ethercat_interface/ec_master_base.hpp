@@ -129,6 +129,14 @@ public:
    *  using the master. */
   virtual bool is_valid() const = 0;
 
+  /** \brief Validate a slave — vendor/product identity against what's physically on the bus,
+   *  plus its sdo_check: preconditions — WITHOUT registering it (no ecrt_master_slave_config,
+   *  no PDO/domain registration, no side effects). Safe to call for every configured module
+   *  before deciding which ones to add_slave(): both checks are addressed by ring position at
+   *  the master level and need no prior slave configuration.
+   *  \return true if the slave may be added; false if it failed a check (see logged detail). */
+  virtual bool check_slave(std::shared_ptr<EcSlaveBase> slave) = 0;
+
   /** \brief add a slave device to the master */
   virtual bool add_slave(std::shared_ptr<EcSlaveBase> slave) = 0;
 
