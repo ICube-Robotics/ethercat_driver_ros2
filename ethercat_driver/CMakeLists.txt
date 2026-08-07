@@ -151,6 +151,22 @@ if(BUILD_TESTING)
   # Add yaml-cpp to test target as well
   target_include_directories(test_ethercat_safety_driver PRIVATE ${YAML_CPP_INCLUDE_DIRS})
   target_compile_options(test_ethercat_safety_driver PRIVATE ${YAML_CPP_CFLAGS_OTHER})
+
+  ament_add_gmock(test_ethercat_driver_transmissions test/test_ethercat_driver_transmissions.cpp)
+  target_include_directories(test_ethercat_driver_transmissions PRIVATE include)
+  target_link_libraries(test_ethercat_driver_transmissions
+    ${PROJECT_NAME}
+    ${YAML_CPP_LIBRARIES}
+  )
+  ament_target_dependencies(test_ethercat_driver_transmissions
+    hardware_interface
+    pluginlib
+    rclcpp
+    rclcpp_lifecycle
+    ethercat_interface
+    transmission_interface
+    yaml_cpp_vendor
+  )
 endif()
 
 ## EXPORTS

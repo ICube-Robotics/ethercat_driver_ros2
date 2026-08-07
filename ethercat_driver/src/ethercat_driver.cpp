@@ -242,7 +242,9 @@ bool EthercatDriver::buildTransmissionRole(
 
   role_out.buffer.assign(name_to_slot.size(), 0.0);
   role_out.interface_names.resize(name_to_slot.size());
-  for (const auto & [name, slot] : name_to_slot) {role_out.interface_names[slot] = name;}
+  for (const auto & [name, slot] : name_to_slot) {
+    role_out.interface_names[slot] = name;
+  }
   return true;
 }
 
@@ -375,7 +377,9 @@ void EthercatDriver::applyTransmissionCommands()
     // NaN-seed the actuator roles' command slots: whatever is still NaN after
     // joint_to_actuator() was not projected by the loaded transmission plugin.
     for (auto & role : tx.actuators) {
-      for (const auto & m : role.command_index_map) {role.buffer[m.buffer_index] = kNan;}
+      for (const auto & m : role.command_index_map) {
+        role.buffer[m.buffer_index] = kNan;
+      }
     }
 
     tx.transmission->joint_to_actuator();
