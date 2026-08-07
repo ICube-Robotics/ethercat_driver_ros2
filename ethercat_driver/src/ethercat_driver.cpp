@@ -148,13 +148,8 @@ bool configure_ethercat_bus_config(
 
 }  // namespace
 
-CallbackReturn EthercatDriver::on_init(
-  const hardware_interface::HardwareComponentInterfaceParams & params)
+void EthercatDriver::resizeIoBuffers()
 {
-  if (hardware_interface::SystemInterface::on_init(params) != CallbackReturn::SUCCESS) {
-    return CallbackReturn::ERROR;
-  }
-
   // Set state vectors
   hw_joint_states_.resize(info_.joints.size());
   for (uint j = 0; j < info_.joints.size(); j++) {
@@ -194,6 +189,16 @@ CallbackReturn EthercatDriver::on_init(
       info_.gpios[g].command_interfaces.size(),
       std::numeric_limits<double>::quiet_NaN());
   }
+}
+
+CallbackReturn EthercatDriver::on_init(
+  const hardware_interface::HardwareComponentInterfaceParams & params)
+{
+  if (hardware_interface::SystemInterface::on_init(params) != CallbackReturn::SUCCESS) {
+    return CallbackReturn::ERROR;
+  }
+
+  resizeIoBuffers();
 
   std::vector<ConfiguredEcModule> configured_modules;
 

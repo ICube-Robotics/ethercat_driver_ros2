@@ -72,6 +72,11 @@ protected:
   std::vector<std::vector<double>> hw_sensor_states_;
   std::vector<std::vector<double>> hw_gpio_states_;
 
+  // Sizes the six hw_*_states_/hw_*_commands_ vectors from info_.joints/.sensors/.gpios,
+  // NaN-filled, one slot per URDF-declared state/command interface. Factored out of on_init()
+  // so it is independently callable (e.g. from a test) without touching bus_manager_.
+  void resizeIoBuffers();
+
   EthercatBusManager bus_manager_;
 };
 }  // namespace ethercat_driver
