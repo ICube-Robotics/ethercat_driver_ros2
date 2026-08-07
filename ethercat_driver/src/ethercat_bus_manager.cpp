@@ -313,7 +313,7 @@ bool EthercatBusManager::setupMaster()
   return true;
 }
 
-bool EthercatBusManager::configNetwork()
+bool EthercatBusManager::registerSlaves()
 {
   // start EC and wait until state operative
 
@@ -366,6 +366,14 @@ bool EthercatBusManager::configNetwork()
     }
   }
 
+  return true;
+}
+
+bool EthercatBusManager::downloadSdoConfig()
+{
+  RCLCPP_INFO(
+    rclcpp::get_logger("EthercatBusManager"),
+    "Downloading config SDO(s) to %zu module(s)...", ec_modules_.size());
   if (!master_->configure_slaves()) {
     RCLCPP_FATAL(
       rclcpp::get_logger("EthercatDriver"),
@@ -390,20 +398,25 @@ bool EthercatBusManager::configureBusLocked()
     return false;
   }
   if (configured_) {
-    return true;  // idempotent: master already requested and network configured
+    return true;  // idempotent: SDO config already downloaded once for this master
   }
 
   // Request the master at most once for the lifetime of this EthercatBusManager: a
-  // deactivate -> reactivate cycle must reconfigure the network below (deactivateBus() clears
-  // configured_ and drops the domain/slave-config objects via EcMasterBase::deactivate()), but
-  // must NOT re-request the master itself — gate on master_ existing, not on configured_.
+  // deactivate -> reactivate cycle must rebuild the PDO/domain registration (see
+  // activateBusLocked()), but must NOT re-request the master — gate on master_ existing,
+  // not on configured_.
   if (!master_ && !setupMaster()) {
     return false;
   }
-  // configure network (leaves the bus in the idle/PRE-OP phase)
-  if (!configNetwork()) {
+  // Register slaves + PDO domain, then download the one-shot config SDOs. Both leave the
+  // bus in the idle/PRE-OP phase (not yet activated).
+  if (!registerSlaves()) {
     return false;
   }
+  if (!downloadSdoConfig()) {
+    return false;
+  }
+  network_registered_ = true;
   configured_ = true;
   return true;
 }
@@ -428,6 +441,20 @@ bool EthercatBusManager::activateBusLocked()
     return false;
   }
   RCLCPP_INFO(rclcpp::get_logger("EthercatBusManager"), "Starting ...please wait...");
+
+  // On a reactivation (after deactivateBus()), EcMasterBase::deactivate() has freed the
+  // ecrt-side PDO/domain registration — rebuild it here. Deliberately NOT
+  // downloadSdoConfig(): those are one-shot config SDOs already sent once in
+  // configureBusLocked() and must not be resent (they are not cyclic PDO data).
+  if (!network_registered_) {
+    if (!registerSlaves()) {
+      RCLCPP_ERROR(
+        rclcpp::get_logger("EthercatBusManager"),
+        "Failed to re-register slaves/PDO domain on reactivation.");
+      return false;
+    }
+    network_registered_ = true;
+  }
 
   if (!master_->start()) {
     RCLCPP_ERROR(rclcpp::get_logger("EthercatBusManager"), "Activate EcMaster failed");
@@ -474,7 +501,10 @@ void EthercatBusManager::deactivateBus()
     RCLCPP_ERROR(
       rclcpp::get_logger("EthercatBusManager"), "Failed to deactivate EtherCAT master");
   }
-  configured_ = false;
+  // The PDO/domain registration deactivate() just freed must be rebuilt before the next
+  // activate() (see activateBusLocked()). configured_ stays true: the config SDOs already
+  // downloaded must not be resent on reactivation.
+  network_registered_ = false;
 
   RCLCPP_INFO(
     rclcpp::get_logger("EthercatBusManager"), "System successfully stopped!");

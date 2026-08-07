@@ -151,7 +151,18 @@ protected:
 
   bool setupMaster();
 
-  bool configNetwork();
+  /** @brief Validate (phase 1) then register (phase 2) every module's slave with the master —
+   *  identity/sdo_check: gate, then ecrt_master_slave_config()/PDO-domain registration for
+   *  every module that passed. No SDO traffic. Must be safely re-runnable: deactivateBus()
+   *  frees this registration (see EcMasterBase::deactivate()), so activateBusLocked() re-runs
+   *  this alone (never downloadSdoConfig()) to rebuild it ahead of a reactivation. */
+  bool registerSlaves();
+
+  /** @brief Download each registered module's configured SDO entries (the slave_config YAML
+   *  `sdo:` block) to the drive. Config SDOs, not cyclic PDO data — must be sent exactly once,
+   *  in configureBusLocked() (i.e. on_configure()), and never repeated on a later
+   *  reactivation. */
+  bool downloadSdoConfig();
 
   /** Implementations of configureBus()/activateBus() that assume ec_mutex_ is
    * already held by the caller (avoids recursive locking when activateBus()
@@ -172,7 +183,14 @@ protected:
   std::shared_ptr<ethercat_interface::EcMasterBase> master_;
 
   std::mutex ec_mutex_;
+  // True once downloadSdoConfig() has run (config SDOs sent). Never cleared by
+  // deactivateBus(): those are one-shot config writes and must not repeat on a
+  // reactivation — see downloadSdoConfig()'s doc comment.
   bool configured_{false};
+  // True while the ecrt-side PDO/domain registration built by registerSlaves() is valid.
+  // deactivateBus() clears this (EcMasterBase::deactivate() frees that registration);
+  // activateBusLocked() rebuilds it via registerSlaves() alone before activating.
+  bool network_registered_{false};
   bool activated_{false};
 
   /** Transfer nets */
