@@ -81,18 +81,64 @@ EcMaster::~EcMaster()
   }
 }
 
-void EcMaster::addSlave(uint16_t alias, uint16_t position, EcSlave * slave)
+bool EcMaster::addSlave(uint16_t alias, uint16_t position, EcSlave * slave)
 {
   slave->setAliasAndPosition(alias, position);
-  addSlave(slave);
+  return addSlave(slave);
 }
 
-void EcMaster::addSlave(EcSlave * slave)
+bool EcMaster::addSlave(EcSlave * slave)
 {
+  // Defense-in-depth: the master may not have been obtained (see EcMaster ctor / isValid()).
+  if (master_ == NULL) {
+    printError("Add slave. Master not obtained; cannot configure slave.");
+    return false;
+  }
+
   if (false == slave->isAliasAndPositionSet()) {
     std::string error_message = "Alias and position not set for slave (vendor id=" + std::to_string(
       slave->vendor_id_) + ",product_code=" + std::to_string(slave->product_id_) + ").";
     throw std::runtime_error(error_message);
+  }
+
+  // Verify the drive actually on the bus matches what the slave_config declares
+  // (vendor + product). IgH would otherwise leave a mismatched slave unconfigured
+  // and it would silently never reach OPERATIONAL; surface it loudly and refuse to
+  // configure the drive instead. ecrt_master_get_slave() addresses by ABSOLUTE ring
+  // position, which equals slave->position_ only for alias 0 (for a non-zero alias,
+  // position_ is relative to that alias), so the identity check is enforced for
+  // alias-0 slaves and skipped for aliased ones.
+  if (slave->alias_ == 0) {
+    ec_slave_info_t info{};
+    if (ecrt_master_get_slave(master_, slave->position_, &info) != 0) {
+      std::ostringstream msg;
+      // position prints decimal (default base); std::hex then applies to the codes.
+      msg << "Add slave. No slave found at ring position " << slave->position_ << std::hex
+          << " (slave_config expects vendor=0x" << slave->vendor_id_
+          << ", product=0x" << slave->product_id_
+          << "). Refusing to configure this drive."
+          << " Is the drive powered and connected on the bus?";
+      printError(msg.str());
+      return false;
+    }
+    if (info.vendor_id != slave->vendor_id_ || info.product_code != slave->product_id_) {
+      std::ostringstream msg;
+      // position prints decimal (default base); std::hex then applies to the codes.
+      msg << "Add slave. Identity mismatch at ring position " << slave->position_
+          << std::hex << ": the drive on the bus is vendor=0x" << info.vendor_id
+          << ", product=0x" << info.product_code << " (revision 0x" << info.revision_number
+          << ", \"" << info.name << "\"), but the slave_config expects vendor=0x"
+          << slave->vendor_id_ << ", product=0x" << slave->product_id_
+          << ". Refusing to configure this drive — check the slave_config matches your hardware.";
+      printError(msg.str());
+      return false;
+    }
+  } else {
+    std::ostringstream msg;
+    msg << "Add slave at alias " << slave->alias_ << " position " << slave->position_
+        << ": skipping the vendor/product identity check (only enforced for alias-0 "
+           "slaves addressed by absolute ring position).";
+    printWarning(msg.str());
   }
 
   // configure slave in master
@@ -103,8 +149,8 @@ void EcMaster::addSlave(EcSlave * slave)
     slave->alias_, slave->position_,
     slave->vendor_id_, slave->product_id_);
   if (slave_info.config == NULL) {
-    printWarning("Add slave. Failed to get slave configuration.");
-    return;
+    printError("Add slave. Failed to get slave configuration.");
+    return false;
   }
 
   // check and setup dc
@@ -134,8 +180,8 @@ void EcMaster::addSlave(EcSlave * slave)
     // configure pdos in slave
     int pdos_status = ecrt_slave_config_pdos(slave_info.config, num_syncs, syncs);
     if (pdos_status) {
-      printWarning("Add slave. Failed to configure PDOs");
-      return;
+      printError("Add slave. Failed to configure PDOs");
+      return false;
     }
   } else {
     printWarning(
@@ -162,6 +208,7 @@ void EcMaster::addSlave(EcSlave * slave)
       iter.second, domain,
       slave);
   }
+  return true;
 }
 
 int EcMaster::configSlaveSdo(
@@ -180,6 +227,22 @@ int EcMaster::configSlaveSdo(
     abort_code
   );
   return ret;
+}
+
+int EcMaster::uploadSlaveSdo(
+  uint16_t slave_position, uint16_t index, uint8_t sub_index,
+  uint8_t * target, size_t target_size, size_t * result_size, uint32_t * abort_code)
+{
+  return ecrt_master_sdo_upload(
+    master_,
+    slave_position,
+    index,
+    sub_index,
+    target,
+    target_size,
+    result_size,
+    abort_code
+  );
 }
 
 void EcMaster::registerPDOInDomain(
