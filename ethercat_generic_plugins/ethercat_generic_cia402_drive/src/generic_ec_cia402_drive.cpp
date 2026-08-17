@@ -41,10 +41,11 @@ void EcCiA402Drive::updateState()
       );
     }
   }
+  initialized_ = ((state_ == STATE_OPERATION_ENABLED) &&
+    (last_state_ == STATE_OPERATION_ENABLED)) ? true : false;
   last_status_word_ = status_word_;
   last_state_ = state_;
   counter_++;
-  initialized_ = is_operational_;
 }
 
 void EcCiA402Drive::processData(size_t entry_idx, uint8_t * domain_address)

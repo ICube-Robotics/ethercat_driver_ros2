@@ -307,9 +307,6 @@ bool CLASSM::load_from_config(YAML::Node channel_config)
       if (map["command_interface"]) {
         auto command_interface_name = map["command_interface"].as<std::string>();
         id = add_command_interface(command_interface_name);
-        if (map["default_value"]) {
-          v_data[id].default_value = map["default_value"].as<double>();
-        }
       }
 
       if (map["state_interface"]) {
@@ -321,8 +318,27 @@ bool CLASSM::load_from_config(YAML::Node channel_config)
         id = add_data_without_interface();
       }
 
+      if (map["default"]) {
+        v_data[id].default_value = map["default"].as<double>();
+      } else {
+        if (RPDO == pdo_type) {
+          char ec_addr[16];
+          std::snprintf(ec_addr, sizeof(ec_addr), "0x%04X:%02i", index, sub_index);
+          std::string msg = "channel: " + std::string(ec_addr) +
+            " addr_offset: " + std::to_string(v_data[id].addr_offset) +
+            "' has no default value, it is mandatory for RPDO entries";
+          throw std::runtime_error(msg);
+        }
+      }
+
       if (map["addr_offset"]) {
         v_data[id].addr_offset = map["addr_offset"].as<size_t>();
+      } else {
+        char ec_addr[16];
+        std::snprintf(ec_addr, sizeof(ec_addr), "0x%04X:%02i", index, sub_index);
+        std::string msg = "channel: " + std::string(ec_addr) +
+          "' has no addr_offset, it is mandatory on data_mapping entries";
+        throw std::runtime_error(msg);
       }
       if (map["type"]) {
         data_type = map["type"].as<std::string>();
@@ -388,6 +404,9 @@ void CLASSM::ec_read_to_interface(uint8_t * domain_address)
 {
   for (size_t i = 0; i < managed_.size(); ++i) {
     const size_t idx = managed_[i];
+    if (TPDO != pdo_type) {
+      continue;
+    }
     ec_read(domain_address, idx);
     if (is_state_interface_defined(idx) ) {
       state_interface_ptr_->at(interface_ids_[idx]) = v_data[idx].last_value;
@@ -407,12 +426,8 @@ void CLASSM::ec_write(uint8_t * domain_address, double value, size_t i)
     d.last_value = d.factor * value + d.offset;
     write_functions_[i](domain_address + d.addr_offset, d.last_value, d.mask);
   } else {
-    if (!std::isnan(d.default_value)) {
-      d.last_value = d.default_value;
-      write_functions_[i](domain_address + d.addr_offset, d.last_value, d.mask);
-    } else {  // Do nothing
-      return;
-    }
+    d.last_value = d.default_value;
+    write_functions_[i](domain_address + d.addr_offset, d.last_value, d.mask);
   }
 }
 
@@ -425,7 +440,7 @@ void CLASSM::ec_write_from_interface(uint8_t * domain_address)
       ec_write(domain_address, value, idx);
     } else {
       auto & d = v_data[idx];
-      if ( (RPDO == pdo_type) && allow_ec_write && !std::isnan(d.default_value)) {
+      if (RPDO == pdo_type && allow_ec_write) {
         d.last_value = d.default_value;
         write_functions_[idx](domain_address + d.addr_offset, d.last_value, d.mask);
       }

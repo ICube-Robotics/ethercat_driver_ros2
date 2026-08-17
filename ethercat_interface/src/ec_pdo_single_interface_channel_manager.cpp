@@ -98,9 +98,17 @@ bool CLASSM::load_from_config(YAML::Node channel_config)
     auto command_interface_name = channel_config["command_interface"].as<std::string>();
     command_interface_name_idx_ = all_command_interface_names.size();
     all_command_interface_names.push_back(command_interface_name);
-    // default value
-    if (channel_config["default"]) {
-      default_value = channel_config["default"].as<double>();
+  }
+
+  if (channel_config["default"]) {
+    default_value = channel_config["default"].as<double>();
+  } else {
+    if (RPDO == pdo_type) {
+      char ec_addr[16];
+      std::snprintf(ec_addr, sizeof(ec_addr), "0x%04X:%02i", index, sub_index);
+      std::string msg = "channel: " + std::string(ec_addr) +
+        "' has no default value, it is mandatory for RPDO entries";
+      throw std::runtime_error(msg);
     }
   }
 
@@ -148,6 +156,9 @@ double CLASSM::ec_read(uint8_t * domain_address, size_t /*i*/)
 
 void CLASSM::ec_read_to_interface(uint8_t * domain_address)
 {
+  if (TPDO != pdo_type) {
+    return;
+  }
   ec_read(domain_address);
   if (is_state_interface_defined() ) {
     state_interface_ptr_->at(state_interface_index_) = last_value;
@@ -163,12 +174,8 @@ void CLASSM::ec_write(uint8_t * domain_address, double value, size_t /*i*/)
     last_value = factor * value + offset;
     write_function_(domain_address, last_value, mask);
   } else {
-    if (!std::isnan(default_value)) {
-      last_value = default_value;
-      write_function_(domain_address, last_value, mask);
-    } else {  // Do nothing
-      return;
-    }
+    last_value = default_value;
+    write_function_(domain_address, last_value, mask);
   }
 }
 
@@ -178,7 +185,7 @@ void CLASSM::ec_write_from_interface(uint8_t * domain_address)
     const auto value = command_interface_ptr_->at(command_interface_index_);
     ec_write(domain_address, value);
   } else {
-    if ( (RPDO == pdo_type) && allow_ec_write && !std::isnan(default_value)) {
+    if (RPDO == pdo_type && allow_ec_write) {
       last_value = default_value;
       write_function_(domain_address, last_value, mask);
     }
