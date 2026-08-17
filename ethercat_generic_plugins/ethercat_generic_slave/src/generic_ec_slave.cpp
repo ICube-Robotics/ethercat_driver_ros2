@@ -33,9 +33,17 @@ GenericEcSlave::~GenericEcSlave()
 }
 int GenericEcSlave::assign_activate_dc_sync() {return assign_activate_;}
 
-void GenericEcSlave::processData(size_t entry_idx, uint8_t * domain_address)
+void GenericEcSlave::processData(unsigned int domain_index, size_t entry_idx, uint8_t * domain_address)
 {
-  pdo_channels_info_[domain_map_[entry_idx]]->ec_update(domain_address);
+  auto it = domains_.find(domain_index);
+  if (it == domains_.end()) {
+    throw std::runtime_error("Missing domain");
+  }
+
+  const std::vector<unsigned int>& entry_map = it->second;
+  auto index = entry_map[entry_idx];
+
+  pdo_channels_info_[index]->ec_update(domain_address);
 }
 
 const ec_sync_info_t * GenericEcSlave::syncs()
@@ -52,7 +60,7 @@ const ec_pdo_entry_info_t * GenericEcSlave::channels()
 }
 void GenericEcSlave::domains(DomainMap & domains) const
 {
-  domains = {{0, domain_map_}};
+  domains = domains_;
 }
 
 void GenericEcSlave::setup_syncs()
@@ -160,10 +168,15 @@ bool GenericEcSlave::setup_from_config(YAML::Node slave_config)
 
     all_channels_.reserve(channels_nbr);
     all_channels_skip_list_.reserve(channels_nbr);
+    all_channels_domain_list_.reserve(channels_nbr);
     channels_nbr = 0;
 
     if (slave_config["rpdo"]) {
       for (auto i = 0ul; i < slave_config["rpdo"].size(); i++) {
+        unsigned int domain_index = 0;
+        if (slave_config["rpdo"][i]["domain"]) {
+          domain_index = slave_config["rpdo"][i]["domain"].as<unsigned int>();
+        }
         auto rpdo_channels_size = slave_config["rpdo"][i]["channels"].size();
         for (auto c = 0ul; c < rpdo_channels_size; c++) {
           ethercat_interface::EcPdoChannelManager * channel_info = nullptr;
@@ -179,6 +192,7 @@ bool GenericEcSlave::setup_from_config(YAML::Node slave_config)
           pdo_channels_info_.push_back(channel_info);
           all_channels_.push_back(channel_info->get_pdo_entry_info());
           all_channels_skip_list_.push_back(channel_info->skip);
+          all_channels_domain_list_.push_back(domain_index);
         }
         rpdos_.push_back(
           {
@@ -193,6 +207,10 @@ bool GenericEcSlave::setup_from_config(YAML::Node slave_config)
 
     if (slave_config["tpdo"]) {
       for (auto i = 0ul; i < slave_config["tpdo"].size(); i++) {
+        unsigned int domain_index = 0;
+        if (slave_config["tpdo"][i]["domain"]) {
+          domain_index = slave_config["tpdo"][i]["domain"].as<unsigned int>();
+        }
         auto tpdo_channels_size = slave_config["tpdo"][i]["channels"].size();
 
         for (auto c = 0ul; c < tpdo_channels_size; c++) {
@@ -208,6 +226,7 @@ bool GenericEcSlave::setup_from_config(YAML::Node slave_config)
           pdo_channels_info_.push_back(channel_info);
           all_channels_.push_back(channel_info->get_pdo_entry_info());
           all_channels_skip_list_.push_back(channel_info->skip);
+          all_channels_domain_list_.push_back(domain_index);
         }
         tpdos_.push_back(
           {
@@ -223,7 +242,7 @@ bool GenericEcSlave::setup_from_config(YAML::Node slave_config)
     // Remove gaps from domain mapping
     for (auto i = 0ul; i < all_channels_.size(); i++) {
       if (all_channels_[i].index != 0x0000 && all_channels_skip_list_[i] != true) {
-        domain_map_.push_back(i);
+        domains_[all_channels_domain_list_[i]].push_back(i);
       }
     }
 

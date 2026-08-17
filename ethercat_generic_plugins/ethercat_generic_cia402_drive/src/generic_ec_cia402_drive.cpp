@@ -47,9 +47,17 @@ void EcCiA402Drive::updateState()
   initialized_ = is_operational_;
 }
 
-void EcCiA402Drive::processData(size_t entry_idx, uint8_t * domain_address)
+void EcCiA402Drive::processData(unsigned int domain_index, size_t entry_idx, uint8_t * domain_address)
 {
-  auto index = domain_map_[entry_idx];
+  (void)domain_index; // TODO add multi-domain-support
+  auto it = domains_.find(domain_index);
+  if (it == domains_.end()) {
+    throw std::runtime_error("Missing domain");
+  }
+
+  const std::vector<unsigned int>& entry_map = it->second;
+  auto index = entry_map[entry_idx];
+
   ethercat_interface::EcPdoSingleInterfaceChannelManager * channel_ptr =
     static_cast<
     ethercat_interface::EcPdoSingleInterfaceChannelManager *>(
@@ -114,7 +122,7 @@ void EcCiA402Drive::processData(size_t entry_idx, uint8_t * domain_address)
 
 
   // CHECK FOR STATE CHANGE
-  if (entry_idx == domain_map_.size() - 1) {  // if last entry in domain
+  if (entry_idx == entry_map.size() - 1) {  // if last entry in domain
     updateState();
   }
 }

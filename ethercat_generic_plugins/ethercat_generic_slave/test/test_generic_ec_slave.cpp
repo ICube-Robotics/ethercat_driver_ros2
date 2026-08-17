@@ -193,7 +193,7 @@ TEST_F(GenericEcSlaveTest, EcReadTPDOToStateInterface)
   ASSERT_EQ(plugin_->pdo_channels_info_[8]->state_interface_index(), 1);
   uint8_t domain_address[2];
   EC_WRITE_S16(domain_address, 42);
-  plugin_->processData(8, domain_address);
+  plugin_->processData(0, 8, domain_address);
   ASSERT_EQ(plugin_->state_interface_ptr_->at(1), 5 * 42 + 15);
 }
 
@@ -210,7 +210,7 @@ TEST_F(GenericEcSlaveTest, EcWriteRPDOFromCommandInterface)
   auto channels = plugin_->pdo_channels_info_;
   ASSERT_EQ(channels[2]->command_interface_index(), 1);
   uint8_t domain_address[2];
-  plugin_->processData(2, domain_address);
+  plugin_->processData(0, 2, domain_address);
   ASSERT_EQ(channels[2]->data().last_value, 2 * 42 + 10);
   ASSERT_EQ(EC_READ_S16(domain_address), 2 * 42 + 10);
 }
@@ -221,7 +221,7 @@ TEST_F(GenericEcSlaveTest, EcWriteRPDODefaultValue)
   plugin_->setup_from_config(YAML::Load(test_slave_config));
   plugin_->setup_interface_mapping();
   uint8_t domain_address[2];
-  plugin_->processData(2, domain_address);
+  plugin_->processData(0, 2, domain_address);
   ASSERT_EQ(plugin_->pdo_channels_info_[2]->data().last_value, -5);
   ASSERT_EQ(EC_READ_S16(domain_address), -5);
 }

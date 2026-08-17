@@ -144,7 +144,9 @@ public:
   bool activate();
 
   /** perform one EtherCAT cycle, passing the domain to the slaves */
-  virtual void update(uint32_t domain = 0);
+  virtual void update(void);
+  virtual void readData(void);
+  virtual void writeData(void);
 
   /** run a control loop of update() and user_callback(), blocking.
    *  call activate and setThreadHighPriority/RealTime first. */
@@ -181,9 +183,6 @@ public:
   }
 
   uint32_t getInterval() {return interval_;}
-
-  virtual void readData(uint32_t domain = 0);
-  virtual void writeData(uint32_t domain = 0);
 
   /** @brief Fill in the EcTransferInfo structures
   *
@@ -246,7 +245,7 @@ protected:
     EcSlave * slave);
 
   /** check for change in the domain state */
-  void checkDomainState(uint32_t domain);
+  void checkDomainState(DomainInfo * domain_info);
 
   /** check for change in the master state */
   void checkMasterState();

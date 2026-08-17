@@ -279,37 +279,36 @@ bool EcMaster::activate()
   return true;
 }
 
-void EcMaster::update(uint32_t domain)
+void EcMaster::update(void)
 {
   // receive process data
   ecrt_master_receive(master_);
 
-  DomainInfo * domain_info = domain_info_.at(domain);
-  if (domain_info == NULL) {
-    throw std::runtime_error("Null domain info: " + std::to_string(domain));
+  for (auto& [domain_index, domain_info ] : domain_info_) {
+    ecrt_domain_process(domain_info->domain);
+
+    // Transfer data if configured
+    // TODO(@yguel) make transfer per domain ? Quid of transfers across domains ?
+    transferAll();
+
+    // check process data state (optional)
+    checkDomainState(domain_info);
+
+    // read and write process data
+    for (DomainInfo::Entry & entry : domain_info->entries) {
+      for (int i = 0; i < entry.num_pdos; ++i) {
+        (entry.slave)->processData(domain_index, i, domain_info->domain_pd + entry.offset[i]);
+      }
+    }
+    ecrt_domain_queue(domain_info->domain);
   }
-
-  ecrt_domain_process(domain_info->domain);
-
-  // Transfer data if configured
-  // TODO(@yguel) make transfer per domain ? Quid of transfers across domains ?
-  transferAll();
-
-  // check process data state (optional)
-  checkDomainState(domain);
 
   // check for master and slave state change
   if (update_counter_ % check_state_frequency_ == 0) {
     checkMasterState();
     checkSlaveStates();
   }
-
-  // read and write process data
-  for (DomainInfo::Entry & entry : domain_info->entries) {
-    for (int i = 0; i < entry.num_pdos; ++i) {
-      (entry.slave)->processData(i, domain_info->domain_pd + entry.offset[i]);
-    }
-  }
+  ++update_counter_;
 
   struct timespec t;
 
@@ -319,59 +318,50 @@ void EcMaster::update(uint32_t domain)
   ecrt_master_sync_slave_clocks(master_);
 
   // send process data
-  ecrt_domain_queue(domain_info->domain);
   ecrt_master_send(master_);
-
-  ++update_counter_;
 }
 
-void EcMaster::readData(uint32_t domain)
+void EcMaster::readData(void)
 {
-  // receive process data
-  ecrt_master_receive(master_);
+  for (auto& [domain_index, domain_info ] : domain_info_) {
+    // receive process data
+    ecrt_master_receive(master_);
 
-  DomainInfo * domain_info = domain_info_.at(domain);
-  if (domain_info == NULL) {
-    throw std::runtime_error("Null domain info: " + std::to_string(domain));
+    ecrt_domain_process(domain_info->domain);
+
+    // Transfer data if configured
+    // TODO(@yguel) make transfer per domain ? Quid of transfers across domains ?
+    transferAll();
+
+    // check process data state (optional)
+    checkDomainState(domain_info);
+
+    // read and write process data
+    for (DomainInfo::Entry & entry : domain_info->entries) {
+      for (int i = 0; i < entry.num_pdos; ++i) {
+        (entry.slave)->processData(domain_index, i, domain_info->domain_pd + entry.offset[i]);
+      }
+    }
   }
-
-  ecrt_domain_process(domain_info->domain);
-
-  // Transfer data if configured
-  // TODO(@yguel) make transfer per domain ? Quid of transfers across domains ?
-  transferAll();
-
-  // check process data state (optional)
-  checkDomainState(domain);
 
   // check for master and slave state change
   if (update_counter_ % check_state_frequency_ == 0) {
     checkMasterState();
     checkSlaveStates();
   }
-
-  // read and write process data
-  for (DomainInfo::Entry & entry : domain_info->entries) {
-    for (int i = 0; i < entry.num_pdos; ++i) {
-      (entry.slave)->processData(i, domain_info->domain_pd + entry.offset[i]);
-    }
-  }
-
   ++update_counter_;
 }
 
-void EcMaster::writeData(uint32_t domain)
+void EcMaster::writeData(void)
 {
-  DomainInfo * domain_info = domain_info_.at(domain);
-  if (domain_info == NULL) {
-    throw std::runtime_error("Null domain info: " + std::to_string(domain));
-  }
-
-  // read and write process data
-  for (DomainInfo::Entry & entry : domain_info->entries) {
-    for (int i = 0; i < entry.num_pdos; ++i) {
-      (entry.slave)->processData(i, domain_info->domain_pd + entry.offset[i]);
+  for (auto& [domain_index, domain_info ] : domain_info_) {
+    // read and write process data
+    for (DomainInfo::Entry & entry : domain_info->entries) {
+      for (int i = 0; i < entry.num_pdos; ++i) {
+        (entry.slave)->processData(domain_index, i, domain_info->domain_pd + entry.offset[i]);
+      }
     }
+    ecrt_domain_queue(domain_info->domain);
   }
 
   struct timespec t;
@@ -382,7 +372,6 @@ void EcMaster::writeData(uint32_t domain)
   ecrt_master_sync_slave_clocks(master_);
 
   // send process data
-  ecrt_domain_queue(domain_info->domain);
   ecrt_master_send(master_);
 }
 
@@ -475,13 +464,8 @@ void EcMaster::setThreadRealTime()
   memset(dummy, 0, MAX_SAFE_STACK);
 }
 
-void EcMaster::checkDomainState(uint32_t domain)
+void EcMaster::checkDomainState(DomainInfo * domain_info)
 {
-  DomainInfo * domain_info = domain_info_.at(domain);
-  if (domain_info == NULL) {
-    throw std::runtime_error("Null domain info: " + std::to_string(domain));
-  }
-
   ec_domain_state_t ds;
   ecrt_domain_state(domain_info->domain, &ds);
 
