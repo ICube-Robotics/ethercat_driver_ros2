@@ -73,6 +73,13 @@ void EcCiA402Drive::updateState()
       );
     }
   }
+  if (walking_to_enabled_ && state_ == STATE_OPERATION_ENABLED) {
+    walking_to_enabled_ = false;
+  }
+  if (walking_to_disabled_ && state_ == STATE_SWITCH_ON_DISABLED) {
+    walking_to_disabled_ = false;
+  }
+
   last_status_word_ = status_word_;
   last_state_ = state_;
   counter_++;
@@ -124,18 +131,42 @@ void EcCiA402Drive::process_data(int index, uint8_t * domain_address)
         }
       }
 
+      if (enable_drive_command_interface_index_ >= 0) {
+        const double v = command_interface_ptr_->at(enable_drive_command_interface_index_);
+        const bool requested = !std::isnan(v) && v != 0;
+        if (requested && !last_enable_drive_command_) {
+          walking_to_enabled_ = true;
+          walking_to_disabled_ = false;
+        }
+        last_enable_drive_command_ = requested;
+      }
+      if (disable_drive_command_interface_index_ >= 0) {
+        const double v = command_interface_ptr_->at(disable_drive_command_interface_index_);
+        const bool requested = !std::isnan(v) && v != 0;
+        if (requested && !last_disable_drive_command_) {
+          walking_to_disabled_ = true;
+          walking_to_enabled_ = false;
+        }
+        last_disable_drive_command_ = requested;
+      }
+
       // fault_reset_ must also force a transition() call: it's the only place that reads and
       // clears the flag (its STATE_FAULT case). Without this, a reset_fault request with
       // auto_state_transitions_ false — the common configuration for a caller driving the
       // state machine itself — would latch fault_reset_ above and then never actually consume
       // it: the pulse would never reach the wire at all.
-      if (auto_state_transitions_ || fault_reset_) {
+      if (auto_state_transitions_ || walking_to_enabled_ || fault_reset_) {
         if (fault_reset_) {
           fault_reset_pulse_active_ = true;
         }
         channel.default_value = transition(
           state_,
           channel.ec_read(domain_address));
+      } else if (walking_to_disabled_) {
+        // Disable Voltage (0x00) is valid from any powered CiA402 state and drops straight
+        // to Switch-on-Disabled — the simple, standard shutdown; a vendor subclass wanting a
+        // controlled quick-stop-first sequence can override this behaviour.
+        channel.default_value = 0x00;
       } else if (fault_reset_pulse_active_) {
         // Nothing above is driving this channel this cycle, so transition()'s own bit-7
         // clearing (see its STATE_FAULT case) never runs again for this pulse — clear it here
@@ -218,6 +249,14 @@ bool EcCiA402Drive::setup_slave(
 
   if (parameters_.find("command_interface/reset_fault") != parameters_.end()) {
     fault_reset_command_interface_index_ = std::stoi(parameters_["command_interface/reset_fault"]);
+  }
+  if (parameters_.find("command_interface/enable_drive") != parameters_.end()) {
+    enable_drive_command_interface_index_ =
+      std::stoi(parameters_["command_interface/enable_drive"]);
+  }
+  if (parameters_.find("command_interface/disable_drive") != parameters_.end()) {
+    disable_drive_command_interface_index_ =
+      std::stoi(parameters_["command_interface/disable_drive"]);
   }
 
   return true;

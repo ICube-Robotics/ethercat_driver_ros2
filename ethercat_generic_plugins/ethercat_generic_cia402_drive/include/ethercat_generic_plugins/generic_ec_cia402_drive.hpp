@@ -82,6 +82,17 @@ protected:
   bool last_fault_reset_command_ = false;
   double last_position_ = std::numeric_limits<double>::quiet_NaN();
 
+  // enable_drive/disable_drive: edge-triggered command interfaces (no PDO object of their
+  // own) that walk the drive toward Operation Enabled / Switch-on-Disabled over as many
+  // cycles as it takes, independently of auto_state_transitions_. Meant for a caller that
+  // wants explicit control without hand-rolling the CiA402 walk itself.
+  int enable_drive_command_interface_index_ = -1;
+  int disable_drive_command_interface_index_ = -1;
+  bool last_enable_drive_command_ = false;
+  bool last_disable_drive_command_ = false;
+  bool walking_to_enabled_ = false;
+  bool walking_to_disabled_ = false;
+
   // True for one cycle after a fault_reset_ pulse is sent while nothing else
   // (auto_state_transitions_) keeps calling transition() on later cycles — that path has no
   // other opportunity to clear the pulse back down, so process_data() clears it directly. See
