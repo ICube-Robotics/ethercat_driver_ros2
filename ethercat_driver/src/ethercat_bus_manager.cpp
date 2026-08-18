@@ -16,16 +16,61 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cstdio>
 #include <ctime>
 #include <regex>
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <utility>
 
+#include "diagnostic_msgs/msg/key_value.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 namespace ethercat_driver
 {
+namespace
+{
+std::string wc_state_str(uint8_t wc_state)
+{
+  switch (wc_state) {
+    case 0: return "ZERO";
+    case 1: return "INCOMPLETE";
+    case 2: return "COMPLETE";
+    default: return "UNKNOWN";
+  }
+}
+
+std::string al_states_mask_str(uint8_t al_states)
+{
+  if (al_states == 0) {return "NONE";}
+  static constexpr std::pair<uint8_t, const char *> kBits[] = {
+    {1, "INIT"}, {2, "PREOP"}, {4, "SAFEOP"}, {8, "OP"}};
+  std::string out;
+  uint8_t seen = 0;
+  for (const auto & [bit, name] : kBits) {
+    if (al_states & bit) {
+      if (!out.empty()) {out += "|";}
+      out += name;
+      seen |= bit;
+    }
+  }
+  if (const uint8_t stray = al_states & static_cast<uint8_t>(~seen); stray != 0) {
+    char buf[16];
+    std::snprintf(buf, sizeof(buf), "UNKNOWN(0x%X)", stray);
+    if (!out.empty()) {out += "|";}
+    out += buf;
+  }
+  return out;
+}
+
+uint8_t diagnostic_level_for_bus(bool link_up, uint8_t domain_wc_state)
+{
+  if (!link_up) {return diagnostic_msgs::msg::DiagnosticStatus::ERROR;}
+  if (domain_wc_state != 2 /* COMPLETE */) {return diagnostic_msgs::msg::DiagnosticStatus::WARN;}
+  return diagnostic_msgs::msg::DiagnosticStatus::OK;
+}
+}  // namespace
 
 pluginlib::ClassLoader<ethercat_interface::EcMasterBase>
 EthercatBusManager::ec_master_loader_{"ethercat_interface", "ethercat_interface::EcMasterBase"};
@@ -564,6 +609,79 @@ void EthercatBusManager::deactivateBus()
     rclcpp::get_logger("EthercatBusManager"), "System successfully stopped!");
 }
 
+void EthercatBusManager::setDiagnosticsNode(rclcpp::Node::SharedPtr node)
+{
+  diagnostics_node_ = node;
+  bus_diagnostics_publisher_ =
+    diagnostics_node_->create_publisher<diagnostic_msgs::msg::DiagnosticArray>(
+    "/diagnostics", rclcpp::SystemDefaultsQoS());
+  rt_bus_diagnostics_publisher_ =
+    std::make_unique<realtime_tools::RealtimePublisher<diagnostic_msgs::msg::DiagnosticArray>>(
+    bus_diagnostics_publisher_);
+}
+
+void EthercatBusManager::publishBusDiagnostics()
+{
+  if (!rt_bus_diagnostics_publisher_) {
+    return;
+  }
+  const auto time = diagnostics_node_->now();
+
+  const ethercat_interface::EcMasterStateInfo master_state = masterState();
+  const ethercat_interface::EcDomainStateInfo domain_state = domainState();
+  const std::string current_bus_state = (master_state.link_up ? "UP" : "DOWN") + std::string(":") +
+    wc_state_str(domain_state.wc_state);
+  const bool state_changed = current_bus_state != previous_bus_state_;
+  const bool heartbeat_due = !bus_diagnostics_publish_time_valid_ ||
+    (time - last_bus_diagnostics_publish_time_) >= rclcpp::Duration::from_seconds(1.0);
+
+  if ((state_changed || heartbeat_due) && rt_bus_diagnostics_publisher_->trylock()) {
+    auto & msg = rt_bus_diagnostics_publisher_->msg_;
+    msg.header.stamp = time;
+    msg.status.resize(1);
+
+    auto & status = msg.status[0];
+    status.name = "ethercat_bus_manager";
+    status.hardware_id = bus_config_.master_iface;
+    status.level = diagnostic_level_for_bus(master_state.link_up, domain_state.wc_state);
+    status.message = master_state.link_up ?
+      ("bus link up, domain " + wc_state_str(domain_state.wc_state)) :
+      "bus link DOWN";
+    status.values.clear();
+    status.values.reserve(4);
+    {
+      diagnostic_msgs::msg::KeyValue kv;
+      kv.key = "slaves_responding";
+      kv.value = std::to_string(master_state.slaves_responding);
+      status.values.push_back(std::move(kv));
+    }
+    {
+      diagnostic_msgs::msg::KeyValue kv;
+      kv.key = "al_states";
+      kv.value = al_states_mask_str(master_state.al_states);
+      status.values.push_back(std::move(kv));
+    }
+    {
+      diagnostic_msgs::msg::KeyValue kv;
+      kv.key = "domain_working_counter";
+      kv.value = std::to_string(domain_state.working_counter);
+      status.values.push_back(std::move(kv));
+    }
+    {
+      diagnostic_msgs::msg::KeyValue kv;
+      kv.key = "domain_wc_state";
+      kv.value = wc_state_str(domain_state.wc_state);
+      status.values.push_back(std::move(kv));
+    }
+
+    rt_bus_diagnostics_publisher_->unlockAndPublish();
+    last_bus_diagnostics_publish_time_ = time;
+    bus_diagnostics_publish_time_valid_ = true;
+  }
+
+  previous_bus_state_ = current_bus_state;
+}
+
 EthercatCycleResult EthercatBusManager::read()
 {
   // try to lock so we can avoid blocking the read/write loop on the lock.
@@ -573,6 +691,7 @@ EthercatCycleResult EthercatBusManager::read()
   }
   if (activated_) {
     master_->read_process_data();
+    publishBusDiagnostics();
     return EthercatCycleResult::kCompleted;
   }
   return EthercatCycleResult::kSkippedInactive;

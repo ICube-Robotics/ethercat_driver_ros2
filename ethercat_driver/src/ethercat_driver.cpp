@@ -155,6 +155,19 @@ CallbackReturn EthercatDriver::on_init(
     return CallbackReturn::ERROR;
   }
 
+  // Diagnostics are optional: an internal node added to the controller_manager's own
+  // executor, per hardware_interface::HardwareComponentInterfaceParams::executor's documented
+  // use. If the executor is gone (e.g. a test harness with none), diagnostics are just skipped.
+  if (auto executor = params.executor.lock()) {
+    auto node = std::make_shared<rclcpp::Node>(info_.name + "_diagnostics");
+    executor->add_node(node);
+    bus_manager_.setDiagnosticsNode(node);
+  } else {
+    RCLCPP_WARN(
+      rclcpp::get_logger("EthercatDriver"),
+      "No executor available; EtherCAT diagnostics will not be published.");
+  }
+
   // Set state vectors
   hw_joint_states_.resize(info_.joints.size());
   for (uint j = 0; j < info_.joints.size(); j++) {

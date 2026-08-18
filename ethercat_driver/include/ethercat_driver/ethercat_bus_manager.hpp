@@ -24,6 +24,10 @@
 
 #include <pluginlib/class_loader.hpp>
 
+#include "diagnostic_msgs/msg/diagnostic_array.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "realtime_tools/realtime_publisher.hpp"
+
 #include "ethercat_interface/ec_master_base.hpp"
 #include "ethercat_interface/ec_slave_base.hpp"
 
@@ -140,6 +144,11 @@ public:
    */
   std::vector<ethercat_interface::EcTransferNet> getEcTransferNets(const YAML::Node & config);
 
+  /** @brief Give this bus manager a node to publish diagnostics from. Optional — with no node
+   *  set, diagnostics are simply not published. Creates the bus-diagnostics publisher; call
+   *  before activateBus() so the first cycle can publish. */
+  void setDiagnosticsNode(rclcpp::Node::SharedPtr node);
+
 protected:
   uint16_t getAliasOrDefaultAlias(
     const std::unordered_map<std::string,
@@ -188,6 +197,12 @@ protected:
    * iteration observe kSkippedBusy and never actually progress. */
   bool waitForSlavesOperational();
 
+  /** @brief Publish bus-wide diagnostics (link_up, slaves_responding, al_states,
+   *  domain_working_counter, domain_wc_state) if a diagnostics node has been set.
+   *  Heartbeat every second, or immediately on change. Realtime-safe (trylock()); a busy
+   *  publisher just skips that cycle. No-op if setDiagnosticsNode() was never called. */
+  void publishBusDiagnostics();
+
 protected:
   EthercatBusConfig bus_config_;
   std::vector<std::shared_ptr<ethercat_interface::EcSlaveBase>> ec_modules_;
@@ -221,6 +236,14 @@ protected:
 
   /** Empty interfaces */
   std::vector<double> empty_interface_;
+
+  rclcpp::Node::SharedPtr diagnostics_node_;
+  rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr bus_diagnostics_publisher_;
+  std::unique_ptr<realtime_tools::RealtimePublisher<diagnostic_msgs::msg::DiagnosticArray>>
+  rt_bus_diagnostics_publisher_;
+  std::string previous_bus_state_;
+  bool bus_diagnostics_publish_time_valid_{false};
+  rclcpp::Time last_bus_diagnostics_publish_time_;
 };
 
 }  // namespace ethercat_driver

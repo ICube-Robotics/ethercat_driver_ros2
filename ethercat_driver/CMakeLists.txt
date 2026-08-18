@@ -9,10 +9,12 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_ros REQUIRED)
 
+find_package(diagnostic_msgs REQUIRED)
 find_package(hardware_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
+find_package(realtime_tools REQUIRED)
 find_package(ethercat_interface REQUIRED)
 find_package(yaml_cpp_vendor REQUIRED)
 
@@ -33,10 +35,12 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 ament_target_dependencies(
   ${PROJECT_NAME}
+  diagnostic_msgs
   hardware_interface
   pluginlib
   rclcpp
   rclcpp_lifecycle
+  realtime_tools
   ethercat_interface
   yaml_cpp_vendor
 )
@@ -159,10 +163,12 @@ ament_export_libraries(
   ${PROJECT_NAME}
 )
 ament_export_dependencies(
+  diagnostic_msgs
   hardware_interface
   pluginlib
   rclcpp
   rclcpp_lifecycle
+  realtime_tools
   ethercat_interface
   yaml_cpp_vendor
 )
