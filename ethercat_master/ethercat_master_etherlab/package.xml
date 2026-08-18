@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>ethercat_master_etherlab</name>
+  <version>0.0.0</version>
+  <description>TODO: Package description</description>
+  <maintainer email="zanne.philippe@unistra.fr">tirrex</maintainer>
+  <license>TODO: License declaration</license>
+
+  <buildtool_depend>ament_cmake_ros</buildtool_depend>
+
+  <depend>ethercat_interface</depend>
+  <depend>ethercat_generic_slave</depend>
+  <depend>pluginlib</depend>
+
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

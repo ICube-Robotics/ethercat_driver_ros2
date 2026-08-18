@@ -17,28 +17,9 @@ find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_ros REQUIRED)
 find_package(rclcpp REQUIRED)
 
-# EtherLab
-set(ETHERLAB_LOCAL_DIR /usr/local/etherlab)
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
-find_path(ETHERCAT_INCLUDE_DIR NAMES ecrt.h PATHS ${ETHERLAB_LOCAL_DIR}/include)
-find_library(ETHERCAT_LIB NAMES ethercat PATHS ${ETHERLAB_LOCAL_DIR}/lib)
-
-if(NOT ETHERCAT_INCLUDE_DIR OR NOT ETHERCAT_LIB)
-  message(FATAL_ERROR
-    "Could not find the IgH EtherCAT master (ecrt.h / libethercat). "
-    "Looked in standard system paths and in ${ETHERLAB_LOCAL_DIR}.")
-endif()
-
-ament_export_include_directories(
-  include
-  ${ETHERCAT_INCLUDE_DIR}
-)
-
 add_library(
   ${PROJECT_NAME}
   SHARED
-  src/ec_master.cpp
   src/ec_pdo_channel_manager.cpp
   src/ec_pdo_single_interface_channel_manager.cpp
   src/ec_pdo_group_interface_channel_manager.cpp
@@ -48,10 +29,9 @@ target_include_directories(
   ${PROJECT_NAME}
   PRIVATE
   include
-  ${ETHERCAT_INCLUDE_DIR}
 )
 
-target_link_libraries(${PROJECT_NAME} ${ETHERCAT_LIB})
+#target_link_libraries(${PROJECT_NAME} ${ETHERCAT_LIB})
 
 ament_target_dependencies(
   ${PROJECT_NAME}
@@ -68,6 +48,8 @@ install(
   DESTINATION include
 )
 
+ament_export_libraries(${PROJECT_NAME})
+
 if(BUILD_TESTING)
   # find_package(ament_cmake_gtest REQUIRED)
   find_package(ament_lint_auto REQUIRED)
@@ -82,7 +64,7 @@ if(BUILD_TESTING)
     test_ec_pdo_channel_manager
     test/test_ec_pdo_channel_manager.cpp
   )
-  target_include_directories(test_ec_pdo_channel_manager PRIVATE include ${ETHERCAT_INCLUDE_DIR})
+  target_include_directories(test_ec_pdo_channel_manager PRIVATE include)
 
   target_link_libraries(test_ec_pdo_channel_manager
     ${PROJECT_NAME}
@@ -93,10 +75,7 @@ endif()
 ament_export_include_directories(
   include
 )
-ament_export_libraries(
-  ${PROJECT_NAME}
-  ${ETHERCAT_LIBRARY}
-)
+
 ament_export_dependencies(
   rclcpp
 )

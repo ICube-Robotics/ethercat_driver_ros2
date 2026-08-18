@@ -24,8 +24,9 @@
 
 #include <pluginlib/class_loader.hpp>
 
-#include "ethercat_interface/ec_master.hpp"
-#include "ethercat_interface/ec_slave.hpp"
+#include "ethercat_interface/ec_master_base.hpp"
+#include "ethercat_interface/ec_slave_base.hpp"
+
 #include "yaml-cpp/yaml.h"
 
 namespace ethercat_driver
@@ -44,7 +45,8 @@ struct ConfiguredEcModule
 /** Bus-wide EtherCAT settings independent of the ros2_control HardwareInfo representation. */
 struct EthercatBusConfig
 {
-  unsigned int master_id{0};
+  std::string master_iface{"0"};
+  std::string master_plugin{"ethercat_master/EtherlabMaster"};
   double control_frequency{100.0};
   std::string transfer_config;
   std::string fsoe_config;
@@ -61,6 +63,9 @@ enum class EthercatCycleResult
 class EthercatBusManager
 {
 public:
+  EthercatBusManager() {}
+  ~EthercatBusManager() {master_.reset(); ec_modules_.clear();}
+
   bool configureModules(
     const EthercatBusConfig & bus_config,
     const std::vector<ConfiguredEcModule> & modules);
@@ -106,15 +111,16 @@ protected:
 
 protected:
   EthercatBusConfig bus_config_;
-  std::vector<std::shared_ptr<ethercat_interface::EcSlave>> ec_modules_;
+  std::vector<std::shared_ptr<ethercat_interface::EcSlaveBase>> ec_modules_;
   std::vector<std::unordered_map<std::string, std::string>> ec_module_parameters_;
 
-  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_{
-    "ethercat_interface", "ethercat_interface::EcSlave"};
+  static pluginlib::ClassLoader<ethercat_interface::EcMasterBase> ec_master_loader_;
+  static pluginlib::ClassLoader<ethercat_interface::EcSlaveBase> ec_slave_loader_;
 
   double control_frequency_;
 
-  std::shared_ptr<ethercat_interface::EcMaster> master_;
+  std::shared_ptr<ethercat_interface::EcMasterBase> master_;
+
   std::mutex ec_mutex_;
   bool activated_{false};
 

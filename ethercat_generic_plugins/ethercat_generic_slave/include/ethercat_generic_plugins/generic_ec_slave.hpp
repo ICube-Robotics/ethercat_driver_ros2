@@ -22,42 +22,47 @@
 #include <unordered_map>
 
 #include "yaml-cpp/yaml.h"
-#include "ethercat_interface/ec_slave.hpp"
+#include "ethercat_interface/ec_slave_base.hpp"
 #include "ethercat_interface/ec_pdo_channel_manager.hpp"
 #include "ethercat_interface/ec_sync_manager.hpp"
 
 namespace ethercat_generic_plugins
 {
 
-class GenericEcSlave : public ethercat_interface::EcSlave
+class GenericEcSlave : public ethercat_interface::EcSlaveBase
 {
 public:
   GenericEcSlave();
   virtual ~GenericEcSlave();
   virtual int assign_activate_dc_sync();
 
-  virtual void processData(size_t entry_idx, uint8_t * domain_address);
+  virtual void process_data(int index, uint8_t * domain_address);
 
-  virtual const ec_sync_info_t * syncs();
-  virtual size_t syncSize();
-  virtual const ec_pdo_entry_info_t * channels();
-  virtual void domains(DomainMap & domains) const;
+//  virtual const ec_sync_info_t * syncs();
+//  virtual size_t syncSize();
+//  virtual const ec_pdo_entry_info_t * channels();
+//  virtual void domains(DomainMap & domains) const;
 
-  virtual bool setupSlave(
+  virtual bool setup_slave(
     std::unordered_map<std::string, std::string> slave_parameters,
     std::vector<double> * state_interface,
     std::vector<double> * command_interface);
 
+  /*std::vector<ethercat_interface::SMConfig> get_sm_config()
+  {
+    return sm_config_;
+  }*/
+
 protected:
-  uint32_t counter_ = 0;
-  std::vector<ec_pdo_info_t> rpdos_;
-  std::vector<ec_pdo_info_t> tpdos_;
-  std::vector<bool> all_channels_skip_list_;
-  std::vector<ec_pdo_entry_info_t> all_channels_;
-  std::vector<ethercat_interface::EcPdoChannelManager *> pdo_channels_info_;
-  std::vector<ethercat_interface::SMConfig> sm_configs_;
-  std::vector<ec_sync_info_t> syncs_;
-  std::vector<unsigned int> domain_map_;
+//  uint32_t counter_ = 0;
+//  std::vector<ec_pdo_info_t> rpdos_;
+//  std::vector<ec_pdo_info_t> tpdos_;
+//  std::vector<bool> all_channels_skip_list_;
+//  std::vector<pdo_entry_info_t> all_channels_;
+//  std::vector<ethercat_interface::EcPdoChannelManager *> pdo_channels_info_;
+//  std::vector<ethercat_interface::SMConfig> sm_config_;
+//  std::vector<ec_sync_info_t> syncs_;
+//  std::vector<unsigned int> domain_map_;
   YAML::Node slave_config_;
   uint32_t assign_activate_ = 0;
 
@@ -66,7 +71,7 @@ protected:
   /** set up of the drive configuration from yaml file*/
   bool setup_from_config_file(std::string config_file);
 
-  void setup_syncs();
+//  void setup_syncs();
 
   void setup_interface_mapping();
 };

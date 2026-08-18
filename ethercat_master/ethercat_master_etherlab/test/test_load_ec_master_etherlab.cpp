@@ -11,16 +11,18 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Author: Maciej Bednarczyk (mcbed.robotics@gmail.com)
 
 #include <gtest/gtest.h>
 #include <memory>
 
 #include <pluginlib/class_loader.hpp>
-#include "ethercat_interface/ec_slave_base.hpp"
+#include "ethercat_interface/ec_master_base.hpp"
 
-TEST(TestLoadEcCiA402Drive, load_ec_module)
+TEST(TestLoadEcMasterEtherlab, load_ec_master)
 {
-  pluginlib::ClassLoader<ethercat_interface::EcSlaveBase> ec_loader_{
-    "ethercat_interface", "ethercat_interface::EcSlaveBase"};
-  ASSERT_NO_THROW(ec_loader_.createSharedInstance("ethercat_generic_plugins/EcCiA402Drive"));
+  pluginlib::ClassLoader<ethercat_interface::EcMasterBase> ec_loader_{
+    "ethercat_interface", "ethercat_interface::EcMasterBase"};
+  ASSERT_NO_THROW(ec_loader_.createSharedInstance("ethercat_master/EtherlabMaster"));
 }

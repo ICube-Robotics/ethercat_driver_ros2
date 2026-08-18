@@ -1,0 +1,155 @@
+// Copyright 2023 ICUBE Laboratory, University of Strasbourg
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#include <map>
+#include <pluginlib/class_loader.hpp>
+// #include "ethercat_interface/ec_slave_base.hpp"
+#include "ethercat_generic_plugins/generic_ec_slave.hpp"
+#include "test_etherlab_slave.hpp"
+
+const char test_slave_config[] =
+  R"(
+# Configuration file for Test drive
+vendor_id: 0x00000011
+product_id: 0x07030924
+assign_activate: 0x0321  # DC Synch register
+period: 100  # Hz
+auto_fault_reset: false  # true = automatic fault reset, false = fault reset on rising edge command interface "reset_fault"
+sdo:  # sdo data to be transferred at drive startup
+  - {index: 0x60C2, sub_index: 1, type: int8, value: 10} # Set interpolation time for cyclic modes to 10 ms
+  - {index: 0x60C2, sub_index: 2, type: int8, value: -3} # Set base 10-3s
+rpdo:  # RxPDO
+  - index: 0x1607
+    channels:
+      - {index: 0x607a, sub_index: 0, type: int32, command_interface: position, default: .nan, factor: 2, offset: 10 }  # Target position
+      - {index: 0x60ff, sub_index: 0, type: int32, command_interface: velocity, default: 0}  # Target velocity
+      - {index: 0x6071, sub_index: 0, type: int16, command_interface: effort, default: -5}  # Target torque
+      - {index: 0x6072, sub_index: 0, type: int16, command_interface: ~, default: 1000}  # Max torque
+      - {index: 0x6040, sub_index: 0, type: uint16, command_interface: ~, default: 0}  # Control word
+      - {index: 0x6060, sub_index: 0, type: int8, command_interface: mode_of_operation, default: 8}  # Mode of operation
+tpdo:  # TxPDO
+  - index: 0x1a07
+    channels:
+      - {index: 0x6064, sub_index: 0, type: int32, state_interface: position}  # Position actual value
+      - {index: 0x606c, sub_index: 0, type: int32, state_interface: velocity}  # Velocity actual value
+      - {index: 0x6077, sub_index: 0, type: int16, state_interface: effort}  # Torque actual value
+      - {index: 0x6041, sub_index: 0, type: uint16, state_interface: ~}  # Status word
+      - {index: 0x6061, sub_index: 0, type: int8, state_interface: mode_of_operation}  # Mode of operation display
+  - index: 0x1a45
+    channels:
+      - {index: 0x2205, sub_index: 1, type: int16, state_interface: analog_input1}  # Analog input
+      - {index: 0x2205, sub_index: 2, type: int16, state_interface: analog_input2}  # Analog input
+sm: # Sync Manager
+  - { index: 0, type: output, watchdog: disable }
+  - { index: 1, type: input, watchdog: disable }
+  - { index: 2, type: output, pdo: rpdo, watchdog: enable }
+  - { index: 3, type: input, pdo: tpdo, watchdog: disable }
+
+)";
+
+
+TEST_F(EtherlabSlaveTest, SlaveSetup)
+{
+  auto test_slave_ptr = std::make_shared<TestSlave>();
+  // std::vector<double> state_interface = {0};
+  // std::vector<double> command_interface = {0};
+  // std::unordered_map<std::string, std::string> slave_paramters;
+
+  ASSERT_TRUE(test_slave_ptr->setup_from_config(YAML::Load(test_slave_config)));
+  etherlab_slave_ = std::make_unique<FriendEtherlabSlave>(test_slave_ptr);
+
+  ASSERT_EQ(etherlab_slave_->get_slave()->get_vendor_id(), 0x00000011u);
+  ASSERT_EQ(etherlab_slave_->get_slave()->get_product_id(), 0x07030924u);
+  ASSERT_EQ(etherlab_slave_->get_slave()->assign_activate_dc_sync(), 0x0321);
+
+  ASSERT_EQ(etherlab_slave_->get_slave()->get_sm_config().size(), 4u);
+  ASSERT_EQ(etherlab_slave_->get_slave()->get_sdo_config().size(), 2u);
+  ASSERT_EQ(etherlab_slave_->get_slave()->get_pdo_info().size(), 3u);
+
+  auto channels = etherlab_slave_->get_slave()->get_pdo_channels_info();
+  ASSERT_EQ(channels[1]->interface_name(), "velocity") << "Interface name is not 'velocity'";
+  ASSERT_EQ(channels[0]->data().factor, 2);
+  ASSERT_EQ(channels[0]->data().offset, 10);
+  ASSERT_EQ(channels[3]->data().default_value, 1000) << "Default value is not 1000";
+  ASSERT_TRUE(std::isnan(channels[0]->data().default_value)) << "Default value is not NaN";
+  ASSERT_EQ(channels[4]->interface_name(), "null") << "Interface name is not 'null'";
+  ASSERT_EQ(channels[12]->interface_name(),
+    "analog_input2") << "Interface name is not 'analog_input2'";
+  ASSERT_EQ(channels[4]->data_type(), "uint16") << "Data type is not 'uint16'";
+
+  ASSERT_EQ(etherlab_slave_->rpdos_.size(), 1u);
+  ASSERT_EQ(etherlab_slave_->rpdos_[0].index, 0x1607u);
+
+  ASSERT_EQ(etherlab_slave_->tpdos_.size(), 2u);
+  ASSERT_EQ(etherlab_slave_->tpdos_[0].index, 0x1a07u);
+  ASSERT_EQ(etherlab_slave_->tpdos_[1].index, 0x1a45u);
+}
+
+TEST_F(EtherlabSlaveTest, SlaveSetupPdoChannels)
+{
+  auto test_slave_ptr = std::make_shared<TestSlave>();
+
+  ASSERT_TRUE(test_slave_ptr->setup_from_config(YAML::Load(test_slave_config)));
+  etherlab_slave_ = std::make_unique<FriendEtherlabSlave>(test_slave_ptr);
+
+  std::vector<ec_pdo_entry_info_t> channels(
+    etherlab_slave_->channels(),
+    etherlab_slave_->channels() + etherlab_slave_->all_channels_.size()
+  );
+
+  ASSERT_EQ(channels.size(), 13u);
+  ASSERT_EQ(channels[0].index, 0x607au);
+  ASSERT_EQ(channels[11].index, 0x2205u);
+  ASSERT_EQ(channels[11].subindex, 0x01u);
+}
+
+TEST_F(EtherlabSlaveTest, SlaveSetupSyncs)
+{
+  auto test_slave_ptr = std::make_shared<TestSlave>();
+
+  ASSERT_TRUE(test_slave_ptr->setup_from_config(YAML::Load(test_slave_config)));
+  etherlab_slave_ = std::make_unique<FriendEtherlabSlave>(test_slave_ptr);
+
+  std::vector<ec_sync_info_t> syncs(
+    etherlab_slave_->syncs(),
+    etherlab_slave_->syncs() + etherlab_slave_->sync_size()
+  );
+
+  ASSERT_EQ(syncs.size(), 5u);
+  ASSERT_EQ(syncs[1].index, 1u);
+  ASSERT_EQ(syncs[1].dir, EC_DIR_INPUT);
+  ASSERT_EQ(syncs[1].n_pdos, 0u);
+  ASSERT_EQ(syncs[1].watchdog_mode, EC_WD_DISABLE);
+  ASSERT_EQ(syncs[2].dir, EC_DIR_OUTPUT);
+  ASSERT_EQ(syncs[2].n_pdos, 1u);
+  ASSERT_EQ(syncs[3].index, 3u);
+  ASSERT_EQ(syncs[3].dir, EC_DIR_INPUT);
+  ASSERT_EQ(syncs[3].n_pdos, 2u);
+  ASSERT_EQ(syncs[3].watchdog_mode, EC_WD_DISABLE);
+}
+
+TEST_F(EtherlabSlaveTest, SlaveSetupDomains)
+{
+  auto test_slave_ptr = std::make_shared<TestSlave>();
+
+  ASSERT_TRUE(test_slave_ptr->setup_from_config(YAML::Load(test_slave_config)));
+  etherlab_slave_ = std::make_unique<FriendEtherlabSlave>(test_slave_ptr);
+
+  std::map<unsigned int, std::vector<unsigned int>> domains;
+  etherlab_slave_->domains(domains);
+
+  ASSERT_EQ(domains[0].size(), 13u);
+  ASSERT_EQ(domains[0][0], 0u);
+  ASSERT_EQ(domains[0][12], 12u);
+}

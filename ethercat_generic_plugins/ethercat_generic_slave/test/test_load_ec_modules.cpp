@@ -16,11 +16,11 @@
 #include <memory>
 
 #include <pluginlib/class_loader.hpp>
-#include "ethercat_interface/ec_slave.hpp"
+#include "ethercat_interface/ec_slave_base.hpp"
 
 TEST(TestLoadGenericEcSlave, load_ec_module)
 {
-  pluginlib::ClassLoader<ethercat_interface::EcSlave> ec_loader_(
-    "ethercat_interface", "ethercat_interface::EcSlave");
+  pluginlib::ClassLoader<ethercat_interface::EcSlaveBase> ec_loader_(
+    "ethercat_interface", "ethercat_interface::EcSlaveBase");
   ASSERT_NO_THROW(ec_loader_.createSharedInstance("ethercat_generic_plugins/GenericEcSlave"));
 }

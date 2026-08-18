@@ -115,7 +115,7 @@ CLASSM::EcPdoChannelManager() {
 CLASSM::~EcPdoChannelManager() {
 }
 
-ec_pdo_entry_info_t CLASSM::get_pdo_entry_info()
+/*pdo_entry_info_t CLASSM::get_pdo_entry_info()
 {
   RCLCPP_INFO(
     rclcpp::get_logger("EcPdoChannelManager"),
@@ -126,7 +126,7 @@ ec_pdo_entry_info_t CLASSM::get_pdo_entry_info()
   );
 
   return {index, sub_index, pdo_bits()};
-}
+}*/
 
 void CLASSM::setup_interface_ptrs(
   std::vector<double> * state_interface,
@@ -147,47 +147,47 @@ void CLASSM::ec_update(uint8_t * domain_address)
 
 double uint8_read(uint8_t * domain_address, uint8_t /*data_mask*/)
 {
-  return static_cast<double>(EC_READ_U8(domain_address));
+  return static_cast<double>(read_u8(domain_address));
 }
 
 double int8_read(uint8_t * domain_address, uint8_t /*data_mask*/)
 {
-  return static_cast<double>(EC_READ_S8(domain_address));
+  return static_cast<double>(read_s8(domain_address));
 }
 
 double uint16_read(uint8_t * domain_address, uint8_t /*data_mask*/)
 {
-  return static_cast<double>(EC_READ_U16(domain_address));
+  return static_cast<double>(read_u16(domain_address));
 }
 
 double int16_read(uint8_t * domain_address, uint8_t /*data_mask*/)
 {
-  return static_cast<double>(EC_READ_S16(domain_address));
+  return static_cast<double>(read_s16(domain_address));
 }
 
 double uint32_read(uint8_t * domain_address, uint8_t /*data_mask*/)
 {
-  return static_cast<double>(EC_READ_U32(domain_address));
+  return static_cast<double>(read_u32(domain_address));
 }
 
 double int32_read(uint8_t * domain_address, uint8_t /*data_mask*/)
 {
-  return static_cast<double>(EC_READ_S32(domain_address));
+  return static_cast<double>(read_s32(domain_address));
 }
 
 double uint64_read(uint8_t * domain_address, uint8_t /*data_mask*/)
 {
-  return static_cast<double>(EC_READ_U64(domain_address));
+  return static_cast<double>(read_u64(domain_address));
 }
 
 double int64_read(uint8_t * domain_address, uint8_t /*data_mask*/)
 {
-  return static_cast<double>(EC_READ_S64(domain_address));
+  return static_cast<double>(read_s64(domain_address));
 }
 
 double real32_read(uint8_t * domain_address, uint8_t /*data_mask*/)
 {
-  uint32_t raw = EC_READ_U32(domain_address);
+  uint32_t raw = read_u32(domain_address);
   float value;
   std::memcpy(&value, &raw, sizeof(value));
   return value;
@@ -195,7 +195,7 @@ double real32_read(uint8_t * domain_address, uint8_t /*data_mask*/)
 
 double real64_read(uint8_t * domain_address, uint8_t /*data_mask*/)
 {
-  uint64_t raw = EC_READ_U64(domain_address);
+  uint64_t raw = read_u64(domain_address);
   double value;
   std::memcpy(&value, &raw, sizeof(value));
   return value;
@@ -203,12 +203,12 @@ double real64_read(uint8_t * domain_address, uint8_t /*data_mask*/)
 
 double bool_read(uint8_t * domain_address, uint8_t data_mask)
 {
-  return (EC_READ_U8(domain_address) & data_mask) ? 1. : 0.;
+  return (read_u8(domain_address) & data_mask) ? 1. : 0.;
 }
 
 double octet_read(uint8_t * domain_address, uint8_t data_mask)
 {
-  return static_cast<double>(EC_READ_U8(domain_address) & data_mask);
+  return static_cast<double>(read_u8(domain_address) & data_mask);
 }
 
 const SingleReadFunctionType ec_pdo_single_read_functions[] = {
@@ -230,42 +230,42 @@ const SingleReadFunctionType ec_pdo_single_read_functions[] = {
 
 void uint8_write(uint8_t * domain_address, double value, uint8_t /*data_mask*/)
 {
-  EC_WRITE_U8(domain_address, static_cast<uint8_t>(value));
+  write_u8(domain_address, static_cast<uint8_t>(value));
 }
 
 void int8_write(uint8_t * domain_address, double value, uint8_t /*data_mask*/)
 {
-  EC_WRITE_S8(domain_address, static_cast<int8_t>(value));
+  write_s8(domain_address, static_cast<int8_t>(value));
 }
 
 void uint16_write(uint8_t * domain_address, double value, uint8_t /*data_mask*/)
 {
-  EC_WRITE_U16(domain_address, static_cast<uint16_t>(value));
+  write_u16(domain_address, static_cast<uint16_t>(value));
 }
 
 void int16_write(uint8_t * domain_address, double value, uint8_t /*data_mask*/)
 {
-  EC_WRITE_S16(domain_address, static_cast<int16_t>(value));
+  write_s16(domain_address, static_cast<int16_t>(value));
 }
 
 void uint32_write(uint8_t * domain_address, double value, uint8_t /*data_mask*/)
 {
-  EC_WRITE_U32(domain_address, static_cast<uint32_t>(value));
+  write_u32(domain_address, static_cast<uint32_t>(value));
 }
 
 void int32_write(uint8_t * domain_address, double value, uint8_t /*data_mask*/)
 {
-  EC_WRITE_S32(domain_address, static_cast<int32_t>(value));
+  write_s32(domain_address, static_cast<int32_t>(value));
 }
 
 void uint64_write(uint8_t * domain_address, double value, uint8_t /*data_mask*/)
 {
-  EC_WRITE_U64(domain_address, static_cast<uint64_t>(value));
+  write_u64(domain_address, static_cast<uint64_t>(value));
 }
 
 void int64_write(uint8_t * domain_address, double value, uint8_t /*data_mask*/)
 {
-  EC_WRITE_S64(domain_address, static_cast<int64_t>(value));
+  write_s64(domain_address, static_cast<int64_t>(value));
 }
 
 void real32_write(uint8_t * domain_address, double value, uint8_t /*data_mask*/)
@@ -273,14 +273,14 @@ void real32_write(uint8_t * domain_address, double value, uint8_t /*data_mask*/)
   float f = static_cast<float>(value);
   uint32_t raw;
   std::memcpy(&raw, &f, sizeof(raw));
-  EC_WRITE_U32(domain_address, static_cast<uint32_t>(raw));
+  write_u32(domain_address, static_cast<uint32_t>(raw));
 }
 
 void real64_write(uint8_t * domain_address, double value, uint8_t /*data_mask*/)
 {
   uint64_t raw;
   std::memcpy(&raw, &value, sizeof(raw));
-  EC_WRITE_U64(domain_address, static_cast<uint64_t>(raw));
+  write_u64(domain_address, static_cast<uint64_t>(raw));
 }
 
 /** @brief Helper function that counts the number of bits in an octet */
@@ -303,29 +303,29 @@ bool check_type(const std::string & type, uint8_t mask)
  */
 void bool_compose(uint8_t * domain_address, double value, uint8_t data_mask)
 {
-  uint8_t buffer = EC_READ_U8(domain_address);
+  uint8_t buffer = read_u8(domain_address);
   // Clear the bit
   buffer &= ~(data_mask);
   if (value) {  // Set the bit
     buffer |= data_mask;
   }
-  EC_WRITE_U8(domain_address, buffer);
+  write_u8(domain_address, buffer);
 }
 
 /** Modify only the bits set to one in the mask */
 void octet_compose(uint8_t * domain_address, double value, uint8_t data_mask)
 {
-  uint8_t buffer = EC_READ_U8(domain_address);
+  uint8_t buffer = read_u8(domain_address);
   // Clear the bits
   buffer &= ~(data_mask);
   uint8_t compose_buffer = static_cast<uint8_t>(value) & data_mask;
-  EC_WRITE_U8(domain_address, buffer | compose_buffer);
+  write_u8(domain_address, buffer | compose_buffer);
 }
 
 /** Modify the whole octet with the result of the applied mask */
 void octet_override(uint8_t * domain_address, double value, uint8_t data_mask)
 {
-  EC_WRITE_U8(domain_address, static_cast<uint8_t>(value) & data_mask);
+  write_u8(domain_address, static_cast<uint8_t>(value) & data_mask);
 }
 
 const SingleWriteFunctionType ec_pdo_single_write_functions[] = {
