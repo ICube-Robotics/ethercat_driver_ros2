@@ -167,6 +167,11 @@ private:
    *  addressed by ring position, safe before ecrt_master_slave_config(). */
   bool checkSlaveSdoChecks(std::shared_ptr<ethercat_interface::EcSlaveBase> slave) const;
 
+  /** Resolve (alias, position) to an absolute ring position, as required by the blocking
+   *  SDO calls (they address by absolute position only). alias 0 returns position
+   *  unchanged. Negative if the alias is not found on the bus. No side effects. */
+  int resolveAbsolutePosition(uint16_t alias, uint16_t position) const;
+
   /** register a domain of the slave */
   void registerPDOInDomain(
     std::vector<uint32_t> & channel_indices,

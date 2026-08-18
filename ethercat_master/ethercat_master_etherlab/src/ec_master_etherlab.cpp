@@ -136,16 +136,37 @@ bool EtherlabMaster::checkSlaveIdentity(
   return true;
 }
 
+int EtherlabMaster::resolveAbsolutePosition(uint16_t alias, uint16_t position) const
+{
+  if (alias == 0) {
+    return position;
+  }
+  ec_slave_info_t info;
+  for (uint16_t ring = 0; ecrt_master_get_slave(master_, ring, &info) == 0; ++ring) {
+    if (info.alias == alias) {
+      return ring + position;
+    }
+  }
+  return -1;
+}
+
 bool EtherlabMaster::checkSlaveSdoChecks(
   std::shared_ptr<ethercat_interface::EcSlaveBase> slave) const
 {
+  const int position = resolveAbsolutePosition(slave->get_alias(), slave->get_position());
+  if (position < 0) {
+    RCLCPP_ERROR(
+          rclcpp::get_logger("EtherlabMaster"),
+          "sdo_check: no slave found for alias %u on the bus.", slave->get_alias());
+    return false;
+  }
   for (auto & check : slave->get_sdo_check_config()) {
     uint8_t buffer[8] = {0};
     size_t result_size = 0;
     uint32_t abort_code = 0;
     const int ret = ecrt_master_sdo_upload(
           master_,
-          slave->get_position(),
+          position,
           check.index,
           check.sub_index,
           buffer,
