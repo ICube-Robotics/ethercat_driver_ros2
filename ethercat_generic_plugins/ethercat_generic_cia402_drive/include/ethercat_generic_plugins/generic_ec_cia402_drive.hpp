@@ -22,6 +22,7 @@
 #include <unordered_map>
 #include <limits>
 
+#include "diagnostic_msgs/msg/diagnostic_status.hpp"
 #include "yaml-cpp/yaml.h"
 #include "ethercat_interface/ec_slave_base.hpp"
 #include "ethercat_interface/ec_pdo_single_interface_channel_manager.hpp"
@@ -52,6 +53,11 @@ public:
 
   void updateState();
 
+  /** Appends CiA402 device state / mode of operation / (while faulted) error code to
+   *  GenericEcSlave's generic online/al_state diagnostics. See EcSlaveBase::collectDiagnostics()
+   *  — call the base first, this only adds to it. */
+  virtual void collectDiagnostics(diagnostic_msgs::msg::DiagnosticStatus & status) const;
+
 protected:
   /** \brief Whether this cycle's commanded target position (0x607a) passes through
     * to the drive (true) or is overridden with the actual position (false). The
@@ -64,6 +70,8 @@ protected:
   uint16_t last_status_word_ = -1;
   uint16_t status_word_ = 0;
   uint16_t control_word_ = 0;
+  // CoE 0x603F, only meaningful once faulted. Stays 0 if the slave_config doesn't map it.
+  uint16_t error_code_ = 0;
   DeviceState last_state_ = STATE_START;
   DeviceState state_ = STATE_START;
   bool initialized_ = false;

@@ -14,13 +14,44 @@
 //
 // Author: Maciej Bednarczyk (macbednarczyk@gmail.com)
 
+#include <cstdio>
 #include <numeric>
+#include <string>
 
+#include "diagnostic_msgs/msg/key_value.hpp"
 #include "ethercat_generic_plugins/generic_ec_cia402_drive.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 namespace ethercat_generic_plugins
 {
+namespace
+{
+uint8_t diagnostic_level_for_state(DeviceState state)
+{
+  if (state == STATE_FAULT || state == STATE_FAULT_REACTION_ACTIVE) {
+    return diagnostic_msgs::msg::DiagnosticStatus::ERROR;
+  } else if (state == STATE_OPERATION_ENABLED) {
+    return diagnostic_msgs::msg::DiagnosticStatus::OK;
+  }
+  return diagnostic_msgs::msg::DiagnosticStatus::WARN;
+}
+
+std::string mode_of_operation_str(int8_t mode)
+{
+  switch (mode) {
+    case MODE_NO_MODE: return "MODE_NO_MODE";
+    case MODE_PROFILED_POSITION: return "MODE_PROFILED_POSITION";
+    case MODE_PROFILED_VELOCITY: return "MODE_PROFILED_VELOCITY";
+    case MODE_PROFILED_TORQUE: return "MODE_PROFILED_TORQUE";
+    case MODE_HOMING: return "MODE_HOMING";
+    case MODE_INTERPOLATED_POSITION: return "MODE_INTERPOLATED_POSITION";
+    case MODE_CYCLIC_SYNC_POSITION: return "MODE_CYCLIC_SYNC_POSITION";
+    case MODE_CYCLIC_SYNC_VELOCITY: return "MODE_CYCLIC_SYNC_VELOCITY";
+    case MODE_CYCLIC_SYNC_TORQUE: return "MODE_CYCLIC_SYNC_TORQUE";
+    default: return "MODE_VENDOR_SPECIFIC";
+  }
+}
+}  // namespace
 
 EcCiA402Drive::EcCiA402Drive()
 : GenericEcSlave() {}
@@ -131,6 +162,11 @@ void EcCiA402Drive::process_data(int index, uint8_t * domain_address)
   // Special case: StatusWord
   if (channel.index == CiA402D_TPDO_STATUSWORD) {
     status_word_ = channel.last_value;
+  }
+
+  // Latched fault code (0x603F), for diagnostics. Optional — stays 0 if not mapped.
+  if (channel.index == CiA402D_TPDO_ERROR_CODE) {
+    error_code_ = channel.last_value;
   }
 
 
@@ -270,6 +306,32 @@ uint16_t EcCiA402Drive::transition(DeviceState state, uint16_t control_word)
       break;
   }
   return control_word;
+}
+
+void EcCiA402Drive::collectDiagnostics(diagnostic_msgs::msg::DiagnosticStatus & status) const
+{
+  GenericEcSlave::collectDiagnostics(status);
+  if (!online_) {
+    return;  // base already reported this as offline/ERROR; nothing CiA402-specific to add
+  }
+
+  status.level = diagnostic_level_for_state(state_);
+  status.message = "drive in " + DEVICE_STATE_STR.at(state_) + " state";
+
+  diagnostic_msgs::msg::KeyValue mode_kv;
+  mode_kv.key = "mode_of_operation";
+  mode_kv.value = mode_of_operation_str(mode_of_operation_display_);
+  status.values.push_back(mode_kv);
+
+  // error_code is only meaningful once actually faulted.
+  if (state_ == STATE_FAULT) {
+    diagnostic_msgs::msg::KeyValue error_kv;
+    error_kv.key = "error_code";
+    char buf[8];
+    std::snprintf(buf, sizeof(buf), "0x%04X", error_code_);
+    error_kv.value = buf;
+    status.values.push_back(error_kv);
+  }
 }
 
 }  // namespace ethercat_generic_plugins
