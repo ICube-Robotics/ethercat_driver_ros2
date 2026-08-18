@@ -297,22 +297,19 @@ bool EtherlabMaster::configure_slaves()
     for (auto & sdo : slave_info_[i].slave->get_slave()->get_sdo_config()) {
       uint8_t buffer[8];
       sdo.buffer_write(buffer);
-      uint32_t abort_code;
-      int ret = ecrt_master_sdo_download(
-            master_,
-            slave_info_[i].slave->get_slave()->get_position(),
+      int ret = ecrt_slave_config_sdo(
+            slave_info_[i].config,
             sdo.index,
             sdo.sub_index,
             buffer,
-            sdo.data_size(),
-            &abort_code);
+            sdo.data_size());
 
       if (ret) {
         RCLCPP_FATAL(
               rclcpp::get_logger("EtherlabMaster"),
               "Failed to download config SDO for module at position %i with Error: %d",
               slave_info_[i].slave->get_slave()->get_position(),
-              abort_code);
+              ret);
         return false;
       }
     }
