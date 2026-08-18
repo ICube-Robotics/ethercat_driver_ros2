@@ -271,6 +271,9 @@ bool EcCiA402Drive::setup_from_config(YAML::Node drive_config)
   if (drive_config["auto_state_transitions"]) {
     auto_state_transitions_ = drive_config["auto_state_transitions"].as<bool>();
   }
+  if (drive_config["auto_enable"]) {
+    auto_enable_ = drive_config["auto_enable"].as<bool>();
+  }
   RCLCPP_INFO(
     rclcpp::get_logger("EtherCATDriver"),
     "setup_from_config end");
@@ -336,8 +339,14 @@ uint16_t EcCiA402Drive::transition(DeviceState state, uint16_t control_word)
       return (control_word & 0b01111110) | 0b00000110;
     case STATE_READY_TO_SWITCH_ON:        // -> STATE_SWITCH_ON
       return (control_word & 0b01110111) | 0b00000111;
-    case STATE_SWITCH_ON:                 // -> STATE_OPERATION_ENABLED
-      return (control_word & 0b01111111) | 0b00001111;
+    case STATE_SWITCH_ON:                 // -> STATE_OPERATION_ENABLED, only if the caller
+      // actually wants that: auto_enable_ opts into the old always-auto-enable behaviour;
+      // otherwise this holds at Switched On (powered, not yet producing torque/motion) until
+      // an explicit enable_drive request takes the last step.
+      if (auto_enable_ || walking_to_enabled_) {
+        return (control_word & 0b01111111) | 0b00001111;
+      }
+      return (control_word & 0b01110111) | 0b00000111;
     case STATE_OPERATION_ENABLED:         // -> GOOD
       return control_word;
     case STATE_QUICK_STOP_ACTIVE:         // -> STATE_OPERATION_ENABLED
