@@ -203,6 +203,12 @@ protected:
    *  publisher just skips that cycle. No-op if setDiagnosticsNode() was never called. */
   void publishBusDiagnostics();
 
+  /** @brief Push this cycle's per-slave online/al_state into each module (a slave has no
+   *  visibility into its own — see EcSlaveBase::setHealth()), then publish one DiagnosticArray
+   *  with one status per module, built from each module's own collectDiagnostics(). Same
+   *  heartbeat/on-change/realtime-safety notes as publishBusDiagnostics(). */
+  void publishSlaveDiagnostics();
+
 protected:
   EthercatBusConfig bus_config_;
   std::vector<std::shared_ptr<ethercat_interface::EcSlaveBase>> ec_modules_;
@@ -244,6 +250,13 @@ protected:
   std::string previous_bus_state_;
   bool bus_diagnostics_publish_time_valid_{false};
   rclcpp::Time last_bus_diagnostics_publish_time_;
+
+  rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr slave_diagnostics_publisher_;
+  std::unique_ptr<realtime_tools::RealtimePublisher<diagnostic_msgs::msg::DiagnosticArray>>
+  rt_slave_diagnostics_publisher_;
+  std::vector<std::string> previous_slave_states_;
+  bool slave_diagnostics_publish_time_valid_{false};
+  rclcpp::Time last_slave_diagnostics_publish_time_;
 };
 
 }  // namespace ethercat_driver

@@ -618,6 +618,13 @@ void EthercatBusManager::setDiagnosticsNode(rclcpp::Node::SharedPtr node)
   rt_bus_diagnostics_publisher_ =
     std::make_unique<realtime_tools::RealtimePublisher<diagnostic_msgs::msg::DiagnosticArray>>(
     bus_diagnostics_publisher_);
+
+  slave_diagnostics_publisher_ =
+    diagnostics_node_->create_publisher<diagnostic_msgs::msg::DiagnosticArray>(
+    "/diagnostics", rclcpp::SystemDefaultsQoS());
+  rt_slave_diagnostics_publisher_ =
+    std::make_unique<realtime_tools::RealtimePublisher<diagnostic_msgs::msg::DiagnosticArray>>(
+    slave_diagnostics_publisher_);
 }
 
 void EthercatBusManager::publishBusDiagnostics()
@@ -682,6 +689,70 @@ void EthercatBusManager::publishBusDiagnostics()
   previous_bus_state_ = current_bus_state;
 }
 
+void EthercatBusManager::publishSlaveDiagnostics()
+{
+  if (ec_modules_.empty()) {
+    return;
+  }
+
+  // A slave has no visibility into its own online/al_state; push this cycle's observation in,
+  // correlated by alias+position (matching the master's own addressing).
+  const std::vector<ethercat_interface::EcSlaveStateInfo> states = slaveStates();
+  for (const auto & module : ec_modules_) {
+    bool found = false;
+    for (const auto & s : states) {
+      if (s.alias == module->get_alias() && s.position == module->get_position()) {
+        module->setHealth(s.online, s.al_state);
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      module->setHealth(false, 0);
+    }
+  }
+
+  if (!rt_slave_diagnostics_publisher_) {
+    return;
+  }
+  const auto time = diagnostics_node_->now();
+
+  std::vector<std::string> current_slave_states(ec_modules_.size());
+  bool state_changed = previous_slave_states_.size() != ec_modules_.size();
+  for (std::size_t i = 0; i < ec_modules_.size(); ++i) {
+    diagnostic_msgs::msg::DiagnosticStatus probe;
+    ec_modules_[i]->collectDiagnostics(probe);
+    current_slave_states[i] = std::to_string(probe.level) + ":" + probe.message;
+    if (!state_changed &&
+      (previous_slave_states_.empty() || current_slave_states[i] != previous_slave_states_[i]))
+    {
+      state_changed = true;
+    }
+  }
+
+  const bool heartbeat_due = !slave_diagnostics_publish_time_valid_ ||
+    (time - last_slave_diagnostics_publish_time_) >= rclcpp::Duration::from_seconds(1.0);
+
+  if ((state_changed || heartbeat_due) && rt_slave_diagnostics_publisher_->trylock()) {
+    auto & msg = rt_slave_diagnostics_publisher_->msg_;
+    msg.header.stamp = time;
+    msg.status.resize(ec_modules_.size());
+    for (std::size_t i = 0; i < ec_modules_.size(); ++i) {
+      auto & status = msg.status[i];
+      const auto name_it = ec_module_parameters_[i].find("name");
+      status.name = name_it != ec_module_parameters_[i].end() ? name_it->second : "slave";
+      status.hardware_id = status.name;
+      status.values.clear();
+      ec_modules_[i]->collectDiagnostics(status);
+    }
+    rt_slave_diagnostics_publisher_->unlockAndPublish();
+    last_slave_diagnostics_publish_time_ = time;
+    slave_diagnostics_publish_time_valid_ = true;
+  }
+
+  previous_slave_states_ = std::move(current_slave_states);
+}
+
 EthercatCycleResult EthercatBusManager::read()
 {
   // try to lock so we can avoid blocking the read/write loop on the lock.
@@ -692,6 +763,7 @@ EthercatCycleResult EthercatBusManager::read()
   if (activated_) {
     master_->read_process_data();
     publishBusDiagnostics();
+    publishSlaveDiagnostics();
     return EthercatCycleResult::kCompleted;
   }
   return EthercatCycleResult::kSkippedInactive;
