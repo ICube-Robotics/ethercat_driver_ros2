@@ -74,6 +74,12 @@ protected:
   bool last_fault_reset_command_ = false;
   double last_position_ = std::numeric_limits<double>::quiet_NaN();
 
+  // True for one cycle after a fault_reset_ pulse is sent while nothing else
+  // (auto_state_transitions_) keeps calling transition() on later cycles — that path has no
+  // other opportunity to clear the pulse back down, so process_data() clears it directly. See
+  // its ControlWord handling.
+  bool fault_reset_pulse_active_ = false;
+
   /** returns device state based upon the status_word */
   DeviceState deviceState(uint16_t status_word);
   /** returns the control word that will take device from state to next desired state */
