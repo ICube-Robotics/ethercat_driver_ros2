@@ -78,6 +78,7 @@ $(function() {
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
+<a href="#pro-static-attribs">Static Protected Attributes</a> &#124;
 <a href="classethercat__driver_1_1EthercatBusManager-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">ethercat_driver::EthercatBusManager Class Reference</div></div>
 </div><!--header-->
@@ -97,6 +98,10 @@ Collaboration diagram for ethercat_driver::EthercatBusManager:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:a8270650f299800648d9c03df3db6ebe8" id="r_a8270650f299800648d9c03df3db6ebe8"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a8270650f299800648d9c03df3db6ebe8">EthercatBusManager</a> ()</td></tr>
+<tr class="separator:a8270650f299800648d9c03df3db6ebe8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae68c0d145e26581c93233a7593442b57" id="r_ae68c0d145e26581c93233a7593442b57"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#ae68c0d145e26581c93233a7593442b57">~EthercatBusManager</a> ()</td></tr>
+<tr class="separator:ae68c0d145e26581c93233a7593442b57"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8c1d1802bd81fbd046aca9550a17aed2" id="r_a8c1d1802bd81fbd046aca9550a17aed2"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a8c1d1802bd81fbd046aca9550a17aed2">configureModules</a> (const <a class="el" href="structethercat__driver_1_1EthercatBusConfig.html">EthercatBusConfig</a> &amp;bus_config, const std::vector&lt; <a class="el" href="structethercat__driver_1_1ConfiguredEcModule.html">ConfiguredEcModule</a> &gt; &amp;modules)</td></tr>
 <tr class="separator:a8c1d1802bd81fbd046aca9550a17aed2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af6b73c79fb4192de193caae1da19623b" id="r_af6b73c79fb4192de193caae1da19623b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#af6b73c79fb4192de193caae1da19623b">activateBus</a> ()</td></tr>
@@ -130,16 +135,14 @@ Protected Member Functions</h2></td></tr>
 Protected Attributes</h2></td></tr>
 <tr class="memitem:ad994ec8ba08da15a661287b4aca73cca" id="r_ad994ec8ba08da15a661287b4aca73cca"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structethercat__driver_1_1EthercatBusConfig.html">EthercatBusConfig</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#ad994ec8ba08da15a661287b4aca73cca">bus_config_</a></td></tr>
 <tr class="separator:ad994ec8ba08da15a661287b4aca73cca"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4af49a52e42f083f5d8c6c1e4d3f23c9" id="r_a4af49a52e42f083f5d8c6c1e4d3f23c9"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::shared_ptr&lt; <a class="el" href="classethercat__interface_1_1EcSlave.html">ethercat_interface::EcSlave</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a4af49a52e42f083f5d8c6c1e4d3f23c9">ec_modules_</a></td></tr>
-<tr class="separator:a4af49a52e42f083f5d8c6c1e4d3f23c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5f10da85ee3c806af18ffce0d149d48f" id="r_a5f10da85ee3c806af18ffce0d149d48f"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::shared_ptr&lt; <a class="el" href="classethercat__interface_1_1EcSlaveBase.html">ethercat_interface::EcSlaveBase</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a5f10da85ee3c806af18ffce0d149d48f">ec_modules_</a></td></tr>
+<tr class="separator:a5f10da85ee3c806af18ffce0d149d48f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af733d1ecfef242f014c5f6ff9feb8786" id="r_af733d1ecfef242f014c5f6ff9feb8786"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::unordered_map&lt; std::string, std::string &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#af733d1ecfef242f014c5f6ff9feb8786">ec_module_parameters_</a></td></tr>
 <tr class="separator:af733d1ecfef242f014c5f6ff9feb8786"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7574b809ab4d22a21695b4bb8fd4093a" id="r_a7574b809ab4d22a21695b4bb8fd4093a"><td class="memItemLeft" align="right" valign="top">pluginlib::ClassLoader&lt; <a class="el" href="classethercat__interface_1_1EcSlave.html">ethercat_interface::EcSlave</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a7574b809ab4d22a21695b4bb8fd4093a">ec_loader_</a></td></tr>
-<tr class="separator:a7574b809ab4d22a21695b4bb8fd4093a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2041e20978cd7db42b9cb0fdf2d730e8" id="r_a2041e20978cd7db42b9cb0fdf2d730e8"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a2041e20978cd7db42b9cb0fdf2d730e8">control_frequency_</a></td></tr>
 <tr class="separator:a2041e20978cd7db42b9cb0fdf2d730e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af105820ba577f825f02d50cc5c94aed0" id="r_af105820ba577f825f02d50cc5c94aed0"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="classethercat__interface_1_1EcMaster.html">ethercat_interface::EcMaster</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#af105820ba577f825f02d50cc5c94aed0">master_</a></td></tr>
-<tr class="separator:af105820ba577f825f02d50cc5c94aed0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adb1199ae17a2ab0f140f083cc04de3e6" id="r_adb1199ae17a2ab0f140f083cc04de3e6"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="classethercat__interface_1_1EcMasterBase.html">ethercat_interface::EcMasterBase</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#adb1199ae17a2ab0f140f083cc04de3e6">master_</a></td></tr>
+<tr class="separator:adb1199ae17a2ab0f140f083cc04de3e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acf76ed684e4aefae77986fd3272382c3" id="r_acf76ed684e4aefae77986fd3272382c3"><td class="memItemLeft" align="right" valign="top">std::mutex&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#acf76ed684e4aefae77986fd3272382c3">ec_mutex_</a></td></tr>
 <tr class="separator:acf76ed684e4aefae77986fd3272382c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab0b9147d64b6edb8792f900205ff4cac" id="r_ab0b9147d64b6edb8792f900205ff4cac"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#ab0b9147d64b6edb8792f900205ff4cac">activated_</a> {false}</td></tr>
@@ -152,7 +155,65 @@ Protected Attributes</h2></td></tr>
 <tr class="separator:a9930493d36413eb874659cf6fe22fad3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adb65b8ca040164fec106485332b12861" id="r_adb65b8ca040164fec106485332b12861"><td class="memItemLeft" align="right" valign="top">std::vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#adb65b8ca040164fec106485332b12861">empty_interface_</a></td></tr>
 <tr class="separator:adb65b8ca040164fec106485332b12861"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-static-attribs" name="pro-static-attribs"></a>
+Static Protected Attributes</h2></td></tr>
+<tr class="memitem:aa5c5e4304d361c47b2a8ebe4f1feeb95" id="r_aa5c5e4304d361c47b2a8ebe4f1feeb95"><td class="memItemLeft" align="right" valign="top">static pluginlib::ClassLoader&lt; <a class="el" href="classethercat__interface_1_1EcMasterBase.html">ethercat_interface::EcMasterBase</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#aa5c5e4304d361c47b2a8ebe4f1feeb95">ec_master_loader_</a></td></tr>
+<tr class="separator:aa5c5e4304d361c47b2a8ebe4f1feeb95"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a167a63ab044aaaac33b357e1e3e3cd85" id="r_a167a63ab044aaaac33b357e1e3e3cd85"><td class="memItemLeft" align="right" valign="top">static pluginlib::ClassLoader&lt; <a class="el" href="classethercat__interface_1_1EcSlaveBase.html">ethercat_interface::EcSlaveBase</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a167a63ab044aaaac33b357e1e3e3cd85">ec_slave_loader_</a></td></tr>
+<tr class="separator:a167a63ab044aaaac33b357e1e3e3cd85"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a8270650f299800648d9c03df3db6ebe8" name="a8270650f299800648d9c03df3db6ebe8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8270650f299800648d9c03df3db6ebe8">&#9670;&#160;</a></span>EthercatBusManager()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">ethercat_driver::EthercatBusManager::EthercatBusManager </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ae68c0d145e26581c93233a7593442b57" name="ae68c0d145e26581c93233a7593442b57"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae68c0d145e26581c93233a7593442b57">&#9670;&#160;</a></span>~EthercatBusManager()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">ethercat_driver::EthercatBusManager::~EthercatBusManager </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a id="a8c1d1802bd81fbd046aca9550a17aed2" name="a8c1d1802bd81fbd046aca9550a17aed2"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8c1d1802bd81fbd046aca9550a17aed2">&#9670;&#160;</a></span>configureModules()</h2>
@@ -448,8 +509,8 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a4af49a52e42f083f5d8c6c1e4d3f23c9" name="a4af49a52e42f083f5d8c6c1e4d3f23c9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4af49a52e42f083f5d8c6c1e4d3f23c9">&#9670;&#160;</a></span>ec_modules_</h2>
+<a id="a5f10da85ee3c806af18ffce0d149d48f" name="a5f10da85ee3c806af18ffce0d149d48f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5f10da85ee3c806af18ffce0d149d48f">&#9670;&#160;</a></span>ec_modules_</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -458,7 +519,7 @@ Protected Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::vector&lt;std::shared_ptr&lt;<a class="el" href="classethercat__interface_1_1EcSlave.html">ethercat_interface::EcSlave</a>&gt; &gt; ethercat_driver::EthercatBusManager::ec_modules_</td>
+          <td class="memname">std::vector&lt;std::shared_ptr&lt;<a class="el" href="classethercat__interface_1_1EcSlaveBase.html">ethercat_interface::EcSlaveBase</a>&gt; &gt; ethercat_driver::EthercatBusManager::ec_modules_</td>
         </tr>
       </table>
   </td>
@@ -492,8 +553,8 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a7574b809ab4d22a21695b4bb8fd4093a" name="a7574b809ab4d22a21695b4bb8fd4093a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7574b809ab4d22a21695b4bb8fd4093a">&#9670;&#160;</a></span>ec_loader_</h2>
+<a id="aa5c5e4304d361c47b2a8ebe4f1feeb95" name="aa5c5e4304d361c47b2a8ebe4f1feeb95"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa5c5e4304d361c47b2a8ebe4f1feeb95">&#9670;&#160;</a></span>ec_master_loader_</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -502,18 +563,38 @@ Protected Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">pluginlib::ClassLoader&lt;<a class="el" href="classethercat__interface_1_1EcSlave.html">ethercat_interface::EcSlave</a>&gt; ethercat_driver::EthercatBusManager::ec_loader_</td>
+          <td class="memname">pluginlib::ClassLoader&lt;<a class="el" href="classethercat__interface_1_1EcMasterBase.html">ethercat_interface::EcMasterBase</a>&gt; ethercat_driver::EthercatBusManager::ec_master_loader_</td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">protected</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">{</div>
-<div class="line">    <span class="stringliteral">&quot;ethercat_interface&quot;</span>, <span class="stringliteral">&quot;ethercat_interface::EcSlave&quot;</span>}</div>
-</div><!-- fragment -->
+
+</div>
+</div>
+<a id="a167a63ab044aaaac33b357e1e3e3cd85" name="a167a63ab044aaaac33b357e1e3e3cd85"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a167a63ab044aaaac33b357e1e3e3cd85">&#9670;&#160;</a></span>ec_slave_loader_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">pluginlib::ClassLoader&lt;<a class="el" href="classethercat__interface_1_1EcSlaveBase.html">ethercat_interface::EcSlaveBase</a>&gt; ethercat_driver::EthercatBusManager::ec_slave_loader_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
 </div>
 </div>
 <a id="a2041e20978cd7db42b9cb0fdf2d730e8" name="a2041e20978cd7db42b9cb0fdf2d730e8"></a>
@@ -538,8 +619,8 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="af105820ba577f825f02d50cc5c94aed0" name="af105820ba577f825f02d50cc5c94aed0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af105820ba577f825f02d50cc5c94aed0">&#9670;&#160;</a></span>master_</h2>
+<a id="adb1199ae17a2ab0f140f083cc04de3e6" name="adb1199ae17a2ab0f140f083cc04de3e6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adb1199ae17a2ab0f140f083cc04de3e6">&#9670;&#160;</a></span>master_</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -548,7 +629,7 @@ Protected Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::shared_ptr&lt;<a class="el" href="classethercat__interface_1_1EcMaster.html">ethercat_interface::EcMaster</a>&gt; ethercat_driver::EthercatBusManager::master_</td>
+          <td class="memname">std::shared_ptr&lt;<a class="el" href="classethercat__interface_1_1EcMasterBase.html">ethercat_interface::EcMasterBase</a>&gt; ethercat_driver::EthercatBusManager::master_</td>
         </tr>
       </table>
   </td>

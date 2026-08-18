@@ -1,18 +1,17 @@
 var searchData=
 [
-  ['activate_0',['activate',['../classethercat__interface_1_1EcMaster.html#afb94d3d0b2c98fc5d94bea7f682d735d',1,'ethercat_interface::EcMaster']]],
-  ['activatebus_1',['activateBus',['../classethercat__driver_1_1EthercatBusManager.html#af6b73c79fb4192de193caae1da19623b',1,'ethercat_driver::EthercatBusManager']]],
-  ['activated_5f_2',['activated_',['../classethercat__driver_1_1EthercatBusManager.html#ab0b9147d64b6edb8792f900205ff4cac',1,'ethercat_driver::EthercatBusManager']]],
-  ['add_5fcommand_5finterface_3',['add_command_interface',['../classethercat__interface_1_1EcPdoGroupInterfaceChannelManager.html#a3726725f3f282f1a12c7b467fc811a5f',1,'ethercat_interface::EcPdoGroupInterfaceChannelManager']]],
-  ['add_5fdata_5fwithout_5finterface_4',['add_data_without_interface',['../classethercat__interface_1_1EcPdoGroupInterfaceChannelManager.html#a19d74b933980fe42ff2cc0ebb172aeb0',1,'ethercat_interface::EcPdoGroupInterfaceChannelManager']]],
+  ['activatebus_0',['activateBus',['../classethercat__driver_1_1EthercatBusManager.html#af6b73c79fb4192de193caae1da19623b',1,'ethercat_driver::EthercatBusManager']]],
+  ['activated_5f_1',['activated_',['../classethercat__driver_1_1EthercatBusManager.html#ab0b9147d64b6edb8792f900205ff4cac',1,'ethercat_driver::EthercatBusManager']]],
+  ['add_5fcommand_5finterface_2',['add_command_interface',['../classethercat__interface_1_1EcPdoGroupInterfaceChannelManager.html#a3726725f3f282f1a12c7b467fc811a5f',1,'ethercat_interface::EcPdoGroupInterfaceChannelManager']]],
+  ['add_5fdata_5fwithout_5finterface_3',['add_data_without_interface',['../classethercat__interface_1_1EcPdoGroupInterfaceChannelManager.html#a19d74b933980fe42ff2cc0ebb172aeb0',1,'ethercat_interface::EcPdoGroupInterfaceChannelManager']]],
+  ['add_5fslave_4',['add_slave',['../classethercat__interface_1_1EcMasterBase.html#a54b47f1d331dd89f95d7353ea5589819',1,'ethercat_interface::EcMasterBase']]],
   ['add_5fstate_5finterface_5',['add_state_interface',['../classethercat__interface_1_1EcPdoGroupInterfaceChannelManager.html#ad3d5f07127aae3674d84f4b6c23291f1',1,'ethercat_interface::EcPdoGroupInterfaceChannelManager']]],
   ['addr_5foffset_6',['addr_offset',['../structethercat__interface_1_1InterfaceDataWithAddrOffset.html#a7e6ece64b000f9a8c6e9359ee9761a95',1,'ethercat_interface::InterfaceDataWithAddrOffset']]],
-  ['addslave_7',['addslave',['../classethercat__interface_1_1EcMaster.html#aeda98e7ea5c02550192bb3d07f352279',1,'ethercat_interface::EcMaster::addSlave(uint16_t alias, uint16_t position, EcSlave *slave)'],['../classethercat__interface_1_1EcMaster.html#a2091b381698e5c116c3dd52d3dfb3d3c',1,'ethercat_interface::EcMaster::addSlave(EcSlave *slave)']]],
-  ['alias_8',['alias',['../classethercat__interface_1_1EcMemoryEntry.html#aff9f35db34986bbf53493271cac56733',1,'ethercat_interface::EcMemoryEntry']]],
-  ['alias_5f_9',['alias_',['../classethercat__interface_1_1EcSlave.html#abaa72e737b102eaa2d9f46b4111d1b4a',1,'ethercat_interface::EcSlave']]],
-  ['all_5fcommand_5finterface_5fnames_10',['all_command_interface_names',['../namespaceethercat__interface.html#ad2594ab1c4df36385e13ce220c003fdf',1,'ethercat_interface']]],
-  ['all_5fstate_5finterface_5fnames_11',['all_state_interface_names',['../namespaceethercat__interface.html#af02088a20e0b8fbd5f484f7a7840427d',1,'ethercat_interface']]],
-  ['allocate_5ffor_5fnew_5finterface_12',['allocate_for_new_interface',['../classethercat__interface_1_1EcPdoGroupInterfaceChannelManager.html#a3b9aa1fe70b5938fe88ee0d15b72700e',1,'ethercat_interface::EcPdoGroupInterfaceChannelManager']]],
-  ['allow_5fec_5fwrite_13',['allow_ec_write',['../classethercat__interface_1_1EcPdoChannelManager.html#a6c11d429961cb57771d906599f133a73',1,'ethercat_interface::EcPdoChannelManager']]],
-  ['assign_5factivate_5fdc_5fsync_14',['assign_activate_dc_sync',['../classethercat__interface_1_1EcSlave.html#a10142d556f0e541d7ff2133a9d0bfbb1',1,'ethercat_interface::EcSlave']]]
+  ['alias_7',['alias',['../classethercat__interface_1_1EcMemoryEntry.html#aff9f35db34986bbf53493271cac56733',1,'ethercat_interface::EcMemoryEntry']]],
+  ['alias_5f_8',['alias_',['../classethercat__interface_1_1EcSlaveBase.html#af63a6b6df7f2c29a0e3d63cbd8f013ad',1,'ethercat_interface::EcSlaveBase']]],
+  ['all_5fcommand_5finterface_5fnames_9',['all_command_interface_names',['../namespaceethercat__interface.html#ad2594ab1c4df36385e13ce220c003fdf',1,'ethercat_interface']]],
+  ['all_5fstate_5finterface_5fnames_10',['all_state_interface_names',['../namespaceethercat__interface.html#af02088a20e0b8fbd5f484f7a7840427d',1,'ethercat_interface']]],
+  ['allocate_5ffor_5fnew_5finterface_11',['allocate_for_new_interface',['../classethercat__interface_1_1EcPdoGroupInterfaceChannelManager.html#a3b9aa1fe70b5938fe88ee0d15b72700e',1,'ethercat_interface::EcPdoGroupInterfaceChannelManager']]],
+  ['allow_5fec_5fwrite_12',['allow_ec_write',['../classethercat__interface_1_1EcPdoChannelManager.html#a6c11d429961cb57771d906599f133a73',1,'ethercat_interface::EcPdoChannelManager']]],
+  ['assign_5factivate_5fdc_5fsync_13',['assign_activate_dc_sync',['../classethercat__interface_1_1EcSlaveBase.html#a94250b722a6bd066f8028cfeed67b9d2',1,'ethercat_interface::EcSlaveBase']]]
 ];

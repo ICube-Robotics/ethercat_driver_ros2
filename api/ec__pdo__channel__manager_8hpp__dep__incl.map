@@ -1,7 +1,16 @@
 <map id="/home/runner/work/ethercat_driver_ros2/ethercat_driver_ros2/ethercat_interface/include/ethercat_interface/ec_pdo_channel_manager.hpp" name="/home/runner/work/ethercat_driver_ros2/ethercat_driver_ros2/ethercat_interface/include/ethercat_interface/ec_pdo_channel_manager.hpp">
-<area shape="rect" id="Node000001" title=" " alt="" coords="130,5,383,89"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="262,5,515,89"/>
 <area shape="rect" id="Node000002" href="$ec__pdo__group__interface__channel__manager_8hpp.html" title=" " alt="" coords="5,137,244,221"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="207,101,168,139,165,135,203,97"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="294,98,209,140,207,135,292,93"/>
 <area shape="rect" id="Node000003" href="$ec__pdo__single__interface__channel__manager_8hpp.html" title=" " alt="" coords="268,137,509,221"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="310,97,349,135,345,139,306,101"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="391,103,391,137,386,137,386,103"/>
+<area shape="rect" id="Node000004" href="$ec__slave__base_8hpp.html" title=" " alt="" coords="534,145,806,214"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="491,93,598,142,596,147,489,98"/>
+<area shape="rect" id="Node000005" href="$ethercat__bus__manager_8hpp.html" title=" " alt="" coords="563,387,777,471"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="632,226,619,247,609,270,602,304,609,338,620,362,635,385,630,388,615,365,603,339,596,304,603,269,614,245,628,223"/>
+<area shape="rect" id="Node000007" href="$ec__master__base_8hpp.html" title=" " alt="" coords="618,269,901,339"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="704,223,737,267,732,271,700,226"/>
+<area shape="rect" id="Node000006" href="$ethercat__driver_8hpp.html" title=" " alt="" coords="543,519,797,588"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="673,484,673,519,667,519,667,484"/>
+<area shape="poly" id="edge7_Node000007_Node000005" title=" " alt="" coords="729,351,702,388,698,385,725,348"/>
 </map>

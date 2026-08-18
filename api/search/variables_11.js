@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['v_5fdata_0',['v_data',['../classethercat__interface_1_1EcPdoGroupInterfaceChannelManager.html#a77a1f9d889d47a380fa5cde8d928bfcb',1,'ethercat_interface::EcPdoGroupInterfaceChannelManager']]],
-  ['vendor_5fid_5f_1',['vendor_id_',['../classethercat__interface_1_1EcSlave.html#ad1ceda684dc1a3ffae76f824cdbaf6d3',1,'ethercat_interface::EcSlave']]]
+  ['watchdog_0',['watchdog',['../classethercat__interface_1_1SMConfig.html#ac3584295de7d9a4ea1b4bef02286c0a9',1,'ethercat_interface::SMConfig']]],
+  ['write_5ffunction_5f_1',['write_function_',['../classethercat__interface_1_1EcPdoSingleInterfaceChannelManager.html#af00da39dc15788176aa516f4a52702cf',1,'ethercat_interface::EcPdoSingleInterfaceChannelManager']]],
+  ['write_5ffunctions_5f_2',['write_functions_',['../classethercat__interface_1_1EcPdoGroupInterfaceChannelManager.html#a5ef77ba13ec606b8e2aeab0c3f6f5b5f',1,'ethercat_interface::EcPdoGroupInterfaceChannelManager']]]
 ];

@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['interfacedata_0',['InterfaceData',['../structethercat__interface_1_1InterfaceData.html',1,'ethercat_interface']]],
-  ['interfacedatawithaddroffset_1',['InterfaceDataWithAddrOffset',['../structethercat__interface_1_1InterfaceDataWithAddrOffset.html',1,'ethercat_interface']]]
+  ['pdo_5finfo_5ft_0',['pdo_info_t',['../structethercat__interface_1_1pdo__info__t.html',1,'ethercat_interface']]]
 ];

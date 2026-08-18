@@ -1,9 +1,9 @@
 <map id="/home/runner/work/ethercat_driver_ros2/ethercat_driver_ros2/ethercat_interface/include/ethercat_interface/ec_transfer.hpp" name="/home/runner/work/ethercat_driver_ros2/ethercat_driver_ros2/ethercat_interface/include/ethercat_interface/ec_transfer.hpp">
-<area shape="rect" id="Node000001" title=" " alt="" coords="8,5,257,75"/>
-<area shape="rect" id="Node000002" href="$ec__master_8hpp.html" title=" " alt="" coords="11,123,255,192"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="135,89,135,122,130,122,130,89"/>
-<area shape="rect" id="Node000003" href="$ethercat__bus__manager_8hpp.html" title=" " alt="" coords="26,240,239,324"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="135,205,135,240,130,240,130,205"/>
-<area shape="rect" id="Node000004" href="$ethercat__driver_8hpp.html" title=" " alt="" coords="5,372,260,441"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="135,338,135,372,130,372,130,338"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="22,5,271,75"/>
+<area shape="rect" id="Node000002" href="$ec__master__base_8hpp.html" title=" " alt="" coords="5,123,288,192"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="149,89,149,122,144,122,144,89"/>
+<area shape="rect" id="Node000003" href="$ethercat__bus__manager_8hpp.html" title=" " alt="" coords="40,240,253,324"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="149,205,149,240,144,240,144,205"/>
+<area shape="rect" id="Node000004" href="$ethercat__driver_8hpp.html" title=" " alt="" coords="19,372,274,441"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="149,338,149,372,144,372,144,338"/>
 </map>

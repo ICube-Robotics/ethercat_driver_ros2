@@ -6,13 +6,5 @@ var searchData=
   ['data_5ftype_5fidx_3',['data_type_idx',['../structethercat__interface_1_1InterfaceDataWithAddrOffset.html#a73bd6b652801510bb0f03a219cd55c5b',1,'ethercat_interface::InterfaceDataWithAddrOffset']]],
   ['data_5ftype_5fidx_5f_4',['data_type_idx_',['../classethercat__interface_1_1EcPdoChannelManager.html#a2630a2f6451b88f0d151224137735415',1,'ethercat_interface::EcPdoChannelManager']]],
   ['deactivatebus_5',['deactivateBus',['../classethercat__driver_1_1EthercatBusManager.html#a31b3797ffadc9aba2e1d3ac48218e841',1,'ethercat_driver::EthercatBusManager']]],
-  ['default_5fvalue_6',['default_value',['../structethercat__interface_1_1InterfaceData.html#a56a06e6a898cefe3997bc9dc8f4a4ac4',1,'ethercat_interface::InterfaceData']]],
-  ['domain_7',['domain',['../structethercat__interface_1_1DomainInfo.html#ac6aae38413e0e86c03922d0a80f83381',1,'ethercat_interface::DomainInfo']]],
-  ['domain_5finfo_5f_8',['domain_info_',['../classethercat__interface_1_1EcMaster.html#a0e08c406de14395ebc795d3f46a138f3',1,'ethercat_interface::EcMaster']]],
-  ['domain_5fpd_9',['domain_pd',['../structethercat__interface_1_1DomainInfo.html#a18e43e4b3707200f78581dcd50b0674b',1,'ethercat_interface::DomainInfo']]],
-  ['domain_5fregs_10',['domain_regs',['../structethercat__interface_1_1DomainInfo.html#ad4c5853e4f959b8c3f6a140fd746c8ea',1,'ethercat_interface::DomainInfo']]],
-  ['domain_5fstate_11',['domain_state',['../structethercat__interface_1_1DomainInfo.html#a24c1d59347a39c56d306da14415ac4fe',1,'ethercat_interface::DomainInfo']]],
-  ['domaininfo_12',['domaininfo',['../structethercat__interface_1_1DomainInfo.html',1,'ethercat_interface::DomainInfo'],['../classethercat__interface_1_1EcMaster.html#a4872c5d8eb454137cb73ad37a9b168e4',1,'ethercat_interface::EcMaster::DomainInfo'],['../structethercat__interface_1_1DomainInfo.html#aace0657437ce2605302c2f79048c761c',1,'ethercat_interface::DomainInfo::DomainInfo()']]],
-  ['domainmap_13',['DomainMap',['../classethercat__interface_1_1EcSlave.html#a8348bf7fd3dbfce01a1d7b8f8a4cdec8',1,'ethercat_interface::EcSlave']]],
-  ['domains_14',['domains',['../classethercat__interface_1_1EcSlave.html#ac3598c47ab7c2eea58c571d6d5e2183f',1,'ethercat_interface::EcSlave']]]
+  ['default_5fvalue_6',['default_value',['../structethercat__interface_1_1InterfaceData.html#a56a06e6a898cefe3997bc9dc8f4a4ac4',1,'ethercat_interface::InterfaceData']]]
 ];

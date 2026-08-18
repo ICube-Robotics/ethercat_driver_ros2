@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['domainmap_0',['DomainMap',['../classethercat__interface_1_1EcSlave.html#a8348bf7fd3dbfce01a1d7b8f8a4cdec8',1,'ethercat_interface::EcSlave']]]
+  ['singlereadfunctiontype_0',['SingleReadFunctionType',['../namespaceethercat__interface.html#a22250355063916923714035b7f6d5e18',1,'ethercat_interface']]],
+  ['singlewritefunctiontype_1',['SingleWriteFunctionType',['../namespaceethercat__interface.html#ae3d0f8d548116327ebc5560f12a2b165',1,'ethercat_interface']]]
 ];
