@@ -68,6 +68,16 @@ if(BUILD_TESTING)
   ament_target_dependencies(test_ec_pdo_channel_manager
     yaml_cpp_vendor
   )
+
+  # Test SdoConfigEntry
+  ament_add_gmock(
+    test_ec_sdo_manager
+    test/test_ec_sdo_manager.cpp
+  )
+  target_include_directories(test_ec_sdo_manager PRIVATE include ${ETHERLAB_DIR}/include)
+  ament_target_dependencies(test_ec_sdo_manager
+    yaml_cpp_vendor
+  )
 endif()
 
 ## EXPORTS

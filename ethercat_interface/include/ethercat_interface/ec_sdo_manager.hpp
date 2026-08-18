@@ -50,8 +50,6 @@ public:
     } else if (data_type == "int32") {
       EC_WRITE_S32(buffer, static_cast<int32_t>(data));
     } else if (data_type == "float32" || data_type == "real32") {
-      // Store IEEE-754 float bits; "data" holds the numeric float value as int when
-      // used for whole-number SDO setup, or bit pattern if configured that way.
       const float f = static_cast<float>(data);
       uint32_t bits = 0;
       std::memcpy(&bits, &f, sizeof(bits));
@@ -88,7 +86,15 @@ public:
     }
     // value
     if (sdo_config["value"]) {
-      data = sdo_config["value"].as<int>();
+      // Hex literals like 0x80 (used across nearly every drive config to clear faults on
+      // 0x6040) only parse via as<int64_t>(), not as<double>(); fractional values like 2.5
+      // (float32/real32 SDOs) only parse via as<double>(). Try the integer form first so hex
+      // keeps working, and fall back to double for fractional values.
+      try {
+        data = static_cast<double>(sdo_config["value"].as<int64_t>());
+      } catch (const YAML::BadConversion &) {
+        data = sdo_config["value"].as<double>();
+      }
     } else {
       std::cerr << "sdo " << index << ": missing sdo value" << std::endl;
       return false;
@@ -105,7 +111,7 @@ public:
   uint16_t index;
   uint8_t sub_index;
   std::string data_type;
-  int data;
+  double data;
 
 private:
   size_t type2bytes(std::string type)
