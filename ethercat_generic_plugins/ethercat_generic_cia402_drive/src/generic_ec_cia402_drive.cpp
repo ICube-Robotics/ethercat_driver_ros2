@@ -14,6 +14,7 @@
 //
 // Author: Maciej Bednarczyk (macbednarczyk@gmail.com)
 
+#include <algorithm>
 #include <cstdio>
 #include <numeric>
 #include <string>
@@ -73,11 +74,23 @@ void EcCiA402Drive::updateState()
       );
     }
   }
-  if (walking_to_enabled_ && state_ == STATE_OPERATION_ENABLED) {
-    walking_to_enabled_ = false;
+  if (walking_to_enabled_) {
+    if (state_ == STATE_OPERATION_ENABLED) {
+      walking_to_enabled_ = false;
+    } else if (std::chrono::steady_clock::now() >= walking_to_enabled_deadline_) {
+      walking_to_enabled_ = false;
+      walk_timed_out_ = true;
+      walk_timeout_target_ = STATE_OPERATION_ENABLED;
+    }
   }
-  if (walking_to_disabled_ && state_ == STATE_SWITCH_ON_DISABLED) {
-    walking_to_disabled_ = false;
+  if (walking_to_disabled_) {
+    if (state_ == STATE_SWITCH_ON_DISABLED) {
+      walking_to_disabled_ = false;
+    } else if (std::chrono::steady_clock::now() >= walking_to_disabled_deadline_) {
+      walking_to_disabled_ = false;
+      walk_timed_out_ = true;
+      walk_timeout_target_ = STATE_SWITCH_ON_DISABLED;
+    }
   }
 
   last_status_word_ = status_word_;
@@ -137,6 +150,8 @@ void EcCiA402Drive::process_data(int index, uint8_t * domain_address)
         if (requested && !last_enable_drive_command_) {
           walking_to_enabled_ = true;
           walking_to_disabled_ = false;
+          walking_to_enabled_deadline_ = std::chrono::steady_clock::now() + kWalkTimeout;
+          walk_timed_out_ = false;
         }
         last_enable_drive_command_ = requested;
       }
@@ -146,6 +161,8 @@ void EcCiA402Drive::process_data(int index, uint8_t * domain_address)
         if (requested && !last_disable_drive_command_) {
           walking_to_disabled_ = true;
           walking_to_enabled_ = false;
+          walking_to_disabled_deadline_ = std::chrono::steady_clock::now() + kWalkTimeout;
+          walk_timed_out_ = false;
         }
         last_disable_drive_command_ = requested;
       }
@@ -370,6 +387,16 @@ void EcCiA402Drive::collectDiagnostics(diagnostic_msgs::msg::DiagnosticStatus & 
     std::snprintf(buf, sizeof(buf), "0x%04X", error_code_);
     error_kv.value = buf;
     status.values.push_back(error_kv);
+  }
+
+  // A missed enable_drive/disable_drive deadline is not a runtime error — just a condition
+  // worth a human's attention, so report it as a warning rather than failing anything.
+  if (walk_timed_out_) {
+    status.level = std::max(status.level, diagnostic_msgs::msg::DiagnosticStatus::WARN);
+    diagnostic_msgs::msg::KeyValue timeout_kv;
+    timeout_kv.key = "drive_command";
+    timeout_kv.value = "timed out walking to " + DEVICE_STATE_STR.at(walk_timeout_target_);
+    status.values.push_back(timeout_kv);
   }
 }
 

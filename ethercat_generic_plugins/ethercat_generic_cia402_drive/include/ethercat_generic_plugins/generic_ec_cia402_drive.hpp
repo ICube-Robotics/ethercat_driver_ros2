@@ -17,6 +17,7 @@
 #ifndef ETHERCAT_GENERIC_PLUGINS__GENERIC_EC_CIA402_DRIVE_HPP_
 #define ETHERCAT_GENERIC_PLUGINS__GENERIC_EC_CIA402_DRIVE_HPP_
 
+#include <chrono>
 #include <vector>
 #include <string>
 #include <unordered_map>
@@ -77,6 +78,12 @@ protected:
   bool initialized_ = false;
   bool auto_fault_reset_ = false;
   bool auto_state_transitions_ = true;
+  // Whether the auto-walk (auto_state_transitions_) goes all the way to Operation Enabled on
+  // its own, or stops at Switched On (powered, not yet producing torque/motion) until an
+  // explicit enable_drive request takes the last step. False by default — a caller not using
+  // enable_drive/disable_drive at all gets the old always-auto-enable behaviour back by
+  // setting this true. See transition()'s STATE_SWITCH_ON case.
+  bool auto_enable_ = false;
   bool fault_reset_ = false;
   int fault_reset_command_interface_index_ = -1;
   bool last_fault_reset_command_ = false;
@@ -92,6 +99,18 @@ protected:
   bool last_disable_drive_command_ = false;
   bool walking_to_enabled_ = false;
   bool walking_to_disabled_ = false;
+
+  // How long a walk may run before giving up. Not a runtime error — updateState() just stops
+  // driving the controlword and latches walk_timed_out_ for collectDiagnostics() to report as
+  // a warning.
+  static constexpr std::chrono::seconds kWalkTimeout{5};
+  std::chrono::steady_clock::time_point walking_to_enabled_deadline_;
+  std::chrono::steady_clock::time_point walking_to_disabled_deadline_;
+  // Set when a walk misses its deadline; cleared by the next enable_drive/disable_drive
+  // request (whether that one succeeds or times out again). walk_timeout_target_ names what
+  // it was walking toward, for the diagnostics message.
+  bool walk_timed_out_ = false;
+  DeviceState walk_timeout_target_ = STATE_UNDEFINED;
 
   /** returns device state based upon the status_word */
   DeviceState deviceState(uint16_t status_word);
