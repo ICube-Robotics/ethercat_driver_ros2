@@ -82,6 +82,17 @@ protected:
   bool last_fault_reset_command_ = false;
   double last_position_ = std::numeric_limits<double>::quiet_NaN();
 
+  // enable_drive/disable_drive: edge-triggered command interfaces (no PDO object of their
+  // own) that walk the drive toward Operation Enabled / Switch-on-Disabled over as many
+  // cycles as it takes, independently of auto_state_transitions_. Meant for a caller that
+  // wants explicit control without hand-rolling the CiA402 walk itself.
+  int enable_drive_command_interface_index_ = -1;
+  int disable_drive_command_interface_index_ = -1;
+  bool last_enable_drive_command_ = false;
+  bool last_disable_drive_command_ = false;
+  bool walking_to_enabled_ = false;
+  bool walking_to_disabled_ = false;
+
   /** returns device state based upon the status_word */
   DeviceState deviceState(uint16_t status_word);
   /** returns the control word that will take device from state to next desired state */
