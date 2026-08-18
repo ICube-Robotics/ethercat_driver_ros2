@@ -173,8 +173,9 @@ public:
    *  \return 0 on success (see ecrt_master_sdo_upload's return convention); negative if
    *          refused or the transfer failed. */
   virtual int upload_slave_sdo(
-    uint16_t alias, uint16_t slave_position, uint16_t index, uint8_t sub_index,
-    uint8_t * target, size_t target_size, size_t * result_size, uint32_t * abort_code) = 0;
+    uint16_t slave_position, uint16_t index, uint8_t sub_index,
+    uint8_t * target, size_t target_size, size_t * result_size, uint32_t * abort_code,
+    uint16_t alias = 0) = 0;
 
   /** @brief Last-observed master state (link up/down, responding-slave count, aggregate AL
    *  states bitmask), as last updated by the periodic state check during

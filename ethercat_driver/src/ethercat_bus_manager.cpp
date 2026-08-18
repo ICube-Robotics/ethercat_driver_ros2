@@ -611,15 +611,16 @@ std::vector<ethercat_interface::EcSlaveStateInfo> EthercatBusManager::slaveState
 }
 
 int EthercatBusManager::readSlaveSdo(
-  uint16_t alias, uint16_t slave_position, uint16_t index, uint8_t sub_index,
-  uint8_t * target, size_t target_size, size_t * result_size, uint32_t * abort_code)
+  uint16_t slave_position, uint16_t index, uint8_t sub_index,
+  uint8_t * target, size_t target_size, size_t * result_size, uint32_t * abort_code,
+  uint16_t alias)
 {
   const std::lock_guard<std::mutex> lock(ec_mutex_);
   if (!master_) {
     return -1;
   }
   return master_->upload_slave_sdo(
-    alias, slave_position, index, sub_index, target, target_size, result_size, abort_code);
+    slave_position, index, sub_index, target, target_size, result_size, abort_code, alias);
 }
 
 void EthercatBusManager::loadTransferConfigYamlFile(YAML::Node & node, const std::string & path)

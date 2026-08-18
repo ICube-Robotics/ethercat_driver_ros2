@@ -340,8 +340,9 @@ bool EtherlabMaster::configure_slaves()
 }
 
 int EtherlabMaster::upload_slave_sdo(
-  uint16_t alias, uint16_t slave_position, uint16_t index, uint8_t sub_index,
-  uint8_t * target, size_t target_size, size_t * result_size, uint32_t * abort_code)
+  uint16_t slave_position, uint16_t index, uint8_t sub_index,
+  uint8_t * target, size_t target_size, size_t * result_size, uint32_t * abort_code,
+  uint16_t alias)
 {
   if (activated_) {
     printError(

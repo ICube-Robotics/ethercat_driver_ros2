@@ -108,8 +108,9 @@ public:
    * ecrt_master_sdo_upload return code.
    */
   int readSlaveSdo(
-    uint16_t alias, uint16_t slave_position, uint16_t index, uint8_t sub_index,
-    uint8_t * target, size_t target_size, size_t * result_size, uint32_t * abort_code);
+    uint16_t slave_position, uint16_t index, uint8_t sub_index,
+    uint8_t * target, size_t target_size, size_t * result_size, uint32_t * abort_code,
+    uint16_t alias = 0);
 
   /** @brief Bus-wide master state (link up/down, responding-slave count, aggregate AL
    *  states), as last observed by the master plugin's periodic check during read(). No new
