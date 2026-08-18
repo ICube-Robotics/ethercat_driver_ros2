@@ -27,6 +27,8 @@
 #include "ethercat_interface/ec_sync_manager.hpp"
 #include "ethercat_interface/ec_buffer_tools.h"
 
+#include "diagnostic_msgs/msg/diagnostic_status.hpp"
+#include "diagnostic_msgs/msg/key_value.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 
@@ -39,6 +41,24 @@ typedef struct
   unsigned int n_entries;   /**< Number of PDO entries in \a entries to map. */
   PdoType pdo_type;
 } pdo_info_t;
+
+/** EtherCAT AL state bitmask (ETG.1000 encoding, matches EcMasterStateInfo::al_states and
+ *  EcSlaveStateInfo::al_state): INIT=1, PREOP=2, SAFEOP=4, OP=8. */
+constexpr uint8_t kAlStateInit = 1;
+constexpr uint8_t kAlStatePreop = 2;
+constexpr uint8_t kAlStateSafeop = 4;
+constexpr uint8_t kAlStateOp = 8;
+
+inline std::string alStateStr(uint8_t al_state)
+{
+  switch (al_state) {
+    case kAlStateInit: return "INIT";
+    case kAlStatePreop: return "PREOP";
+    case kAlStateSafeop: return "SAFEOP";
+    case kAlStateOp: return "OP";
+    default: return "UNKNOWN";
+  }
+}
 
 class EcSlaveBase
 {
@@ -68,6 +88,38 @@ public:
   bool isAliasAndPositionSet()
   {
     return is_alias_and_position_set_;
+  }
+
+  /** Push this cycle's link/AL-state observation in. A slave has no visibility into its own
+   *  online/al_state otherwise — both are tracked by the master's periodic state check.
+   *  Called once per cycle by whoever owns the master (e.g. EthercatBusManager), correlated
+   *  by alias/position against EcMasterBase::get_slave_states(). */
+  inline
+  void setHealth(bool online, uint8_t al_state)
+  {
+    online_ = online;
+    al_state_ = al_state;
+  }
+
+  /** Fill in this slave's diagnostic status: generic EtherCAT-layer health (online, al_state)
+   *  and a level derived from it. name/hardware_id are the caller's responsibility (it knows
+   *  the component name; this slave doesn't). Subclasses that have more specific diagnostics
+   *  (e.g. a CiA402 device state) should override, call the base implementation first to get
+   *  the generic fields, then append/refine — not replace it outright. */
+  virtual void collectDiagnostics(diagnostic_msgs::msg::DiagnosticStatus & status) const
+  {
+    status.level = (online_ && al_state_ == kAlStateOp) ?
+      diagnostic_msgs::msg::DiagnosticStatus::OK :
+      diagnostic_msgs::msg::DiagnosticStatus::ERROR;
+    status.message = online_ ? "online" : "offline";
+    diagnostic_msgs::msg::KeyValue online_kv;
+    online_kv.key = "online";
+    online_kv.value = online_ ? "true" : "false";
+    status.values.push_back(online_kv);
+    diagnostic_msgs::msg::KeyValue al_state_kv;
+    al_state_kv.key = "al_state";
+    al_state_kv.value = alStateStr(al_state_);
+    status.values.push_back(al_state_kv);
   }
 
   virtual bool setup_slave(
@@ -124,6 +176,9 @@ protected:
 
   bool is_operational_ = false;
   bool is_alias_and_position_set_ = false;
+
+  bool online_ = false;
+  uint8_t al_state_ = 0;
 
 
   std::vector<SdoConfigEntry> sdo_config_;

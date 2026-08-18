@@ -16,6 +16,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_ros REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(diagnostic_msgs REQUIRED)
 
 add_library(
   ${PROJECT_NAME}
@@ -36,6 +37,7 @@ target_include_directories(
 ament_target_dependencies(
   ${PROJECT_NAME}
   rclcpp
+  diagnostic_msgs
 )
 
 # INSTALL
@@ -78,5 +80,6 @@ ament_export_include_directories(
 
 ament_export_dependencies(
   rclcpp
+  diagnostic_msgs
 )
 ament_package()
