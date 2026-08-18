@@ -168,11 +168,12 @@ public:
    *  NEVER be called while the master is activated (cyclic process-data exchange running):
    *  it blocks the calling thread on a mailbox round-trip, which would stall the real-time
    *  cycle. Implementations must refuse (return a negative value and log an error) rather
-   *  than perform the transfer if called while activated.
+   *  than perform the transfer if called while activated. alias 0 addresses slave_position
+   *  as an absolute ring position; a non-zero alias makes slave_position relative to it.
    *  \return 0 on success (see ecrt_master_sdo_upload's return convention); negative if
    *          refused or the transfer failed. */
   virtual int upload_slave_sdo(
-    uint16_t slave_position, uint16_t index, uint8_t sub_index,
+    uint16_t alias, uint16_t slave_position, uint16_t index, uint8_t sub_index,
     uint8_t * target, size_t target_size, size_t * result_size, uint32_t * abort_code) = 0;
 
   /** @brief Last-observed master state (link up/down, responding-slave count, aggregate AL

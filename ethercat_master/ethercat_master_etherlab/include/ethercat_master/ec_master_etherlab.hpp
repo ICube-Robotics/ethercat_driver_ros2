@@ -99,7 +99,7 @@ public:
    *  during the configure phase — after configure_slaves() and before start(), or after
    *  stop(). See EcMasterBase::upload_slave_sdo(). */
   int upload_slave_sdo(
-    uint16_t slave_position, uint16_t index, uint8_t sub_index,
+    uint16_t alias, uint16_t slave_position, uint16_t index, uint8_t sub_index,
     uint8_t * target, size_t target_size, size_t * result_size, uint32_t * abort_code);
 
   ethercat_interface::EcMasterStateInfo get_master_state() const;

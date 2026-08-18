@@ -101,12 +101,14 @@ public:
   /** @brief Read a slave SDO entry (CoE upload). Must be called in the idle/PRE-OP
    * phase — i.e. after configureBus() but BEFORE activateBus(). This is a blocking
    * mailbox call; after the bus is activated the application owns the cyclic loop
-   * and a blocking upload would stall the master (and the calling thread).
+   * and a blocking upload would stall the master (and the calling thread). alias 0
+   * addresses slave_position as an absolute ring position; a non-zero alias makes
+   * slave_position relative to it.
    * @return 0 on success, negative if the master does not exist, else the
    * ecrt_master_sdo_upload return code.
    */
   int readSlaveSdo(
-    uint16_t slave_position, uint16_t index, uint8_t sub_index,
+    uint16_t alias, uint16_t slave_position, uint16_t index, uint8_t sub_index,
     uint8_t * target, size_t target_size, size_t * result_size, uint32_t * abort_code);
 
   /** @brief Bus-wide master state (link up/down, responding-slave count, aggregate AL
