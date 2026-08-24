@@ -13,6 +13,8 @@
 // limitations under the License.
 
 #include <gtest/gtest.h>
+#include <cstdint>
+#include <cstring>
 #include <memory>
 
 #include "ethercat_interface/ec_pdo_channel_manager.hpp"
@@ -110,6 +112,57 @@ TEST(TestEcPdoChannelManager, EcReadWriteBoolMask1)
   ASSERT_EQ(EC_READ_U8(buffer), 0);
   pdo_manager.ec_write(buffer, 5);
   ASSERT_EQ(EC_READ_U8(buffer), 1);
+}
+
+TEST(TestEcPdoChannelManager, EcReadWriteFloat32)
+{
+  const char channel_config[] =
+    R"(
+      {index: 0x2063, sub_index: 0, type: float32, state_interface: motor_temperature}
+    )";
+  YAML::Node config = YAML::Load(channel_config);
+  ethercat_interface::EcPdoChannelManager pdo_manager;
+  pdo_manager.pdo_type = ethercat_interface::PdoType::TPDO;
+  pdo_manager.load_from_config(config);
+
+  ASSERT_EQ(pdo_manager.data_type, "float32");
+  ASSERT_EQ(pdo_manager.type2bits(pdo_manager.data_type), 32);
+
+  uint8_t buffer[4];
+  const float temperature = 42.5f;
+  uint32_t bits = 0;
+  std::memcpy(&bits, &temperature, sizeof(bits));
+  EC_WRITE_U32(buffer, bits);
+
+  ASSERT_FLOAT_EQ(static_cast<float>(pdo_manager.ec_read(buffer)), temperature);
+
+  pdo_manager.ec_write(buffer, 12.25);
+  bits = EC_READ_U32(buffer);
+  float written = 0.0f;
+  std::memcpy(&written, &bits, sizeof(written));
+  ASSERT_FLOAT_EQ(written, 12.25f);
+}
+
+TEST(TestEcPdoChannelManager, EcReadReal32Alias)
+{
+  const char channel_config[] =
+    R"(
+      {index: 0x2060, sub_index: 0, type: real32, state_interface: dc_bus_voltage, factor: 0.5}
+    )";
+  YAML::Node config = YAML::Load(channel_config);
+  ethercat_interface::EcPdoChannelManager pdo_manager;
+  pdo_manager.pdo_type = ethercat_interface::PdoType::TPDO;
+  pdo_manager.load_from_config(config);
+
+  ASSERT_EQ(pdo_manager.type2bits(pdo_manager.data_type), 32);
+
+  uint8_t buffer[4];
+  const float voltage = 48.0f;
+  uint32_t bits = 0;
+  std::memcpy(&bits, &voltage, sizeof(bits));
+  EC_WRITE_U32(buffer, bits);
+
+  ASSERT_FLOAT_EQ(static_cast<float>(pdo_manager.ec_read(buffer)), 24.0f);
 }
 
 TEST(TestEcPdoChannelManager, EcReadWriteBoolMask5)

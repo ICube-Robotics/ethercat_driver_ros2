@@ -18,6 +18,8 @@
 #define ETHERCAT_INTERFACE__EC_SDO_MANAGER_HPP_
 
 #include <ecrt.h>
+#include <cstdint>
+#include <cstring>
 #include <string>
 #include <vector>
 #include <limits>
@@ -47,6 +49,11 @@ public:
       EC_WRITE_U32(buffer, static_cast<uint32_t>(data));
     } else if (data_type == "int32") {
       EC_WRITE_S32(buffer, static_cast<int32_t>(data));
+    } else if (data_type == "float32" || data_type == "real32") {
+      const float f = static_cast<float>(data);
+      uint32_t bits = 0;
+      std::memcpy(&bits, &f, sizeof(bits));
+      EC_WRITE_U32(buffer, bits);
     } else if (data_type == "uint64") {
       EC_WRITE_U64(buffer, static_cast<uint64_t>(data));
     } else if (data_type == "int64") {
@@ -79,7 +86,15 @@ public:
     }
     // value
     if (sdo_config["value"]) {
-      data = sdo_config["value"].as<int>();
+      // Hex literals like 0x80 (used across nearly every drive config to clear faults on
+      // 0x6040) only parse via as<int64_t>(), not as<double>(); fractional values like 2.5
+      // (float32/real32 SDOs) only parse via as<double>(). Try the integer form first so hex
+      // keeps working, and fall back to double for fractional values.
+      try {
+        data = static_cast<double>(sdo_config["value"].as<int64_t>());
+      } catch (const YAML::BadConversion &) {
+        data = sdo_config["value"].as<double>();
+      }
     } else {
       std::cerr << "sdo " << index << ": missing sdo value" << std::endl;
       return false;
@@ -96,7 +111,7 @@ public:
   uint16_t index;
   uint8_t sub_index;
   std::string data_type;
-  int data;
+  double data;
 
 private:
   size_t type2bytes(std::string type)
@@ -105,11 +120,12 @@ private:
       return 1;
     } else if (type == "int16" || type == "uint16") {
       return 2;
-    } else if (type == "int32" || type == "uint32") {
+    } else if (type == "int32" || type == "uint32" || type == "float32" || type == "real32") {
       return 4;
     } else if (type == "int64" || type == "uint64") {
       return 8;
     }
+    return 0;
   }
 };
 
