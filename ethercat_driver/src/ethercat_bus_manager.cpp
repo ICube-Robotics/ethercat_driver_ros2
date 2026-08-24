@@ -15,10 +15,12 @@
 #include "ethercat_driver/ethercat_bus_manager.hpp"
 
 #include <algorithm>
+#include <chrono>
 #include <ctime>
 #include <regex>
 #include <stdexcept>
 #include <string>
+#include <thread>
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -423,15 +425,27 @@ bool EthercatBusManager::configureBusLocked()
 
 bool EthercatBusManager::activateBus()
 {
-  const std::lock_guard<std::mutex> lock(ec_mutex_);
-  // Configure first if a caller skipped the explicit configureBus() step (keeps
-  // the original single-call contract for existing consumers like EthercatDriver).
-  if (!configured_) {
-    if (!configureBusLocked()) {
+  {
+    const std::lock_guard<std::mutex> lock(ec_mutex_);
+    // Configure first if a caller skipped the explicit configureBus() step (keeps
+    // the original single-call contract for existing consumers like EthercatDriver).
+    if (!configured_) {
+      if (!configureBusLocked()) {
+        return false;
+      }
+    }
+    if (!activateBusLocked()) {
       return false;
     }
+  }  // Lock released: activated_ is now true, so read()/write() are live - required by
+     // waitForSlavesOperational(), which calls them and would otherwise always observe
+     // this same thread already holding ec_mutex_.
+
+  if (!waitForSlavesOperational()) {
+    deactivateBus();
+    return false;
   }
-  return activateBusLocked();
+  return true;
 }
 
 bool EthercatBusManager::activateBusLocked()
@@ -469,20 +483,59 @@ bool EthercatBusManager::activateBusLocked()
     RCLCPP_INFO(rclcpp::get_logger("EthercatBusManager"), "Transfer network configured!");
   }
 
-  // Deliberately NOT waiting here for slaves to reach OPERATIONAL: that walk happens
-  // autonomously, one AL state at a time, driven purely by the ordinary cyclic
-  // read()/write() exchange (see EtherlabMaster::read_process_data()/write_process_data(),
-  // which already run the DC sync and state checks on every call, starting with the very
-  // first cycle after this returns). Blocking here would mean running that wait on a
-  // hand-timed loop outside the real RT cycle instead of inside it. Callers that need to
-  // know readiness use slaveStates()/masterState() (see EthercatBusMonitorController).
+  // Deliberately NOT waiting here for slaves to reach OPERATIONAL: this method runs with
+  // ec_mutex_ held, and that wait needs read()/write() (see waitForSlavesOperational()),
+  // which take their own try_to_lock and would see this thread already holding the lock on
+  // every attempt. activateBus() runs the actual bounded wait after releasing this lock.
   RCLCPP_INFO(
       rclcpp::get_logger("EthercatDriver"),
-      "System Successfully started! Slaves will reach OPERATIONAL over the following cycles.");
+      "EcMaster active. Waiting for slaves to reach OPERATIONAL...");
 
   activated_ = true;
 
   return true;
+}
+
+bool EthercatBusManager::waitForSlavesOperational()
+{
+  const auto period = std::chrono::duration<double>(1.0 / control_frequency_);
+  const auto deadline = std::chrono::steady_clock::now() +
+    std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+    std::chrono::duration<double>(bus_config_.readiness_timeout_s));
+
+  while (std::chrono::steady_clock::now() < deadline) {
+    if (read() == EthercatCycleResult::kError) {
+      RCLCPP_ERROR(rclcpp::get_logger("EthercatBusManager"),
+        "waitForSlavesOperational(): read() failed during settle.");
+      return false;
+    }
+    if (write() == EthercatCycleResult::kError) {
+      RCLCPP_ERROR(rclcpp::get_logger("EthercatBusManager"),
+        "waitForSlavesOperational(): write() failed during settle.");
+      return false;
+    }
+
+    bool all_operational = true;
+    for (const auto & slave : slaveStates()) {
+      if (!slave.operational) {
+        all_operational = false;
+        break;
+      }
+    }
+    if (all_operational) {
+      RCLCPP_INFO(
+        rclcpp::get_logger("EthercatBusManager"), "All slaves reached OPERATIONAL.");
+      return true;
+    }
+
+    std::this_thread::sleep_for(
+      std::chrono::duration_cast<std::chrono::steady_clock::duration>(period));
+  }
+
+  RCLCPP_ERROR(rclcpp::get_logger("EthercatBusManager"),
+    "Timed out (%.1fs) waiting for all slaves to reach OPERATIONAL.",
+    bus_config_.readiness_timeout_s);
+  return false;
 }
 
 void EthercatBusManager::deactivateBus()

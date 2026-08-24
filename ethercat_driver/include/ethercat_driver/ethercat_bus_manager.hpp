@@ -50,6 +50,10 @@ struct EthercatBusConfig
   double control_frequency{100.0};
   std::string transfer_config;
   std::string fsoe_config;
+  // Bound on how long activateBus() waits for every slave to reach OPERATIONAL (bus AL
+  // state, not any vendor drive-state machine) before giving up. Matches the naming/default
+  // convention of a settle-timeout already used elsewhere for the same kind of wait.
+  double readiness_timeout_s{25.0};
 };
 
 enum class EthercatCycleResult
@@ -79,6 +83,13 @@ public:
    */
   bool configureBus();
 
+  /** @brief Request the master, register/activate the network, then block (bounded by
+   * bus_config_.readiness_timeout_s) until every slave reports OPERATIONAL from the bus's
+   * own point of view (EcSlaveStateInfo::operational, via slaveStates()) - not merely that
+   * the master accepted activation. Without this, a caller's first read() after this
+   * returns could still see a slave in the PREOP/SAFEOP transient, with process data that
+   * has not started exchanging yet. Returns false (and rolls back via deactivateBus()) on
+   * timeout or on any read()/write() failure during the wait. */
   bool activateBus();
 
   void deactivateBus();
@@ -169,6 +180,13 @@ protected:
    * needs to configure first). */
   bool configureBusLocked();
   bool activateBusLocked();
+
+  /** @brief Poll read()/write() (the ordinary cyclic exchange, not a raw sleep) until
+   * slaveStates() reports every slave operational, or bus_config_.readiness_timeout_s
+   * elapses. Deliberately called with ec_mutex_ NOT held (see activateBus()): read()/write()
+   * take their own try_to_lock, so holding the lock across this call would make every
+   * iteration observe kSkippedBusy and never actually progress. */
+  bool waitForSlavesOperational();
 
 protected:
   EthercatBusConfig bus_config_;
