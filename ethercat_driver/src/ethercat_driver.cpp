@@ -101,6 +101,20 @@ bool configure_ethercat_bus_config(
     }
   }
 
+  // Get readiness timeout (bound on activateBus()'s wait for all slaves to reach
+  // OPERATIONAL)
+  if (hardware_parameters.find("readiness_timeout_s") == hardware_parameters.end()) {
+    bus_config.readiness_timeout_s = 25.0;
+  } else {
+    try {
+      bus_config.readiness_timeout_s = std::stod(hardware_parameters.at("readiness_timeout_s"));
+    } catch (std::exception & e) {
+      RCLCPP_FATAL(
+        rclcpp::get_logger("EthercatDriver"), "Invalid readiness timeout (%s)!", e.what());
+      return false;
+    }
+  }
+
   const auto transfer_config = hardware_parameters.find("transfer_config");
   const auto fsoe_config = hardware_parameters.find("fsoe_config");
   if (transfer_config != hardware_parameters.end() && fsoe_config != hardware_parameters.end()) {
