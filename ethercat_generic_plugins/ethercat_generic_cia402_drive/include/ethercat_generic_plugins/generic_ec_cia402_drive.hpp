@@ -81,22 +81,21 @@ protected:
   // Whether the auto-walk (auto_state_transitions_) goes all the way to Operation Enabled on
   // its own, or stops at Switched On (powered, not yet producing torque/motion) until an
   // explicit enable_drive request takes the last step. False by default — a caller not using
-  // enable_drive/disable_drive at all gets the old always-auto-enable behaviour back by
-  // setting this true. See transition()'s STATE_SWITCH_ON case.
+  // enable_drive at all gets the old always-auto-enable behaviour back by setting this true.
+  // See transition()'s STATE_SWITCH_ON case.
   bool auto_enable_ = false;
   bool fault_reset_ = false;
   int fault_reset_command_interface_index_ = -1;
   bool last_fault_reset_command_ = false;
   double last_position_ = std::numeric_limits<double>::quiet_NaN();
 
-  // enable_drive/disable_drive: edge-triggered command interfaces (no PDO object of their
-  // own) that walk the drive toward Operation Enabled / Switch-on-Disabled over as many
-  // cycles as it takes, independently of auto_state_transitions_. Meant for a caller that
-  // wants explicit control without hand-rolling the CiA402 walk itself.
+  // enable_drive: one level-triggered command interface (no PDO object of its own) that walks
+  // the drive toward Operation Enabled on a rising edge (0/NaN -> nonzero) and toward
+  // Switch-on-Disabled on a falling edge (nonzero -> 0/NaN), over as many cycles as it takes,
+  // independently of auto_state_transitions_. Meant for a caller that wants explicit control
+  // without hand-rolling the CiA402 walk itself.
   int enable_drive_command_interface_index_ = -1;
-  int disable_drive_command_interface_index_ = -1;
   bool last_enable_drive_command_ = false;
-  bool last_disable_drive_command_ = false;
   bool walking_to_enabled_ = false;
   bool walking_to_disabled_ = false;
 
@@ -106,9 +105,9 @@ protected:
   static constexpr std::chrono::seconds kWalkTimeout{5};
   std::chrono::steady_clock::time_point walking_to_enabled_deadline_;
   std::chrono::steady_clock::time_point walking_to_disabled_deadline_;
-  // Set when a walk misses its deadline; cleared by the next enable_drive/disable_drive
-  // request (whether that one succeeds or times out again). walk_timeout_target_ names what
-  // it was walking toward, for the diagnostics message.
+  // Set when a walk misses its deadline; cleared by the next enable_drive edge (whether that
+  // one succeeds or times out again). walk_timeout_target_ names what it was walking toward,
+  // for the diagnostics message.
   bool walk_timed_out_ = false;
   DeviceState walk_timeout_target_ = STATE_UNDEFINED;
 
