@@ -174,10 +174,13 @@ void EcCiA402Drive::process_data(int index, uint8_t * domain_address)
           state_,
           channel.ec_read(domain_address));
       } else if (walking_to_disabled_) {
-        // Disable Voltage (0x00) is valid from any powered CiA402 state and drops straight
-        // to Switch-on-Disabled — the simple, standard shutdown; a vendor subclass wanting a
-        // controlled quick-stop-first sequence can override this behaviour.
-        channel.default_value = 0x00;
+        // Route through Quick Stop before dropping voltage, the standard controlled CiA402
+        // shutdown: any powered state -> Quick Stop (0x02) -> once Quick Stop Active is
+        // reached, Disable Voltage (0x00) -> Switch-on-Disabled. A single unconditional 0x00
+        // from whatever state the drive happens to be in would cut power immediately instead.
+        channel.default_value =
+          (state_ == STATE_QUICK_STOP_ACTIVE || state_ == STATE_SWITCH_ON_DISABLED) ?
+          0x00 : 0x02;
       } else if (fault_reset_pulse_active_) {
         // Nothing above is driving this channel this cycle, so transition()'s own bit-7
         // clearing (see its STATE_FAULT case) never runs again for this pulse — clear it here
