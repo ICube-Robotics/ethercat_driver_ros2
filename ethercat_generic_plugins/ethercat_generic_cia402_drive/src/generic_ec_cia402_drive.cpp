@@ -147,24 +147,18 @@ void EcCiA402Drive::process_data(int index, uint8_t * domain_address)
       if (enable_drive_command_interface_index_ >= 0) {
         const double v = command_interface_ptr_->at(enable_drive_command_interface_index_);
         const bool requested = !std::isnan(v) && v != 0;
-        if (requested && !last_enable_drive_command_) {
-          walking_to_enabled_ = true;
-          walking_to_disabled_ = false;
-          walking_to_enabled_deadline_ = std::chrono::steady_clock::now() + kWalkTimeout;
+        if (requested != last_enable_drive_command_) {
+          // Rising edge (0/NaN -> nonzero): walk up to Operation Enabled. Falling edge
+          // (nonzero -> 0/NaN): walk down to Switch-on-Disabled. One interface, one edge
+          // decides the direction - no separate disable_drive interface needed.
+          walking_to_enabled_ = requested;
+          walking_to_disabled_ = !requested;
+          const auto deadline = std::chrono::steady_clock::now() + kWalkTimeout;
+          walking_to_enabled_deadline_ = deadline;
+          walking_to_disabled_deadline_ = deadline;
           walk_timed_out_ = false;
         }
         last_enable_drive_command_ = requested;
-      }
-      if (disable_drive_command_interface_index_ >= 0) {
-        const double v = command_interface_ptr_->at(disable_drive_command_interface_index_);
-        const bool requested = !std::isnan(v) && v != 0;
-        if (requested && !last_disable_drive_command_) {
-          walking_to_disabled_ = true;
-          walking_to_enabled_ = false;
-          walking_to_disabled_deadline_ = std::chrono::steady_clock::now() + kWalkTimeout;
-          walk_timed_out_ = false;
-        }
-        last_disable_drive_command_ = requested;
       }
 
       // fault_reset_ must also force a transition() call: it's the only place that reads and
@@ -270,10 +264,6 @@ bool EcCiA402Drive::setup_slave(
   if (parameters_.find("command_interface/enable_drive") != parameters_.end()) {
     enable_drive_command_interface_index_ =
       std::stoi(parameters_["command_interface/enable_drive"]);
-  }
-  if (parameters_.find("command_interface/disable_drive") != parameters_.end()) {
-    disable_drive_command_interface_index_ =
-      std::stoi(parameters_["command_interface/disable_drive"]);
   }
 
   return true;
@@ -408,7 +398,7 @@ void EcCiA402Drive::collectDiagnostics(diagnostic_msgs::msg::DiagnosticStatus & 
     status.values.push_back(error_kv);
   }
 
-  // A missed enable_drive/disable_drive deadline is not a runtime error — just a condition
+  // A missed enable_drive deadline is not a runtime error — just a condition
   // worth a human's attention, so report it as a warning rather than failing anything.
   if (walk_timed_out_) {
     status.level = std::max(status.level, diagnostic_msgs::msg::DiagnosticStatus::WARN);
