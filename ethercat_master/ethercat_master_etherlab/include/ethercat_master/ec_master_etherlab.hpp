@@ -85,13 +85,12 @@ public:
 
   bool reset();
 
-  void update(uint32_t domain = 0);
-
-  bool spin_slaves_until_operational();
-
   /** stop the control loop.
    */
   bool stop();
+
+  /** see EcMasterBase::deactivate() */
+  bool deactivate();
 
   bool read_process_data();
   bool write_process_data();
@@ -158,9 +157,6 @@ protected:
 
 private:
   // EtherCAT Control
-
-  uint32_t get_interval() {return interval_;}
-
 
   /** Vendor/product identity check against what's physically on the bus at this slave's ring
    *  position — shared by add_slave() and check_slave() so both see identical behavior. No

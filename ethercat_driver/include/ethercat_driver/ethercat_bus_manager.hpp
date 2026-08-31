@@ -50,6 +50,10 @@ struct EthercatBusConfig
   double control_frequency{100.0};
   std::string transfer_config;
   std::string fsoe_config;
+  // Bound on how long activateBus() waits for every slave to reach OPERATIONAL (bus AL
+  // state, not any vendor drive-state machine) before giving up. Matches the naming/default
+  // convention of a settle-timeout already used elsewhere for the same kind of wait.
+  double readiness_timeout_s{25.0};
 };
 
 enum class EthercatCycleResult
@@ -79,6 +83,13 @@ public:
    */
   bool configureBus();
 
+  /** @brief Request the master, register/activate the network, then block (bounded by
+   * bus_config_.readiness_timeout_s) until every slave reports OPERATIONAL from the bus's
+   * own point of view (EcSlaveStateInfo::operational, via slaveStates()) - not merely that
+   * the master accepted activation. Without this, a caller's first read() after this
+   * returns could still see a slave in the PREOP/SAFEOP transient, with process data that
+   * has not started exchanging yet. Returns false (and rolls back via deactivateBus()) on
+   * timeout or on any read()/write() failure during the wait. */
   bool activateBus();
 
   void deactivateBus();
@@ -151,13 +162,31 @@ protected:
 
   bool setupMaster();
 
-  bool configNetwork();
+  /** @brief Validate (phase 1) then register (phase 2) every module's slave with the master —
+   *  identity/sdo_check: gate, then ecrt_master_slave_config()/PDO-domain registration for
+   *  every module that passed. No SDO traffic. Must be safely re-runnable: deactivateBus()
+   *  frees this registration (see EcMasterBase::deactivate()), so activateBusLocked() re-runs
+   *  this alone (never downloadSdoConfig()) to rebuild it ahead of a reactivation. */
+  bool registerSlaves();
+
+  /** @brief Download each registered module's configured SDO entries (the slave_config YAML
+   *  `sdo:` block) to the drive. Config SDOs, not cyclic PDO data — must be sent exactly once,
+   *  in configureBusLocked() (i.e. on_configure()), and never repeated on a later
+   *  reactivation. */
+  bool downloadSdoConfig();
 
   /** Implementations of configureBus()/activateBus() that assume ec_mutex_ is
    * already held by the caller (avoids recursive locking when activateBus()
    * needs to configure first). */
   bool configureBusLocked();
   bool activateBusLocked();
+
+  /** @brief Poll read()/write() (the ordinary cyclic exchange, not a raw sleep) until
+   * slaveStates() reports every slave operational, or bus_config_.readiness_timeout_s
+   * elapses. Deliberately called with ec_mutex_ NOT held (see activateBus()): read()/write()
+   * take their own try_to_lock, so holding the lock across this call would make every
+   * iteration observe kSkippedBusy and never actually progress. */
+  bool waitForSlavesOperational();
 
 protected:
   EthercatBusConfig bus_config_;
@@ -172,7 +201,14 @@ protected:
   std::shared_ptr<ethercat_interface::EcMasterBase> master_;
 
   std::mutex ec_mutex_;
+  // True once downloadSdoConfig() has run (config SDOs sent). Never cleared by
+  // deactivateBus(): those are one-shot config writes and must not repeat on a
+  // reactivation — see downloadSdoConfig()'s doc comment.
   bool configured_{false};
+  // True while the ecrt-side PDO/domain registration built by registerSlaves() is valid.
+  // deactivateBus() clears this (EcMasterBase::deactivate() frees that registration);
+  // activateBusLocked() rebuilds it via registerSlaves() alone before activating.
+  bool network_registered_{false};
   bool activated_{false};
 
   /** Transfer nets */

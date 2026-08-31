@@ -486,88 +486,39 @@ bool EtherlabMaster::start()
   return true;
 }
 
-void EtherlabMaster::update(uint32_t domain)
-{
-  // receive process data
-  ecrt_master_receive(master_);
-
-  DomainInfo * domain_info = domain_info_[domain];
-
-  ecrt_domain_process(domain_info->domain);
-
-  // check process data state (optional)
-  checkDomainState(domain);
-
-  // check for master and slave state change
-  if (update_counter_ % check_state_frequency_ == 0) {
-    checkMasterState();
-    checkSlaveStates();
-  }
-
-  // read and write process data
-  for (DomainInfo::Entry & entry : domain_info->entries) {
-    std::shared_ptr<ethercat_interface::EcSlaveBase> slave = entry.slave->get_slave();
-    for (int i = 0; i < entry.num_pdos; ++i) {
-      slave->process_data(i, domain_info->domain_pd + entry.offset[i]);
-    }
-    slave->updateState();
-  }
-
-
-  struct timespec t;
-
-  clock_gettime(CLOCK_MONOTONIC, &t);
-  ecrt_master_application_time(master_, EC_NEWTIMEVAL2NANO(t));
-  ecrt_master_sync_reference_clock(master_);
-  ecrt_master_sync_slave_clocks(master_);
-
-  // send process data
-  ecrt_domain_queue(domain_info->domain);
-  ecrt_master_send(master_);
-
-  ++update_counter_;
-}
-
-bool EtherlabMaster::spin_slaves_until_operational()
-{
-  // start after one second
-  struct timespec t;
-  clock_gettime(CLOCK_MONOTONIC, &t);
-  t.tv_sec++;
-
-  bool running = true;
-  while (running) {
-    // wait until next shot
-    clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &t, NULL);
-
-    // update EtherCAT bus
-    update();
-
-    // RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"), "updated!");
-
-    // check if operational
-    bool isAllInit = true;
-    for (auto & slave_info : slave_info_) {
-      isAllInit = isAllInit && slave_info.slave->initialized();
-    }
-    if (isAllInit) {
-      running = false;
-    }
-    // calculate next shot. carry over nanoseconds into microseconds.
-    t.tv_nsec += get_interval();
-    while (t.tv_nsec >= 1000000000) {
-      t.tv_nsec -= 1000000000;
-      t.tv_sec++;
-    }
-  }
-  return true;
-}
 
   /** stop the control loop.
    */
 bool EtherlabMaster::stop()
 {
   activated_ = false;
+  return true;
+}
+
+bool EtherlabMaster::deactivate()
+{
+  if (master_ == NULL) {
+    printError("Deactivate. Master not obtained.");
+    return false;
+  }
+
+  int ret = ecrt_master_deactivate(master_);
+  if (ret != 0) {
+    printWarning("Deactivate. ecrt_master_deactivate() failed with code " + std::to_string(ret));
+    return false;
+  }
+
+  // ecrt_master_deactivate() frees everything created by ecrt_master_create_domain() /
+  // ecrt_master_slave_config() / ecrt_domain_data(); drop everything that referenced those
+  // objects so a subsequent add_slave()/registerTransferInDomain() cycle starts clean instead
+  // of appending onto or dereferencing stale entries.
+  for (auto & domain : domain_info_) {
+    delete domain.second;
+  }
+  domain_info_.clear();
+  slave_info_.clear();
+  transfers_.clear();
+
   return true;
 }
 
