@@ -76,7 +76,9 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
-<a href="#namespaces">Namespaces</a>  </div>
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">ec_slave_base.hpp File Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -90,35 +92,41 @@ $(function() {
 <code>#include &quot;<a class="el" href="ec__pdo__channel__manager_8hpp_source.html">ethercat_interface/ec_pdo_channel_manager.hpp</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="ec__sync__manager_8hpp_source.html">ethercat_interface/ec_sync_manager.hpp</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="ec__buffer__tools_8h_source.html">ethercat_interface/ec_buffer_tools.h</a>&quot;</code><br />
+<code>#include &quot;diagnostic_msgs/msg/diagnostic_status.hpp&quot;</code><br />
+<code>#include &quot;diagnostic_msgs/msg/key_value.hpp&quot;</code><br />
 <code>#include &quot;rclcpp/rclcpp.hpp&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for ec_slave_base.hpp:</div>
 <div class="dyncontent">
 <div class="center"><img src="ec__slave__base_8hpp__incl.png" border="0" usemap="#a_2home_2runner_2work_2ethercat__driver__ros2_2ethercat__driver__ros2_2ethercat__interface_2include_2ethercat__interface_2ec__slave__base_8hpp" alt=""/></div>
 <map name="a_2home_2runner_2work_2ethercat__driver__ros2_2ethercat__driver__ros2_2ethercat__interface_2include_2ethercat__interface_2ec__slave__base_8hpp" id="a_2home_2runner_2work_2ethercat__driver__ros2_2ethercat__driver__ros2_2ethercat__interface_2include_2ethercat__interface_2ec__slave__base_8hpp">
-<area shape="rect" title=" " alt="" coords="349,5,621,75"/>
+<area shape="rect" title=" " alt="" coords="472,5,744,75"/>
 <area shape="rect" title=" " alt="" coords="5,130,56,155"/>
-<area shape="poly" title=" " alt="" coords="350,64,216,89,75,125,69,127,67,122,74,120,215,84,349,58"/>
+<area shape="poly" title=" " alt="" coords="472,55,282,80,178,100,75,125,68,128,66,123,74,120,177,95,282,75,471,50"/>
 <area shape="rect" title=" " alt="" coords="478,218,541,243"/>
-<area shape="poly" title=" " alt="" coords="349,47,248,57,200,66,159,78,127,93,109,111,105,122,105,133,110,146,121,161,144,178,179,192,223,203,273,212,377,222,464,226,464,231,377,227,273,217,222,208,177,197,141,183,117,165,106,149,100,134,100,121,104,109,124,88,157,73,199,61,247,52,349,42"/>
+<area shape="poly" title=" " alt="" coords="472,48,369,55,264,69,217,79,176,92,143,107,121,124,113,143,121,161,144,178,179,192,223,203,273,212,377,222,464,226,464,231,377,227,273,217,222,208,177,197,141,183,117,164,107,143,117,121,140,102,174,87,215,74,263,64,368,50,472,42"/>
 <area shape="rect" title=" " alt="" coords="131,130,255,155"/>
-<area shape="poly" title=" " alt="" coords="389,77,240,128,239,123,387,72"/>
+<area shape="poly" title=" " alt="" coords="472,76,269,125,253,129,251,124,267,120,471,71"/>
 <area shape="rect" title=" " alt="" coords="280,130,360,155"/>
-<area shape="poly" title=" " alt="" coords="431,77,352,125,349,120,428,73"/>
+<area shape="poly" title=" " alt="" coords="511,77,373,125,365,128,364,123,371,120,509,72"/>
 <area shape="rect" title=" " alt="" coords="385,130,447,155"/>
-<area shape="poly" title=" " alt="" coords="464,77,434,120,430,117,460,74"/>
+<area shape="poly" title=" " alt="" coords="545,77,451,126,449,121,542,73"/>
 <area shape="rect" title=" " alt="" coords="565,218,624,243"/>
-<area shape="poly" title=" " alt="" coords="489,75,496,118,503,140,513,161,536,188,563,209,560,213,532,192,508,164,498,142,490,119,484,75"/>
+<area shape="poly" title=" " alt="" coords="553,77,530,98,513,124,508,143,513,161,533,188,560,209,557,213,530,192,508,164,502,143,508,122,526,95,550,73"/>
 <area shape="rect" href="ec__sdo__manager_8hpp.html" title=" " alt="" coords="717,123,880,163"/>
-<area shape="poly" title=" " alt="" coords="591,72,728,116,727,121,589,77"/>
+<area shape="poly" title=" " alt="" coords="673,73,752,114,750,119,671,77"/>
 <area shape="rect" href="ec__buffer__tools_8h.html" title=" " alt="" coords="1183,211,1324,251"/>
-<area shape="poly" title=" " alt="" coords="622,46,759,56,908,71,1044,92,1098,105,1140,120,1182,152,1228,199,1225,202,1178,157,1137,125,1097,111,1043,98,908,76,759,61,621,51"/>
+<area shape="poly" title=" " alt="" coords="745,50,967,78,1068,97,1140,120,1182,153,1228,199,1224,203,1178,157,1137,125,1067,102,966,83,744,56"/>
 <area shape="rect" href="ec__pdo__channel__manager_8hpp.html" title=" " alt="" coords="905,123,1127,163"/>
-<area shape="poly" title=" " alt="" coords="622,64,904,117,903,123,621,70"/>
+<area shape="poly" title=" " alt="" coords="745,72,927,117,926,122,744,77"/>
 <area shape="rect" href="ec__sync__manager_8hpp.html" title=" " alt="" coords="523,123,693,163"/>
-<area shape="poly" title=" " alt="" coords="528,73,576,112,573,116,525,77"/>
-<area shape="rect" title=" " alt="" coords="1202,130,1334,155"/>
-<area shape="poly" title=" " alt="" coords="622,51,883,78,1183,120,1207,125,1206,130,1182,125,882,83,621,56"/>
+<area shape="poly" title=" " alt="" coords="611,75,611,108,605,108,605,75"/>
+<area shape="rect" title=" " alt="" coords="1201,123,1369,163"/>
+<area shape="poly" title=" " alt="" coords="744,56,1183,120,1188,121,1187,126,1182,125,744,62"/>
+<area shape="rect" title=" " alt="" coords="1393,123,1556,163"/>
+<area shape="poly" title=" " alt="" coords="745,49,1033,76,1205,96,1380,120,1380,125,1204,101,1032,82,744,54"/>
+<area shape="rect" title=" " alt="" coords="1581,130,1713,155"/>
+<area shape="poly" title=" " alt="" coords="744,44,911,53,1117,68,1343,90,1568,120,1591,124,1590,130,1568,125,1342,95,1117,73,911,58,744,49"/>
 <area shape="poly" title=" " alt="" coords="720,165,639,187,554,213,548,215,547,210,552,208,638,182,718,160"/>
 <area shape="poly" title=" " alt="" coords="753,165,637,213,633,215,631,210,635,208,751,160"/>
 <area shape="rect" title=" " alt="" coords="805,218,864,243"/>
@@ -174,6 +182,22 @@ Classes</h2></td></tr>
 Namespaces</h2></td></tr>
 <tr class="memitem:namespaceethercat__interface" id="r_namespaceethercat__interface"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceethercat__interface.html">ethercat_interface</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a7854b27208c445cd93fc35c211ff330f" id="r_a7854b27208c445cd93fc35c211ff330f"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceethercat__interface.html#a7854b27208c445cd93fc35c211ff330f">ethercat_interface::alStateStr</a> (uint8_t al_state)</td></tr>
+<tr class="separator:a7854b27208c445cd93fc35c211ff330f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a401ce62714c8b562b0b802cf38f18cb4" id="r_a401ce62714c8b562b0b802cf38f18cb4"><td class="memItemLeft" align="right" valign="top">constexpr uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceethercat__interface.html#a401ce62714c8b562b0b802cf38f18cb4">ethercat_interface::kAlStateInit</a> = 1</td></tr>
+<tr class="separator:a401ce62714c8b562b0b802cf38f18cb4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad43d02d408d8eae9124c075928b1f562" id="r_ad43d02d408d8eae9124c075928b1f562"><td class="memItemLeft" align="right" valign="top">constexpr uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceethercat__interface.html#ad43d02d408d8eae9124c075928b1f562">ethercat_interface::kAlStatePreop</a> = 2</td></tr>
+<tr class="separator:ad43d02d408d8eae9124c075928b1f562"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a78944a1c38727be8e7329bbc90c86660" id="r_a78944a1c38727be8e7329bbc90c86660"><td class="memItemLeft" align="right" valign="top">constexpr uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceethercat__interface.html#a78944a1c38727be8e7329bbc90c86660">ethercat_interface::kAlStateSafeop</a> = 4</td></tr>
+<tr class="separator:a78944a1c38727be8e7329bbc90c86660"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e895593f4e2d4311d570c032d12d99e" id="r_a3e895593f4e2d4311d570c032d12d99e"><td class="memItemLeft" align="right" valign="top">constexpr uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceethercat__interface.html#a3e895593f4e2d4311d570c032d12d99e">ethercat_interface::kAlStateOp</a> = 8</td></tr>
+<tr class="separator:a3e895593f4e2d4311d570c032d12d99e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <!-- start footer part -->

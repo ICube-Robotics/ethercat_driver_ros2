@@ -1,12 +1,12 @@
 var searchData=
 [
-  ['parameters_0',['parameters',['../structethercat__driver_1_1ConfiguredEcModule.html#a7098003dbffbdb3b31c0f4cb5d0b7ad2',1,'ethercat_driver::ConfiguredEcModule']]],
-  ['parameters_5f_1',['parameters_',['../classethercat__interface_1_1EcSlaveBase.html#acaf2e245fe0180d2edddb22e1abde75b',1,'ethercat_interface::EcSlaveBase']]],
-  ['pdo_5fchannels_5finfo_5f_2',['pdo_channels_info_',['../classethercat__interface_1_1EcSlaveBase.html#ad74430e46c554a0d8953b568a7c7b141',1,'ethercat_interface::EcSlaveBase']]],
-  ['pdo_5finfo_5f_3',['pdo_info_',['../classethercat__interface_1_1EcSlaveBase.html#a7add29e3ab14884f28e8859a7cd75d41',1,'ethercat_interface::EcSlaveBase']]],
-  ['pdo_5fname_4',['pdo_name',['../classethercat__interface_1_1SMConfig.html#a5c9300654023ef197811c74a97abc874',1,'ethercat_interface::SMConfig']]],
-  ['pdo_5ftype_5',['pdo_type',['../classethercat__interface_1_1EcPdoChannelManager.html#a9b7b8530fa97335bc1e603681531875a',1,'ethercat_interface::EcPdoChannelManager::pdo_type'],['../structethercat__interface_1_1pdo__info__t.html#aa65d39547635eb5c912484b65d7b641a',1,'ethercat_interface::pdo_info_t::pdo_type']]],
-  ['position_6',['position',['../structethercat__interface_1_1EcSlaveStateInfo.html#a6e978d59b5d1fb83b873e145ba97f3cb',1,'ethercat_interface::EcSlaveStateInfo::position'],['../classethercat__interface_1_1EcMemoryEntry.html#a60fa144811a337a91cc5b82f4f8b74f7',1,'ethercat_interface::EcMemoryEntry::position']]],
-  ['position_5f_7',['position_',['../classethercat__interface_1_1EcSlaveBase.html#a664448f7e91ed60b7720dfc7250c91dd',1,'ethercat_interface::EcSlaveBase']]],
-  ['product_5fid_5f_8',['product_id_',['../classethercat__interface_1_1EcSlaveBase.html#ad31147a45edeb98ba4f3edf7606c1155',1,'ethercat_interface::EcSlaveBase']]]
+  ['offset_0',['offset',['../structethercat__interface_1_1InterfaceData.html#a74b50f0831203f9e9122e339a8938158',1,'ethercat_interface::InterfaceData']]],
+  ['online_1',['online',['../structethercat__interface_1_1EcSlaveStateInfo.html#a2bb16b5161f2a4891e3f0643a350fde1',1,'ethercat_interface::EcSlaveStateInfo']]],
+  ['online_5f_2',['online_',['../classethercat__interface_1_1EcSlaveBase.html#a5d836bf70e492609e31f4febd2186b1f',1,'ethercat_interface::EcSlaveBase']]],
+  ['operational_3',['operational',['../structethercat__interface_1_1EcSlaveStateInfo.html#a7b9def07d286ded6137f14436d865817',1,'ethercat_interface::EcSlaveStateInfo']]],
+  ['out_5fptr_4',['out_ptr',['../structethercat__interface_1_1EcTransferInfo.html#a964082ff294ed0a405cb78185b68ab75',1,'ethercat_interface::EcTransferInfo']]],
+  ['output_5',['output',['../classethercat__interface_1_1EcTransferEntry.html#aa77886c5f921c37fb1a56c8ce514728e',1,'ethercat_interface::EcTransferEntry']]],
+  ['output_5fdomain_6',['output_domain',['../structethercat__interface_1_1EcTransferInfo.html#ac6490c6c3b767afff921ee9f96ee43c9',1,'ethercat_interface::EcTransferInfo']]],
+  ['output_5fvalues_7',['output_values',['../structethercat__driver_1_1ConfiguredEcModule.html#aa235f1431701800ddbdd485bd97877f0',1,'ethercat_driver::ConfiguredEcModule']]],
+  ['override_5fcommand_8',['override_command',['../structethercat__interface_1_1InterfaceData.html#ae143e90b870f7cc118147e237a633d78',1,'ethercat_interface::InterfaceData']]]
 ];

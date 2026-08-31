@@ -17,6 +17,7 @@ var searchData=
   ['readslavesdo_14',['readSlaveSdo',['../classethercat__driver_1_1EthercatBusManager.html#aa3360f951e51ddb8df5b2a49cdf6b3ab',1,'ethercat_driver::EthercatBusManager']]],
   ['registerslaves_15',['registerSlaves',['../classethercat__driver_1_1EthercatBusManager.html#a27571650e5d69fb5de28954060edda64',1,'ethercat_driver::EthercatBusManager']]],
   ['registertransferindomain_16',['registerTransferInDomain',['../classethercat__interface_1_1EcMasterBase.html#a8b94755bcfd2164e46ffb98b2eb23319',1,'ethercat_interface::EcMasterBase']]],
-  ['reset_17',['reset',['../classethercat__interface_1_1EcMasterBase.html#a847fc7515be947b6a8a786c73bcdce8d',1,'ethercat_interface::EcMasterBase::reset()'],['../classethercat__interface_1_1EcTransferNet.html#ae9457a97c0b78e86ef56e5917503354c',1,'ethercat_interface::EcTransferNet::reset()']]],
-  ['rpdo_18',['RPDO',['../namespaceethercat__interface.html#a36921a332ee2abf4ed1e02bf884b26deae5ea830341ade3adc7054e3aa87232cf',1,'ethercat_interface']]]
+  ['reportprocessdatafault_17',['reportProcessDataFault',['../classethercat__interface_1_1EcSlaveBase.html#a43e3e0dd7c50f526550ad2591d97848b',1,'ethercat_interface::EcSlaveBase']]],
+  ['reset_18',['reset',['../classethercat__interface_1_1EcMasterBase.html#a847fc7515be947b6a8a786c73bcdce8d',1,'ethercat_interface::EcMasterBase::reset()'],['../classethercat__interface_1_1EcTransferNet.html#ae9457a97c0b78e86ef56e5917503354c',1,'ethercat_interface::EcTransferNet::reset()']]],
+  ['rpdo_19',['RPDO',['../namespaceethercat__interface.html#a36921a332ee2abf4ed1e02bf884b26deae5ea830341ade3adc7054e3aa87232cf',1,'ethercat_interface']]]
 ];

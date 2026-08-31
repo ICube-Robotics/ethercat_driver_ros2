@@ -76,6 +76,7 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="classethercat__interface_1_1EcSlaveBase-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">ethercat_interface::EcSlaveBase Class Reference</div></div>
@@ -104,6 +105,16 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a4fb95bd685c61ffddb0bdb004b1b2ab8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1d2d03ca5e1e0b4a6bbc795c4cf906ad" id="r_a1d2d03ca5e1e0b4a6bbc795c4cf906ad"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcSlaveBase.html#a1d2d03ca5e1e0b4a6bbc795c4cf906ad">isAliasAndPositionSet</a> ()</td></tr>
 <tr class="separator:a1d2d03ca5e1e0b4a6bbc795c4cf906ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4056e05530aedb24ad94b94e49dd9296" id="r_a4056e05530aedb24ad94b94e49dd9296"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcSlaveBase.html#a4056e05530aedb24ad94b94e49dd9296">setHealth</a> (bool online, uint8_t al_state)</td></tr>
+<tr class="separator:a4056e05530aedb24ad94b94e49dd9296"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a521d0f7335545dfdece6c928aa7bf91b" id="r_a521d0f7335545dfdece6c928aa7bf91b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcSlaveBase.html#a521d0f7335545dfdece6c928aa7bf91b">processDataSafe</a> (int index, uint8_t *domain_address)</td></tr>
+<tr class="separator:a521d0f7335545dfdece6c928aa7bf91b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5e3d8f50e83f16d4b8b273ac391e6d3b" id="r_a5e3d8f50e83f16d4b8b273ac391e6d3b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcSlaveBase.html#a5e3d8f50e83f16d4b8b273ac391e6d3b">updateStateSafe</a> ()</td></tr>
+<tr class="separator:a5e3d8f50e83f16d4b8b273ac391e6d3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ade1cacf01bcc1455c37ecaa93c5ed17a" id="r_ade1cacf01bcc1455c37ecaa93c5ed17a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcSlaveBase.html#ade1cacf01bcc1455c37ecaa93c5ed17a">clearProcessDataFault</a> ()</td></tr>
+<tr class="separator:ade1cacf01bcc1455c37ecaa93c5ed17a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a775e9e84d2031095e97795ae66e7ccab" id="r_a775e9e84d2031095e97795ae66e7ccab"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcSlaveBase.html#a775e9e84d2031095e97795ae66e7ccab">collectDiagnostics</a> (diagnostic_msgs::msg::DiagnosticStatus &amp;status) const</td></tr>
+<tr class="separator:a775e9e84d2031095e97795ae66e7ccab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a29f7de71efd0960483bdfa854e39c4a4" id="r_a29f7de71efd0960483bdfa854e39c4a4"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcSlaveBase.html#a29f7de71efd0960483bdfa854e39c4a4">setup_slave</a> (std::unordered_map&lt; std::string, std::string &gt; slave_paramters, std::vector&lt; double &gt; *state_interface, std::vector&lt; double &gt; *command_interface)</td></tr>
 <tr class="separator:a29f7de71efd0960483bdfa854e39c4a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac886f71a111a65f215c2d6790c2c5c29" id="r_ac886f71a111a65f215c2d6790c2c5c29"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcSlaveBase.html#ac886f71a111a65f215c2d6790c2c5c29">get_vendor_id</a> ()</td></tr>
@@ -124,6 +135,11 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a4b6f7982e39a28f3d84bd7ac8b7ccbe9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad6e0b07e52fd63a1bcccc55efbe6ebfe" id="r_ad6e0b07e52fd63a1bcccc55efbe6ebfe"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structethercat__interface_1_1pdo__info__t.html">pdo_info_t</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcSlaveBase.html#ad6e0b07e52fd63a1bcccc55efbe6ebfe">get_pdo_info</a> ()</td></tr>
 <tr class="separator:ad6e0b07e52fd63a1bcccc55efbe6ebfe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-methods" name="pro-methods"></a>
+Protected Member Functions</h2></td></tr>
+<tr class="memitem:a43e3e0dd7c50f526550ad2591d97848b" id="r_a43e3e0dd7c50f526550ad2591d97848b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcSlaveBase.html#a43e3e0dd7c50f526550ad2591d97848b">reportProcessDataFault</a> (const std::string &amp;what)</td></tr>
+<tr class="separator:a43e3e0dd7c50f526550ad2591d97848b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
@@ -147,6 +163,12 @@ Protected Attributes</h2></td></tr>
 <tr class="separator:a7a2a57581fafcfaa32a8d4498f9b8ae9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a909b0fd4f048377ce12b04aa06966e6d" id="r_a909b0fd4f048377ce12b04aa06966e6d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcSlaveBase.html#a909b0fd4f048377ce12b04aa06966e6d">is_alias_and_position_set_</a> = false</td></tr>
 <tr class="separator:a909b0fd4f048377ce12b04aa06966e6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5d836bf70e492609e31f4febd2186b1f" id="r_a5d836bf70e492609e31f4febd2186b1f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcSlaveBase.html#a5d836bf70e492609e31f4febd2186b1f">online_</a> = false</td></tr>
+<tr class="separator:a5d836bf70e492609e31f4febd2186b1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6768c7af00b341c7a5778c5977eb58f2" id="r_a6768c7af00b341c7a5778c5977eb58f2"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcSlaveBase.html#a6768c7af00b341c7a5778c5977eb58f2">al_state_</a> = 0</td></tr>
+<tr class="separator:a6768c7af00b341c7a5778c5977eb58f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a744fbc5036331c0ad3ee2027bafa3e9a" id="r_a744fbc5036331c0ad3ee2027bafa3e9a"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcSlaveBase.html#a744fbc5036331c0ad3ee2027bafa3e9a">process_data_fault_</a></td></tr>
+<tr class="separator:a744fbc5036331c0ad3ee2027bafa3e9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9e45574b5c536d9c2d83f73d68f2451f" id="r_a9e45574b5c536d9c2d83f73d68f2451f"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classethercat__interface_1_1SdoConfigEntry.html">SdoConfigEntry</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcSlaveBase.html#a9e45574b5c536d9c2d83f73d68f2451f">sdo_config_</a></td></tr>
 <tr class="separator:a9e45574b5c536d9c2d83f73d68f2451f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ade5d8779cbd79a77609a33f94c076b08" id="r_ade5d8779cbd79a77609a33f94c076b08"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classethercat__interface_1_1SdoCheckEntry.html">SdoCheckEntry</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcSlaveBase.html#ade5d8779cbd79a77609a33f94c076b08">sdo_check_config_</a></td></tr>
@@ -407,6 +429,159 @@ Protected Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a4056e05530aedb24ad94b94e49dd9296" name="a4056e05530aedb24ad94b94e49dd9296"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4056e05530aedb24ad94b94e49dd9296">&#9670;&#160;</a></span>setHealth()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ethercat_interface::EcSlaveBase::setHealth </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>online</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>al_state</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Push this cycle's link/AL-state observation in. A slave has no visibility into its own online/al_state otherwise — both are tracked by the master's periodic state check. Called once per cycle by whoever owns the master (e.g. EthercatBusManager), correlated by alias/position against <a class="el" href="classethercat__interface_1_1EcMasterBase.html#ac00a2bd02131368239119a83a57d4514" title="Last-observed per-slave AL state / online / operational, as last updated by the periodic state check....">EcMasterBase::get_slave_states()</a>. </p>
+
+</div>
+</div>
+<a id="a521d0f7335545dfdece6c928aa7bf91b" name="a521d0f7335545dfdece6c928aa7bf91b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a521d0f7335545dfdece6c928aa7bf91b">&#9670;&#160;</a></span>processDataSafe()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool ethercat_interface::EcSlaveBase::processDataSafe </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>index</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t *&#160;</td>
+          <td class="paramname"><em>domain_address</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Call <a class="el" href="classethercat__interface_1_1EcSlaveBase.html#a65cd96842286d4406edff0218ae4c43e">process_data()</a>, isolating any exception it throws so one misbehaving slave can't abort the caller's per-cycle loop over the whole bus. Any <a class="el" href="classethercat__interface_1_1EcMasterBase.html">EcMasterBase</a> implementation should call this instead of <a class="el" href="classethercat__interface_1_1EcSlaveBase.html#a65cd96842286d4406edff0218ae4c43e">process_data()</a> directly. Returns false (and records the fault for <a class="el" href="classethercat__interface_1_1EcSlaveBase.html#a775e9e84d2031095e97795ae66e7ccab">collectDiagnostics()</a>) if it threw. </p>
+
+</div>
+</div>
+<a id="a5e3d8f50e83f16d4b8b273ac391e6d3b" name="a5e3d8f50e83f16d4b8b273ac391e6d3b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5e3d8f50e83f16d4b8b273ac391e6d3b">&#9670;&#160;</a></span>updateStateSafe()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool ethercat_interface::EcSlaveBase::updateStateSafe </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Same isolation as <a class="el" href="classethercat__interface_1_1EcSlaveBase.html#a521d0f7335545dfdece6c928aa7bf91b">processDataSafe()</a>, for <a class="el" href="classethercat__interface_1_1EcSlaveBase.html#ac7cf7bc47953321ba26bcc9130d263a2">updateState()</a>. </p>
+
+</div>
+</div>
+<a id="ade1cacf01bcc1455c37ecaa93c5ed17a" name="ade1cacf01bcc1455c37ecaa93c5ed17a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ade1cacf01bcc1455c37ecaa93c5ed17a">&#9670;&#160;</a></span>clearProcessDataFault()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ethercat_interface::EcSlaveBase::clearProcessDataFault </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Clear a previously recorded process_data fault once a cycle completes cleanly. Callers loop <a class="el" href="classethercat__interface_1_1EcSlaveBase.html#a65cd96842286d4406edff0218ae4c43e">process_data()</a>/updateState() through <a class="el" href="classethercat__interface_1_1EcSlaveBase.html#a521d0f7335545dfdece6c928aa7bf91b">processDataSafe()</a>/updateStateSafe() and call this only once none of those calls faulted this cycle. </p>
+
+</div>
+</div>
+<a id="a775e9e84d2031095e97795ae66e7ccab" name="a775e9e84d2031095e97795ae66e7ccab"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a775e9e84d2031095e97795ae66e7ccab">&#9670;&#160;</a></span>collectDiagnostics()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void ethercat_interface::EcSlaveBase::collectDiagnostics </td>
+          <td>(</td>
+          <td class="paramtype">diagnostic_msgs::msg::DiagnosticStatus &amp;&#160;</td>
+          <td class="paramname"><em>status</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Fill in this slave's diagnostic status: generic EtherCAT-layer health (online, al_state) and a level derived from it. name/hardware_id are the caller's responsibility (it knows the component name; this slave doesn't). Subclasses that have more specific diagnostics (e.g. a CiA402 device state) should override, call the base implementation first to get the generic fields, then append/refine — not replace it outright. </p>
 
 </div>
 </div>
@@ -677,6 +852,33 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="a43e3e0dd7c50f526550ad2591d97848b" name="a43e3e0dd7c50f526550ad2591d97848b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a43e3e0dd7c50f526550ad2591d97848b">&#9670;&#160;</a></span>reportProcessDataFault()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ethercat_interface::EcSlaveBase::reportProcessDataFault </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>what</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Logs and records a <a class="el" href="classethercat__interface_1_1EcSlaveBase.html#a65cd96842286d4406edff0218ae4c43e">process_data()</a>/updateState() exception. Shared by <a class="el" href="classethercat__interface_1_1EcSlaveBase.html#a521d0f7335545dfdece6c928aa7bf91b">processDataSafe()</a>/ <a class="el" href="classethercat__interface_1_1EcSlaveBase.html#a5e3d8f50e83f16d4b8b273ac391e6d3b">updateStateSafe()</a> so every <a class="el" href="classethercat__interface_1_1EcMasterBase.html">EcMasterBase</a> implementation gets the same log line and <a class="el" href="classethercat__interface_1_1EcSlaveBase.html#a775e9e84d2031095e97795ae66e7ccab">collectDiagnostics()</a> reporting without re-implementing it. </p>
+
+</div>
+</div>
 <h2 class="groupheader">Member Data Documentation</h2>
 <a id="ac3d9d321c4f91d307f8fffbe32740a3b" name="ac3d9d321c4f91d307f8fffbe32740a3b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac3d9d321c4f91d307f8fffbe32740a3b">&#9670;&#160;</a></span>state_interface_ptr_</h2>
@@ -887,6 +1089,72 @@ Protected Attributes</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">bool ethercat_interface::EcSlaveBase::is_alias_and_position_set_ = false</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a5d836bf70e492609e31f4febd2186b1f" name="a5d836bf70e492609e31f4febd2186b1f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5d836bf70e492609e31f4febd2186b1f">&#9670;&#160;</a></span>online_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool ethercat_interface::EcSlaveBase::online_ = false</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a6768c7af00b341c7a5778c5977eb58f2" name="a6768c7af00b341c7a5778c5977eb58f2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6768c7af00b341c7a5778c5977eb58f2">&#9670;&#160;</a></span>al_state_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t ethercat_interface::EcSlaveBase::al_state_ = 0</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a744fbc5036331c0ad3ee2027bafa3e9a" name="a744fbc5036331c0ad3ee2027bafa3e9a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a744fbc5036331c0ad3ee2027bafa3e9a">&#9670;&#160;</a></span>process_data_fault_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string ethercat_interface::EcSlaveBase::process_data_fault_</td>
         </tr>
       </table>
   </td>

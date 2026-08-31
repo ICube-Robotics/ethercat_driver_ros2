@@ -151,6 +151,8 @@ Functions</h2></td></tr>
 <tr class="memitem:aa860d60620cc38b123902f4a4ebb9777" id="r_aa860d60620cc38b123902f4a4ebb9777"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceethercat__interface.html#aa860d60620cc38b123902f4a4ebb9777">check_type</a> (const std::string &amp;type, uint8_t mask)</td></tr>
 <tr class="memdesc:aa860d60620cc38b123902f4a4ebb9777"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if the definition of a type is correct.  <br /></td></tr>
 <tr class="separator:aa860d60620cc38b123902f4a4ebb9777"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7854b27208c445cd93fc35c211ff330f" id="r_a7854b27208c445cd93fc35c211ff330f"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceethercat__interface.html#a7854b27208c445cd93fc35c211ff330f">alStateStr</a> (uint8_t al_state)</td></tr>
+<tr class="separator:a7854b27208c445cd93fc35c211ff330f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
@@ -172,6 +174,14 @@ Variables</h2></td></tr>
 <tr class="memitem:a13512f0f8cdc77d87b522ef61a01bdfa" id="r_a13512f0f8cdc77d87b522ef61a01bdfa"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="namespaceethercat__interface.html#ae3d0f8d548116327ebc5560f12a2b165">SingleWriteFunctionType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceethercat__interface.html#a13512f0f8cdc77d87b522ef61a01bdfa">ec_pdo_single_write_functions</a> []</td></tr>
 <tr class="memdesc:a13512f0f8cdc77d87b522ef61a01bdfa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Global table that stores each write function associated with a data type.  <br /></td></tr>
 <tr class="separator:a13512f0f8cdc77d87b522ef61a01bdfa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a401ce62714c8b562b0b802cf38f18cb4" id="r_a401ce62714c8b562b0b802cf38f18cb4"><td class="memItemLeft" align="right" valign="top">constexpr uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceethercat__interface.html#a401ce62714c8b562b0b802cf38f18cb4">kAlStateInit</a> = 1</td></tr>
+<tr class="separator:a401ce62714c8b562b0b802cf38f18cb4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad43d02d408d8eae9124c075928b1f562" id="r_ad43d02d408d8eae9124c075928b1f562"><td class="memItemLeft" align="right" valign="top">constexpr uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceethercat__interface.html#ad43d02d408d8eae9124c075928b1f562">kAlStatePreop</a> = 2</td></tr>
+<tr class="separator:ad43d02d408d8eae9124c075928b1f562"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a78944a1c38727be8e7329bbc90c86660" id="r_a78944a1c38727be8e7329bbc90c86660"><td class="memItemLeft" align="right" valign="top">constexpr uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceethercat__interface.html#a78944a1c38727be8e7329bbc90c86660">kAlStateSafeop</a> = 4</td></tr>
+<tr class="separator:a78944a1c38727be8e7329bbc90c86660"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e895593f4e2d4311d570c032d12d99e" id="r_a3e895593f4e2d4311d570c032d12d99e"><td class="memItemLeft" align="right" valign="top">constexpr uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceethercat__interface.html#a3e895593f4e2d4311d570c032d12d99e">kAlStateOp</a> = 8</td></tr>
+<tr class="separator:a3e895593f4e2d4311d570c032d12d99e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Typedef Documentation</h2>
 <a id="a22250355063916923714035b7f6d5e18" name="a22250355063916923714035b7f6d5e18"></a>
@@ -334,6 +344,32 @@ Variables</h2></td></tr>
 
 </div>
 </div>
+<a id="a7854b27208c445cd93fc35c211ff330f" name="a7854b27208c445cd93fc35c211ff330f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7854b27208c445cd93fc35c211ff330f">&#9670;&#160;</a></span>alStateStr()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string ethercat_interface::alStateStr </td>
+          <td>(</td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>al_state</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <h2 class="groupheader">Variable Documentation</h2>
 <a id="a819d3ddb932178e45be8f5d31c256813" name="a819d3ddb932178e45be8f5d31c256813"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a819d3ddb932178e45be8f5d31c256813">&#9670;&#160;</a></span>ec_pdo_channel_data_types</h2>
@@ -476,6 +512,95 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Global table that stores each write function associated with a data type. </p>
+
+</div>
+</div>
+<a id="a401ce62714c8b562b0b802cf38f18cb4" name="a401ce62714c8b562b0b802cf38f18cb4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a401ce62714c8b562b0b802cf38f18cb4">&#9670;&#160;</a></span>kAlStateInit</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr uint8_t ethercat_interface::kAlStateInit = 1</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>EtherCAT AL state bitmask (ETG.1000 encoding, matches <a class="el" href="structethercat__interface_1_1EcMasterStateInfo.html#a79a7b6d8cf7b3db0518dd635386ef966">EcMasterStateInfo::al_states</a> and <a class="el" href="structethercat__interface_1_1EcSlaveStateInfo.html#a5c2d8ad1c3e3c7be0f98c25bbd9f68e6">EcSlaveStateInfo::al_state</a>): INIT=1, PREOP=2, SAFEOP=4, OP=8. </p>
+
+</div>
+</div>
+<a id="ad43d02d408d8eae9124c075928b1f562" name="ad43d02d408d8eae9124c075928b1f562"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad43d02d408d8eae9124c075928b1f562">&#9670;&#160;</a></span>kAlStatePreop</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr uint8_t ethercat_interface::kAlStatePreop = 2</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a78944a1c38727be8e7329bbc90c86660" name="a78944a1c38727be8e7329bbc90c86660"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a78944a1c38727be8e7329bbc90c86660">&#9670;&#160;</a></span>kAlStateSafeop</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr uint8_t ethercat_interface::kAlStateSafeop = 4</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a3e895593f4e2d4311d570c032d12d99e" name="a3e895593f4e2d4311d570c032d12d99e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3e895593f4e2d4311d570c032d12d99e">&#9670;&#160;</a></span>kAlStateOp</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr uint8_t ethercat_interface::kAlStateOp = 8</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
 
 </div>
 </div>
