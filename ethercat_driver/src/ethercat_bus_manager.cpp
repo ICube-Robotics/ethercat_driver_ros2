@@ -15,10 +15,12 @@
 #include "ethercat_driver/ethercat_bus_manager.hpp"
 
 #include <algorithm>
+#include <chrono>
 #include <ctime>
 #include <regex>
 #include <stdexcept>
 #include <string>
+#include <thread>
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -95,6 +97,16 @@ uint16_t EthercatBusManager::getAliasOrDefaultAlias(
   }
 }
 
+bool EthercatBusManager::getRequiredOrDefault(
+  const std::unordered_map<std::string,
+  std::string> & slave_parameters)
+{
+  const auto it = slave_parameters.find("required");
+  // Absent (the overwhelmingly common case today) or "true": today's behavior, unchanged —
+  // a failing module refuses to configure the whole bus.
+  return it == slave_parameters.end() || it->second != "false";
+}
+
 bool EthercatBusManager::configureModules(
   const EthercatBusConfig & bus_config,
   const std::vector<ConfiguredEcModule> & modules)
@@ -117,6 +129,7 @@ bool EthercatBusManager::configureModules(
   ec_transfer_masters_.clear();
   ec_transfer_slaves_.clear();
   master_.reset();
+  configured_ = false;
 
   // Collect all module parameters up front so the load loop mirrors the
   // original on_init() body structure (plugin load + setupSlave + push to ec_modules_).
@@ -286,20 +299,83 @@ bool EthercatBusManager::setupMaster()
     return false;
   }
 
+  // The master plugin's init() can fail (master not running, or /dev/EtherCATx not
+  // accessible to this process); is_valid() is a defense-in-depth check in case a plugin
+  // returns true from init() but still leaves an invalid internal master handle.
+  if (!master_ || !master_->is_valid()) {
+    RCLCPP_ERROR(
+      rclcpp::get_logger("EthercatBusManager"),
+      "Failed to obtain EtherCAT master '%s'. Is the master running and is "
+      "/dev/EtherCAT%s accessible to this process (permissions)?",
+      bus_config_.master_iface.c_str(), bus_config_.master_iface.c_str());
+    master_.reset();
+    return false;
+  }
+
   return true;
 }
 
-bool EthercatBusManager::configNetwork()
+bool EthercatBusManager::registerSlaves()
 {
   // start EC and wait until state operative
 
   control_frequency_ = bus_config_.control_frequency;
   master_->set_ctrl_frequency(control_frequency_);
 
+  // Phase 1: validate every module (identity + sdo_check:) with no side effects, before any
+  // module is registered — both checks are addressed by ring position at the master level and
+  // need no prior slave configuration. A module that fails and is required (absent "required"
+  // param, or "required: true" — today's default and only behavior) refuses to configure the
+  // whole bus, exactly as before. A module explicitly marked "required: false" is excluded
+  // instead: it's simply never added in phase 2 below, so it's absent from the cyclic domain
+  // and reads as offline (EthercatClient::slaveHealth() / motor_drive_controller's existing
+  // slave_online handling already treats "no matching entry in get_slave_states()" as offline
+  // — no new state or interface needed for this).
+  std::vector<bool> module_ok(ec_modules_.size(), false);
   for (auto i = 0ul; i < ec_modules_.size(); i++) {
-    master_->add_slave(ec_modules_[i]);
+    module_ok[i] = master_->check_slave(ec_modules_[i]);
+    if (!module_ok[i]) {
+      if (getRequiredOrDefault(ec_module_parameters_[i])) {
+        RCLCPP_ERROR(
+          rclcpp::get_logger("EthercatBusManager"),
+          "Module at position %s failed validation and is required (the default); refusing "
+          "to configure the bus (see the master plugin's error above for the exact cause). "
+          "Mark it 'required: false' in the URDF to let the rest of the bus come up without "
+          "it instead.",
+          ec_module_parameters_[i]["position"].c_str());
+        return false;
+      }
+      RCLCPP_WARN(
+        rclcpp::get_logger("EthercatBusManager"),
+        "Module at position %s failed validation and is marked 'required: false'; excluding "
+        "it from the bus — it will not be readable or writable (see the master plugin's "
+        "error above for the exact cause). The rest of the bus will still configure.",
+        ec_module_parameters_[i]["position"].c_str());
+    }
   }
 
+  // Phase 2: register (PDO/domain mapping) only the modules that passed phase 1.
+  for (auto i = 0ul; i < ec_modules_.size(); i++) {
+    if (!module_ok[i]) {continue;}
+    if (!master_->add_slave(ec_modules_[i])) {
+      RCLCPP_ERROR(
+        rclcpp::get_logger("EthercatBusManager"),
+        "Failed to add slave for module at position %s; refusing to configure the bus. "
+        "Check the drive is powered and present on the bus and that the slave_config "
+        "matches the hardware (see the master plugin's error above for the exact cause).",
+        ec_module_parameters_[i]["position"].c_str());
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool EthercatBusManager::downloadSdoConfig()
+{
+  RCLCPP_INFO(
+    rclcpp::get_logger("EthercatBusManager"),
+    "Downloading config SDO(s) to %zu module(s)...", ec_modules_.size());
   if (!master_->configure_slaves()) {
     RCLCPP_FATAL(
       rclcpp::get_logger("EthercatDriver"),
@@ -307,44 +383,91 @@ bool EthercatBusManager::configNetwork()
     return false;
   }
 
+  return true;
+}
 
-  // configure SDO
-  /*for (auto i = 0ul; i < ec_modules_.size(); i++) {
-    for (auto & sdo : ec_modules_[i]->get_sdo_config()) {
-      uint32_t abort_code;
-      int ret = master_->configure_slave(
-        std::stod(ec_module_parameters_[i]["position"]),
-        sdo,
-        &abort_code);
-      if (ret) {
-        RCLCPP_INFO(
-          rclcpp::get_logger("EthercatBusManager"),
-          "Failed to download config SDO for module at position %s with Error: %d",
-          ec_module_parameters_[i]["position"].c_str(),
-          abort_code);
-      }
-    }
-  }*/
+bool EthercatBusManager::configureBus()
+{
+  const std::lock_guard<std::mutex> lock(ec_mutex_);
+  return configureBusLocked();
+}
 
+bool EthercatBusManager::configureBusLocked()
+{
+  if (activated_) {
+    RCLCPP_FATAL(
+      rclcpp::get_logger("EthercatBusManager"), "configureBus() called while active.");
+    return false;
+  }
+  if (configured_) {
+    return true;  // idempotent: SDO config already downloaded once for this master
+  }
+
+  // Request the master at most once for the lifetime of this EthercatBusManager: a
+  // deactivate -> reactivate cycle must rebuild the PDO/domain registration (see
+  // activateBusLocked()), but must NOT re-request the master — gate on master_ existing,
+  // not on configured_.
+  if (!master_ && !setupMaster()) {
+    return false;
+  }
+  // Register slaves + PDO domain, then download the one-shot config SDOs. Both leave the
+  // bus in the idle/PRE-OP phase (not yet activated).
+  if (!registerSlaves()) {
+    return false;
+  }
+  if (!downloadSdoConfig()) {
+    return false;
+  }
+  network_registered_ = true;
+  configured_ = true;
   return true;
 }
 
 bool EthercatBusManager::activateBus()
 {
-  const std::lock_guard<std::mutex> lock(ec_mutex_);
+  {
+    const std::lock_guard<std::mutex> lock(ec_mutex_);
+    // Configure first if a caller skipped the explicit configureBus() step (keeps
+    // the original single-call contract for existing consumers like EthercatDriver).
+    if (!configured_) {
+      if (!configureBusLocked()) {
+        return false;
+      }
+    }
+    if (!activateBusLocked()) {
+      return false;
+    }
+  }  // Lock released: activated_ is now true, so read()/write() are live - required by
+     // waitForSlavesOperational(), which calls them and would otherwise always observe
+     // this same thread already holding ec_mutex_.
+
+  if (!waitForSlavesOperational()) {
+    deactivateBus();
+    return false;
+  }
+  return true;
+}
+
+bool EthercatBusManager::activateBusLocked()
+{
   if (activated_) {
     RCLCPP_FATAL(rclcpp::get_logger("EthercatBusManager"), "Double on_activate()");
     return false;
   }
   RCLCPP_INFO(rclcpp::get_logger("EthercatBusManager"), "Starting ...please wait...");
 
-  // setup master
-  if (!setupMaster()) {
-    return false;
-  }
-  // configure network
-  if (!configNetwork()) {
-    return false;
+  // On a reactivation (after deactivateBus()), EcMasterBase::deactivate() has freed the
+  // ecrt-side PDO/domain registration — rebuild it here. Deliberately NOT
+  // downloadSdoConfig(): those are one-shot config SDOs already sent once in
+  // configureBusLocked() and must not be resent (they are not cyclic PDO data).
+  if (!network_registered_) {
+    if (!registerSlaves()) {
+      RCLCPP_ERROR(
+        rclcpp::get_logger("EthercatBusManager"),
+        "Failed to re-register slaves/PDO domain on reactivation.");
+      return false;
+    }
+    network_registered_ = true;
   }
 
   if (!master_->start()) {
@@ -360,19 +483,59 @@ bool EthercatBusManager::activateBus()
     RCLCPP_INFO(rclcpp::get_logger("EthercatBusManager"), "Transfer network configured!");
   }
 
-  if (!master_->spin_slaves_until_operational()) {
-    RCLCPP_FATAL(
-      rclcpp::get_logger("EthercatDriver"),
-      "Failed to bring all slaves into OPERATIONAL state");
-    return false;
-  }
+  // Deliberately NOT waiting here for slaves to reach OPERATIONAL: this method runs with
+  // ec_mutex_ held, and that wait needs read()/write() (see waitForSlavesOperational()),
+  // which take their own try_to_lock and would see this thread already holding the lock on
+  // every attempt. activateBus() runs the actual bounded wait after releasing this lock.
   RCLCPP_INFO(
       rclcpp::get_logger("EthercatDriver"),
-      "All Slaves are in OPERATIONAL state. System Successfully started!");
+      "EcMaster active. Waiting for slaves to reach OPERATIONAL...");
 
   activated_ = true;
 
   return true;
+}
+
+bool EthercatBusManager::waitForSlavesOperational()
+{
+  const auto period = std::chrono::duration<double>(1.0 / control_frequency_);
+  const auto deadline = std::chrono::steady_clock::now() +
+    std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+    std::chrono::duration<double>(bus_config_.readiness_timeout_s));
+
+  while (std::chrono::steady_clock::now() < deadline) {
+    if (read() == EthercatCycleResult::kError) {
+      RCLCPP_ERROR(rclcpp::get_logger("EthercatBusManager"),
+        "waitForSlavesOperational(): read() failed during settle.");
+      return false;
+    }
+    if (write() == EthercatCycleResult::kError) {
+      RCLCPP_ERROR(rclcpp::get_logger("EthercatBusManager"),
+        "waitForSlavesOperational(): write() failed during settle.");
+      return false;
+    }
+
+    bool all_operational = true;
+    for (const auto & slave : slaveStates()) {
+      if (!slave.operational) {
+        all_operational = false;
+        break;
+      }
+    }
+    if (all_operational) {
+      RCLCPP_INFO(
+        rclcpp::get_logger("EthercatBusManager"), "All slaves reached OPERATIONAL.");
+      return true;
+    }
+
+    std::this_thread::sleep_for(
+      std::chrono::duration_cast<std::chrono::steady_clock::duration>(period));
+  }
+
+  RCLCPP_ERROR(rclcpp::get_logger("EthercatBusManager"),
+    "Timed out (%.1fs) waiting for all slaves to reach OPERATIONAL.",
+    bus_config_.readiness_timeout_s);
+  return false;
 }
 
 void EthercatBusManager::deactivateBus()
@@ -382,8 +545,20 @@ void EthercatBusManager::deactivateBus()
 
   RCLCPP_INFO(rclcpp::get_logger("EthercatBusManager"), "Stopping ...please wait...");
 
-  // stop EC and disconnect
+  // Stop our own cyclic send/receive, then formally deactivate the EtherCAT master (per spec,
+  // this is what makes the slaves' Sync Manager Watchdog drop them OP -> Safe-OP instead of
+  // leaving them stuck at OP with a dead master indefinitely). This frees the domain/slave-config
+  // objects the master plugin holds, so a subsequent activation must re-register the network —
+  // the master reservation itself (master_) is untouched and stays valid for reuse.
   master_->stop();
+  if (!master_->deactivate()) {
+    RCLCPP_ERROR(
+      rclcpp::get_logger("EthercatBusManager"), "Failed to deactivate EtherCAT master");
+  }
+  // The PDO/domain registration deactivate() just freed must be rebuilt before the next
+  // activate() (see activateBusLocked()). configured_ stays true: the config SDOs already
+  // downloaded must not be resent on reactivation.
+  network_registered_ = false;
 
   RCLCPP_INFO(
     rclcpp::get_logger("EthercatBusManager"), "System successfully stopped!");
@@ -415,6 +590,36 @@ EthercatCycleResult EthercatBusManager::write()
     return EthercatCycleResult::kCompleted;
   }
   return EthercatCycleResult::kSkippedInactive;
+}
+
+ethercat_interface::EcMasterStateInfo EthercatBusManager::masterState() const
+{
+  if (!master_) {return {};}
+  return master_->get_master_state();
+}
+
+ethercat_interface::EcDomainStateInfo EthercatBusManager::domainState(uint32_t domain) const
+{
+  if (!master_) {return {};}
+  return master_->get_domain_state(domain);
+}
+
+std::vector<ethercat_interface::EcSlaveStateInfo> EthercatBusManager::slaveStates() const
+{
+  if (!master_) {return {};}
+  return master_->get_slave_states();
+}
+
+int EthercatBusManager::readSlaveSdo(
+  uint16_t slave_position, uint16_t index, uint8_t sub_index,
+  uint8_t * target, size_t target_size, size_t * result_size, uint32_t * abort_code)
+{
+  const std::lock_guard<std::mutex> lock(ec_mutex_);
+  if (!master_) {
+    return -1;
+  }
+  return master_->upload_slave_sdo(
+    slave_position, index, sub_index, target, target_size, result_size, abort_code);
 }
 
 void EthercatBusManager::loadTransferConfigYamlFile(YAML::Node & node, const std::string & path)

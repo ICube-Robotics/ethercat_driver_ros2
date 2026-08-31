@@ -17,6 +17,8 @@
 #ifndef ETHERCAT_INTERFACE__EC_MASTER_BASE_HPP_
 #define ETHERCAT_INTERFACE__EC_MASTER_BASE_HPP_
 
+#include <cstdint>
+#include <cstddef>
 #include <string>
 #include <memory>
 #include <vector>
@@ -27,6 +29,43 @@
 
 namespace ethercat_interface
 {
+
+/** Per-slave AL state / link presence, as last observed by the master's periodic state check
+ *  (throttled — see each master plugin's own check frequency). One entry per add_slave() call,
+ *  in add order. Master-backend-agnostic: no ecrt.h/IgH types, so this survives swapping the
+ *  master plugin (e.g. for a SOEM-backed implementation). */
+struct EcSlaveStateInfo
+{
+  uint16_t alias = 0;
+  uint16_t position = 0;
+  /** AL state bitmask: INIT=1, PREOP=2, SAFEOP=4, OP=8 (the ETG.1000 standard EtherCAT AL
+   *  state encoding; IgH's ec_al_state_t uses the same values). */
+  uint8_t al_state = 0;
+  /** false if the slave has stopped responding on the wire (e.g. cabling/power loss). */
+  bool online = false;
+  /** true once the slave has reached OP and started exchanging valid process data. */
+  bool operational = false;
+};
+
+/** Last-observed master-wide link/AL state. Master-backend-agnostic (no ecrt.h types). */
+struct EcMasterStateInfo
+{
+  bool link_up = false;
+  uint32_t slaves_responding = 0;
+  /** Aggregate AL-states bitmask, OR'd across all slaves (IgH ec_master_state_t.al_states
+   *  encoding: INIT=1, PREOP=2, SAFEOP=4, OP=8). */
+  uint8_t al_states = 0;
+};
+
+/** Last-observed process-data domain state (working counter / completeness).
+ *  Master-backend-agnostic (no ecrt.h types). */
+struct EcDomainStateInfo
+{
+  uint32_t working_counter = 0;
+  /** 0 = ZERO (no data exchanged), 1 = INCOMPLETE, 2 = COMPLETE (matches IgH's
+   *  ec_wc_state_t ordinal values: EC_WC_ZERO, EC_WC_INCOMPLETE, EC_WC_COMPLETE). */
+  uint8_t wc_state = 0;
+};
 
 class EcMemoryEntry
 {
@@ -85,6 +124,19 @@ public:
   EcMasterBase() {}
   virtual ~EcMasterBase() {}
 
+  /** \brief whether the underlying EtherCAT master was successfully obtained (init()
+   *  succeeded and stop() has not since released it). Callers should check this before
+   *  using the master. */
+  virtual bool is_valid() const = 0;
+
+  /** \brief Validate a slave — vendor/product identity against what's physically on the bus,
+   *  plus its sdo_check: preconditions — WITHOUT registering it (no ecrt_master_slave_config,
+   *  no PDO/domain registration, no side effects). Safe to call for every configured module
+   *  before deciding which ones to add_slave(): both checks are addressed by ring position at
+   *  the master level and need no prior slave configuration.
+   *  \return true if the slave may be added; false if it failed a check (see logged detail). */
+  virtual bool check_slave(std::shared_ptr<EcSlaveBase> slave) = 0;
+
   /** \brief add a slave device to the master */
   virtual bool add_slave(std::shared_ptr<EcSlaveBase> slave) = 0;
 
@@ -97,9 +149,45 @@ public:
 
   virtual bool stop() = 0;
 
+  /** @brief Deactivate the master (releasing the domain/slave-config objects it created for
+   *  add_slave()/registerTransferInDomain()) so the bus drops out of cyclic exchange without
+   *  releasing the master reservation itself. Per the EtherCAT spec, loss of cyclic process
+   *  data should make each slave's Sync Manager Watchdog autonomously drop OP -> Safe-OP
+   *  (still allowing mailbox/SDO access), rather than leaving slaves stuck at OP indefinitely
+   *  as merely stopping the local cyclic loop (stop()) would.
+   *  A subsequent add_slave()/start() cycle must rebuild the registration this frees; config
+   *  SDOs already sent via configure_slaves() must NOT be resent.
+   *  Must not be called in realtime context (blocking).
+   *  \return true on success. */
+  virtual bool deactivate() = 0;
+
   virtual bool reset() = 0;
 
-  virtual bool spin_slaves_until_operational() = 0;
+  /** \brief Blocking CoE SDO upload (read). ONLY valid during the "configure" phase — after
+   *  configure_slaves() and before start() (or after stop(), before the next start()). Must
+   *  NEVER be called while the master is activated (cyclic process-data exchange running):
+   *  it blocks the calling thread on a mailbox round-trip, which would stall the real-time
+   *  cycle. Implementations must refuse (return a negative value and log an error) rather
+   *  than perform the transfer if called while activated.
+   *  \return 0 on success (see ecrt_master_sdo_upload's return convention); negative if
+   *          refused or the transfer failed. */
+  virtual int upload_slave_sdo(
+    uint16_t slave_position, uint16_t index, uint8_t sub_index,
+    uint8_t * target, size_t target_size, size_t * result_size, uint32_t * abort_code) = 0;
+
+  /** @brief Last-observed master state (link up/down, responding-slave count, aggregate AL
+   *  states bitmask), as last updated by the periodic state check during
+   *  read_process_data()/update(). No new bus transaction: returns the cached result of that
+   *  periodic check. */
+  virtual EcMasterStateInfo get_master_state() const = 0;
+
+  /** @brief Last-observed domain state (working counter / completeness), as last updated by
+   *  the periodic state check. No new bus transaction: returns the cached result. */
+  virtual EcDomainStateInfo get_domain_state(uint32_t domain = 0) const = 0;
+
+  /** @brief Last-observed per-slave AL state / online / operational, as last updated by the
+   *  periodic state check. No new bus transaction: returns the cached result. */
+  virtual std::vector<EcSlaveStateInfo> get_slave_states() const = 0;
 
   /** @brief Fill in the EcTransferInfo structures
   *

@@ -17,6 +17,12 @@
   <depend>yaml_cpp_vendor</depend>
   <depend>yaml-cpp</depend>
 
+  <!-- Not a build/link dependency (only ethercat_interface's EcMasterBase is used at compile
+       time) but the default master_plugin ("ethercat_master/EtherlabMaster", see
+       EthercatBusConfig) is pluginlib-loaded at runtime from this package, so it must be
+       installed/sourced alongside ethercat_driver for the out-of-the-box default to resolve. -->
+  <exec_depend>ethercat_master_etherlab</exec_depend>
+
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
   <test_depend>python3-click</test_depend>

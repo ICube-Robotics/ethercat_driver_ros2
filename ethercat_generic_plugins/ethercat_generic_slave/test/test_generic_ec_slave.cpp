@@ -28,6 +28,9 @@ sdo:  # sdo data to be transferred at slave startup
   - {index: 0x60C2, sub_index: 2, type: int8, value: -3}
   - {index: 0x6098, sub_index: 0, type: int8, value: 35}
   - {index: 0x6099, sub_index: 0, type: int32, value: 0}
+sdo_check:  # hardware preconditions read back and validated at configure time
+  - {index: 0x2150, sub_index: 1, type: uint8, value: 1, description: "Torque sensor type"}
+  - {index: 0x60C2, sub_index: 1, type: int8, values: [5, 10, 20]}
 rpdo:  # Receive PDO Mapping
   - index: 0x1607
     channels:
@@ -237,6 +240,63 @@ TEST_F(GenericEcSlaveTest, SlaveSetupSDOConfig)
   ASSERT_EQ(sdos[2].index, 0x6098);
   ASSERT_EQ(sdos[3].data_type, "int32");
   ASSERT_EQ(sdos[3].data_size(), 4);
+}
+
+TEST_F(GenericEcSlaveTest, SlaveSetupSDOCheckConfig)
+{
+  SetUp();
+  plugin_->setup_from_config(YAML::Load(test_slave_config));
+  auto checks = plugin_->get_sdo_check_config();
+  ASSERT_EQ(checks.size(), 2u);
+  EXPECT_EQ(checks[0].index, 0x2150);
+  EXPECT_EQ(checks[0].sub_index, 1);
+  EXPECT_EQ(checks[0].data_type, "uint8");
+  EXPECT_EQ(checks[0].data_size(), 1u);
+  EXPECT_EQ(checks[0].description, "Torque sensor type");
+  ASSERT_EQ(checks[0].allowed_values.size(), 1u);
+  EXPECT_EQ(checks[0].allowed_values[0], 1);
+
+  EXPECT_EQ(checks[1].index, 0x60C2);
+  EXPECT_TRUE(checks[1].description.empty());
+  ASSERT_EQ(checks[1].allowed_values.size(), 3u);
+  EXPECT_EQ(checks[1].allowed_values[0], 5);
+  EXPECT_EQ(checks[1].allowed_values[1], 10);
+  EXPECT_EQ(checks[1].allowed_values[2], 20);
+}
+
+TEST_F(GenericEcSlaveTest, SDOCheckEntryMatchesDecodedValue)
+{
+  ethercat_interface::SdoCheckEntry check;
+  ASSERT_TRUE(
+    check.load_from_config(YAML::Load("{index: 0x2150, sub_index: 1, type: uint8, value: 1}")));
+
+  uint8_t configured[1] = {1};
+  EXPECT_TRUE(check.matches(configured));
+  EXPECT_EQ(check.decode(configured), 1);
+
+  uint8_t unconfigured[1] = {0};
+  EXPECT_FALSE(check.matches(unconfigured));
+  EXPECT_EQ(check.decode(unconfigured), 0);
+}
+
+TEST_F(GenericEcSlaveTest, SDOCheckEntrySignedTypeAndValueList)
+{
+  ethercat_interface::SdoCheckEntry check;
+  ASSERT_TRUE(
+    check.load_from_config(
+      YAML::Load("{index: 0x6098, sub_index: 0, type: int16, values: [-3, 7]}")));
+
+  uint8_t minus_three[2];
+  write_s16(minus_three, -3);
+  EXPECT_TRUE(check.matches(minus_three));
+
+  uint8_t seven[2];
+  write_s16(seven, 7);
+  EXPECT_TRUE(check.matches(seven));
+
+  uint8_t other[2];
+  write_s16(other, 42);
+  EXPECT_FALSE(check.matches(other));
 }
 
 TEST_F(GenericEcSlaveTest, SlaveSetupSyncManagerConfig)

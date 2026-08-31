@@ -70,7 +70,11 @@ public:
   EtherlabMaster();
   ~EtherlabMaster();
 
+  bool is_valid() const {return master_ != NULL;}
+
   bool init(std::string master_interface = "0");
+
+  bool check_slave(std::shared_ptr<ethercat_interface::EcSlaveBase> slave);
 
   bool add_slave(std::shared_ptr<ethercat_interface::EcSlaveBase> slave);
 
@@ -81,16 +85,26 @@ public:
 
   bool reset();
 
-  void update(uint32_t domain = 0);
-
-  bool spin_slaves_until_operational();
-
   /** stop the control loop.
    */
   bool stop();
 
+  /** see EcMasterBase::deactivate() */
+  bool deactivate();
+
   bool read_process_data();
   bool write_process_data();
+
+  /** Blocking CoE SDO upload (read). Refuses (returns negative, logs an error) unless called
+   *  during the configure phase — after configure_slaves() and before start(), or after
+   *  stop(). See EcMasterBase::upload_slave_sdo(). */
+  int upload_slave_sdo(
+    uint16_t slave_position, uint16_t index, uint8_t sub_index,
+    uint8_t * target, size_t target_size, size_t * result_size, uint32_t * abort_code);
+
+  ethercat_interface::EcMasterStateInfo get_master_state() const;
+  ethercat_interface::EcDomainStateInfo get_domain_state(uint32_t domain = 0) const;
+  std::vector<ethercat_interface::EcSlaveStateInfo> get_slave_states() const;
 
   /** @brief Fill in the EcTransferInfo structures
   *
@@ -144,8 +158,14 @@ protected:
 private:
   // EtherCAT Control
 
-  uint32_t get_interval() {return interval_;}
+  /** Vendor/product identity check against what's physically on the bus at this slave's ring
+   *  position — shared by add_slave() and check_slave() so both see identical behavior. No
+   *  side effects; safe before ecrt_master_slave_config(). */
+  bool checkSlaveIdentity(std::shared_ptr<ethercat_interface::EcSlaveBase> slave) const;
 
+  /** Run a slave's sdo_check: preconditions (read + allowed-value match). No side effects;
+   *  addressed by ring position, safe before ecrt_master_slave_config(). */
+  bool checkSlaveSdoChecks(std::shared_ptr<ethercat_interface::EcSlaveBase> slave) const;
 
   /** register a domain of the slave */
   void registerPDOInDomain(
@@ -169,6 +189,13 @@ private:
     RCLCPP_WARN(rclcpp::get_logger("EthercatDriver"), "WARNING. Master. %s", message.c_str());
   }
 
+  /** print error message to terminal */
+  inline
+  static void printError(const std::string & message)
+  {
+    RCLCPP_ERROR(rclcpp::get_logger("EthercatDriver"), "ERROR. Master. %s", message.c_str());
+  }
+
   /** @brief Check the validity of the domain info and the ec_pdo_entry_reg_t
    * and throw an exception if not valid.
    *
@@ -185,6 +212,10 @@ private:
   /** EtherCAT master data */
   ec_master_t * master_ = NULL;
   ec_master_state_t master_state_ = {};
+
+  /** true from a successful start() until stop(). upload_slave_sdo() refuses to run a
+   *  blocking mailbox transfer while this is true — see EcMasterBase::upload_slave_sdo(). */
+  bool activated_ = false;
 
   /** map from domain index to domain info */
   std::map<uint32_t, DomainInfo *> domain_info_;

@@ -68,6 +68,13 @@ EtherlabMaster::~EtherlabMaster()
       slave_info_[i].slave.reset();
     }
   }
+
+  // Release the EtherCAT master so the kernel module can be reused — without this the
+  // master stays locked after the process exits, preventing re-initialization on restart
+  // without unloading the kernel module (critical in multi-master setups).
+  if (master_) {
+    ecrt_release_master(master_);
+  }
 }
 
 bool EtherlabMaster::init(std::string master_interface)
@@ -86,6 +93,118 @@ bool EtherlabMaster::init(std::string master_interface)
   return true;
 }
 
+bool EtherlabMaster::checkSlaveIdentity(
+  std::shared_ptr<ethercat_interface::EcSlaveBase> slave) const
+{
+  // Verify the drive actually on the bus matches what the slave_config declares (vendor +
+  // product). The master would otherwise leave a mismatched slave unconfigured and it would
+  // silently never reach OPERATIONAL; surface it loudly and refuse to configure the drive
+  // instead. ecrt_master_get_slave() addresses by ABSOLUTE ring position, which equals
+  // slave->get_position() only for alias 0 (for a non-zero alias, position is relative to
+  // that alias), so the identity check is enforced for alias-0 slaves and skipped for
+  // aliased ones.
+  if (slave->get_alias() == 0) {
+    ec_slave_info_t info{};
+    if (ecrt_master_get_slave(master_, slave->get_position(), &info) != 0) {
+      std::ostringstream msg;
+      msg << "Add slave. No slave found at ring position " << slave->get_position() << std::hex
+          << " (slave_config expects vendor=0x" << slave->get_vendor_id()
+          << ", product=0x" << slave->get_product_id()
+          << "). Refusing to configure this drive."
+          << " Is the drive powered and connected on the bus?";
+      printError(msg.str());
+      return false;
+    }
+    if (info.vendor_id != slave->get_vendor_id() || info.product_code != slave->get_product_id()) {
+      std::ostringstream msg;
+      msg << "Add slave. Identity mismatch at ring position " << slave->get_position()
+          << std::hex << ": the drive on the bus is vendor=0x" << info.vendor_id
+          << ", product=0x" << info.product_code << " (revision 0x" << info.revision_number
+          << ", \"" << info.name << "\"), but the slave_config expects vendor=0x"
+          << slave->get_vendor_id() << ", product=0x" << slave->get_product_id()
+          << ". Refusing to configure this drive — check the slave_config matches your hardware.";
+      printError(msg.str());
+      return false;
+    }
+  } else {
+    std::ostringstream msg;
+    msg << "Add slave at alias " << slave->get_alias() << " position " << slave->get_position()
+        << ": skipping the vendor/product identity check (only enforced for alias-0 slaves "
+      "addressed by absolute ring position).";
+    printWarning(msg.str());
+  }
+  return true;
+}
+
+bool EtherlabMaster::checkSlaveSdoChecks(
+  std::shared_ptr<ethercat_interface::EcSlaveBase> slave) const
+{
+  for (auto & check : slave->get_sdo_check_config()) {
+    uint8_t buffer[8] = {0};
+    size_t result_size = 0;
+    uint32_t abort_code = 0;
+    const int ret = ecrt_master_sdo_upload(
+          master_,
+          slave->get_position(),
+          check.index,
+          check.sub_index,
+          buffer,
+          sizeof(buffer),
+          &result_size,
+          &abort_code);
+    if (ret) {
+      RCLCPP_ERROR(
+            rclcpp::get_logger("EtherlabMaster"),
+            "Failed to read check SDO 0x%04X:%u (%s) for module at position %i with "
+            "Error: %d",
+            check.index, check.sub_index,
+            check.description.empty() ? "sdo_check" : check.description.c_str(),
+            slave->get_position(),
+            abort_code);
+      return false;
+    }
+    if (result_size != check.data_size()) {
+      RCLCPP_ERROR(
+            rclcpp::get_logger("EtherlabMaster"),
+            "Check SDO 0x%04X:%u (%s) for module at position %i returned %zu byte(s), "
+            "expected %zu.",
+            check.index, check.sub_index,
+            check.description.empty() ? "sdo_check" : check.description.c_str(),
+            slave->get_position(),
+            result_size, check.data_size());
+      return false;
+    }
+    if (!check.matches(buffer)) {
+      std::ostringstream allowed;
+      for (std::size_t v = 0; v < check.allowed_values.size(); ++v) {
+        if (v) {allowed << ", ";}
+        allowed << check.allowed_values[v];
+      }
+      RCLCPP_ERROR(
+            rclcpp::get_logger("EtherlabMaster"),
+            "Check SDO 0x%04X:%u (%s) for module at position %i read %ld, expected one "
+            "of [%s]. The drive is not commissioned as this slave_config requires.",
+            check.index, check.sub_index,
+            check.description.empty() ? "sdo_check" : check.description.c_str(),
+            slave->get_position(),
+            check.decode(buffer), allowed.str().c_str());
+      return false;
+    }
+  }
+  return true;
+}
+
+bool EtherlabMaster::check_slave(std::shared_ptr<ethercat_interface::EcSlaveBase> slave)
+{
+  if (false == slave->isAliasAndPositionSet()) {
+    std::string error_message = "Alias and position not set for slave (vendor id=" +
+      std::to_string(slave->get_vendor_id()) + ",product_code=" +
+      std::to_string(slave->get_product_id()) + ").";
+    throw std::runtime_error(error_message);
+  }
+  return checkSlaveIdentity(slave) && checkSlaveSdoChecks(slave);
+}
+
 bool EtherlabMaster::add_slave(std::shared_ptr<ethercat_interface::EcSlaveBase> slave)
 {
   if (false == slave->isAliasAndPositionSet()) {
@@ -93,6 +212,10 @@ bool EtherlabMaster::add_slave(std::shared_ptr<ethercat_interface::EcSlaveBase> 
       std::to_string(slave->get_vendor_id()) + ",product_code=" +
       std::to_string(slave->get_product_id()) + ").";
     throw std::runtime_error(error_message);
+  }
+
+  if (!checkSlaveIdentity(slave)) {
+    return false;
   }
 
   // configure slave in master
@@ -108,7 +231,7 @@ bool EtherlabMaster::add_slave(std::shared_ptr<ethercat_interface::EcSlaveBase> 
         slave->get_vendor_id(),
         slave->get_product_id());
   if (slave_info.config == NULL) {
-    printWarning("Add slave. Failed to get slave configuration.");
+    printError("Add slave. Failed to get slave configuration.");
     return false;
   }
 
@@ -136,7 +259,7 @@ bool EtherlabMaster::add_slave(std::shared_ptr<ethercat_interface::EcSlaveBase> 
       // configure pdos in slave
     int pdos_status = ecrt_slave_config_pdos(slave_info.config, num_syncs, syncs);
     if (pdos_status) {
-      printWarning("Add slave. Failed to configure PDOs");
+      printError("Add slave. Failed to configure PDOs");
       return false;
     }
   } else {
@@ -196,6 +319,55 @@ bool EtherlabMaster::configure_slaves()
   }
 
   return true;
+}
+
+int EtherlabMaster::upload_slave_sdo(
+  uint16_t slave_position, uint16_t index, uint8_t sub_index,
+  uint8_t * target, size_t target_size, size_t * result_size, uint32_t * abort_code)
+{
+  if (activated_) {
+    printError(
+      "Upload slave SDO. Refusing: this is a blocking mailbox round-trip and must only be "
+      "called during the configure phase (after configure_slaves(), before start()), never "
+      "while the master is activated — it would stall the real-time cycle.");
+    return -1;
+  }
+  return ecrt_master_sdo_upload(
+    master_, slave_position, index, sub_index, target, target_size, result_size, abort_code);
+}
+
+ethercat_interface::EcMasterStateInfo EtherlabMaster::get_master_state() const
+{
+  ethercat_interface::EcMasterStateInfo info;
+  info.link_up = master_state_.link_up;
+  info.slaves_responding = master_state_.slaves_responding;
+  info.al_states = static_cast<uint8_t>(master_state_.al_states);
+  return info;
+}
+
+ethercat_interface::EcDomainStateInfo EtherlabMaster::get_domain_state(uint32_t domain) const
+{
+  ethercat_interface::EcDomainStateInfo info;
+  const DomainInfo * domain_info = domain_info_.at(domain);
+  info.working_counter = domain_info->domain_state.working_counter;
+  info.wc_state = static_cast<uint8_t>(domain_info->domain_state.wc_state);
+  return info;
+}
+
+std::vector<ethercat_interface::EcSlaveStateInfo> EtherlabMaster::get_slave_states() const
+{
+  std::vector<ethercat_interface::EcSlaveStateInfo> out;
+  out.reserve(slave_info_.size());
+  for (const SlaveInfo & s : slave_info_) {
+    ethercat_interface::EcSlaveStateInfo info;
+    info.alias = s.slave->get_slave()->get_alias();
+    info.position = s.slave->get_slave()->get_position();
+    info.al_state = s.config_state.al_state;
+    info.online = s.config_state.online;
+    info.operational = s.config_state.operational;
+    out.push_back(info);
+  }
+  return out;
 }
 
   /*int EtherlabMaster::configure_slave(uint16_t slave_position, ethercat_interface::SdoConfigEntry sdo_config, uint32_t *abort_code)
@@ -293,6 +465,10 @@ bool EtherlabMaster::start()
     printWarning("Start. Failed to activate ecat master.");
     return false;
   }
+  // From here on the master is cyclically exchanging process data: blocking mailbox SDO
+  // calls (upload_slave_sdo) are no longer safe, regardless of whether the rest of start()
+  // below succeeds.
+  activated_ = true;
 
   // retrieve domain data
   for (auto & iter : domain_info_) {
@@ -310,87 +486,39 @@ bool EtherlabMaster::start()
   return true;
 }
 
-void EtherlabMaster::update(uint32_t domain)
-{
-  // receive process data
-  ecrt_master_receive(master_);
-
-  DomainInfo * domain_info = domain_info_[domain];
-
-  ecrt_domain_process(domain_info->domain);
-
-  // check process data state (optional)
-  checkDomainState(domain);
-
-  // check for master and slave state change
-  if (update_counter_ % check_state_frequency_ == 0) {
-    checkMasterState();
-    checkSlaveStates();
-  }
-
-  // read and write process data
-  for (DomainInfo::Entry & entry : domain_info->entries) {
-    std::shared_ptr<ethercat_interface::EcSlaveBase> slave = entry.slave->get_slave();
-    for (int i = 0; i < entry.num_pdos; ++i) {
-      slave->process_data(i, domain_info->domain_pd + entry.offset[i]);
-    }
-    slave->updateState();
-  }
-
-
-  struct timespec t;
-
-  clock_gettime(CLOCK_MONOTONIC, &t);
-  ecrt_master_application_time(master_, EC_NEWTIMEVAL2NANO(t));
-  ecrt_master_sync_reference_clock(master_);
-  ecrt_master_sync_slave_clocks(master_);
-
-  // send process data
-  ecrt_domain_queue(domain_info->domain);
-  ecrt_master_send(master_);
-
-  ++update_counter_;
-}
-
-bool EtherlabMaster::spin_slaves_until_operational()
-{
-  // start after one second
-  struct timespec t;
-  clock_gettime(CLOCK_MONOTONIC, &t);
-  t.tv_sec++;
-
-  bool running = true;
-  while (running) {
-    // wait until next shot
-    clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &t, NULL);
-
-    // update EtherCAT bus
-    update();
-
-    // RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"), "updated!");
-
-    // check if operational
-    bool isAllInit = true;
-    for (auto & slave_info : slave_info_) {
-      isAllInit = isAllInit && slave_info.slave->initialized();
-    }
-    if (isAllInit) {
-      running = false;
-    }
-    // calculate next shot. carry over nanoseconds into microseconds.
-    t.tv_nsec += get_interval();
-    while (t.tv_nsec >= 1000000000) {
-      t.tv_nsec -= 1000000000;
-      t.tv_sec++;
-    }
-  }
-  return true;
-}
 
   /** stop the control loop.
    */
 bool EtherlabMaster::stop()
 {
+  activated_ = false;
+  return true;
+}
+
+bool EtherlabMaster::deactivate()
+{
+  if (master_ == NULL) {
+    printError("Deactivate. Master not obtained.");
+    return false;
+  }
+
+  int ret = ecrt_master_deactivate(master_);
+  if (ret != 0) {
+    printWarning("Deactivate. ecrt_master_deactivate() failed with code " + std::to_string(ret));
+    return false;
+  }
+
+  // ecrt_master_deactivate() frees everything created by ecrt_master_create_domain() /
+  // ecrt_master_slave_config() / ecrt_domain_data(); drop everything that referenced those
+  // objects so a subsequent add_slave()/registerTransferInDomain() cycle starts clean instead
+  // of appending onto or dereferencing stale entries.
+  for (auto & domain : domain_info_) {
+    delete domain.second;
+  }
+  domain_info_.clear();
+  slave_info_.clear();
+  transfers_.clear();
+
   return true;
 }
 
@@ -429,11 +557,19 @@ bool EtherlabMaster::read_process_data()
     entry.slave->domains(domain_map);
     domain_map_ = domain_map.at(0);
 
-    for (auto i = 0; i < entry.num_pdos; ++i) {
+    // processDataSafe()/updateStateSafe() isolate a slave plugin's exception so it can't abort
+    // the bus cycle for the other slaves; see EcSlaveBase.
+    bool ok = true;
+    for (auto i = 0; ok && i < entry.num_pdos; ++i) {
       auto index = domain_map_[i];
-      slave->process_data(index, domain_info->domain_pd + entry.offset[i]);
+      ok = slave->processDataSafe(index, domain_info->domain_pd + entry.offset[i]);
     }
-    slave->updateState();
+    if (ok) {
+      ok = slave->updateStateSafe();
+    }
+    if (ok) {
+      slave->clearProcessDataFault();
+    }
   }
 
   ++update_counter_;
@@ -454,9 +590,16 @@ bool EtherlabMaster::write_process_data()
     std::shared_ptr<ethercat_interface::EcSlaveBase> slave = entry.slave->get_slave();
     entry.slave->domains(domain_map);
     domain_map_ = domain_map.at(0);
-    for (auto i = 0; i < entry.num_pdos; ++i) {
+
+    // Same isolation as read_process_data(): one slave's exception must not stop the rest of
+    // the bus from getting its commands written.
+    bool ok = true;
+    for (auto i = 0; ok && i < entry.num_pdos; ++i) {
       auto index = domain_map_[i];
-      slave->process_data(index, domain_info->domain_pd + entry.offset[i]);
+      ok = slave->processDataSafe(index, domain_info->domain_pd + entry.offset[i]);
+    }
+    if (ok) {
+      slave->clearProcessDataFault();
     }
   }
 

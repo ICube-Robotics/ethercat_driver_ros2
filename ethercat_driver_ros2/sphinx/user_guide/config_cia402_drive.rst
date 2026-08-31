@@ -8,6 +8,8 @@ Plugin features
 
 * **Drive State transitions**: Management of the motor drive states and their transitions.
 * **Drive Fault reset**: Management of the motor drive fault reset using :code:`command_interface` "reset_fault".
+* **Drive enable/disable**: Walking the drive to Operation Enabled or down to Switch-on-Disabled using the :code:`command_interface` "enable_drive"/"disable_drive", independently of :code:`auto_state_transitions`. Times out (5s) rather than running forever if the drive never reaches its target; reported as a diagnostics warning, not a runtime error.
+* **Diagnostics**: :code:`collectDiagnostics()` reports drive state, mode of operation, and (while faulted) the latched error code, on top of the generic online/link-state diagnostics :code:`GenericEcSlave` already provides.
 * **Mode of Operation**: Management of multiple cyclic modes of operation : position (8), velocity (9), effort (10) and homing (6) with the possibility of switch between them.
 * **Default position**: Management of the target position when not controlled.
 
@@ -24,12 +26,16 @@ In addition to the configuration options given by the :code:`GenericEcSlave`, th
     - Description
   * - :code:`auto_fault_reset`
     - if set to :code:`true` the drive performs automatic fault reset; if set to :code:`false`, fault reset is only performed on rising edge (0 -> 1) command on the :code:`command_interface` "reset_fault".
+  * - :code:`auto_state_transitions`
+    - if set to :code:`true` (the default) the drive manages its own CiA402 state-machine walk every cycle; if :code:`false`, nothing drives the state machine except an explicit "enable_drive"/"disable_drive" request (or a raw :code:`control_word` command interface the caller manages itself).
+  * - :code:`auto_enable`
+    - if set to :code:`true`, the auto-walk (when :code:`auto_state_transitions` is enabled) goes all the way to :code:`OPERATION_ENABLED` on its own — the old always-auto-enable behaviour. Defaults to :code:`false`: the auto-walk stops at :code:`SWITCHED_ON` (powered, not yet producing torque/motion) until an explicit "enable_drive" request takes the last step. Has no effect when :code:`auto_state_transitions` is :code:`false`.
 
 Behavior
 --------
 Here are some remarks about the implemented motor drive behavior logic.
 
-After launching the well-configured drive, by default and without fault, motor drive module is brought automatically into the state :code:`OPERATION_ENABLED` making it ready for use. Automatic transition is only enabled when the :code:`control_word` command interface is either missing or set to :code:`NaN` making it possible for the user to take control over the motor drive's state machine by sending corresponding state transition values using the :code:`control_word` command interface.
+After launching the well-configured drive, by default and without fault, motor drive module is brought automatically into the state :code:`SWITCHED_ON` (powered, not yet producing torque/motion) and stops there — set :code:`auto_enable: true` to restore the old always-auto-enable-to-:code:`OPERATION_ENABLED` behaviour, or send a rising edge on the "enable_drive" :code:`command_interface` to take that last step explicitly. Automatic transition is only enabled when the :code:`control_word` command interface is either missing or set to :code:`NaN` making it possible for the user to take control over the motor drive's state machine by sending corresponding state transition values using the :code:`control_word` command interface.
 
 The default mode of operation of the motor drive can be set either in the configuration yaml file as the default value of the corresponding PDO channel or in urdf using the :code:`mode_of_operation` parameter of the the :code:`EcCiA402Drive`. If both are set, the urdf parameter value overrides the default one from the configuration yaml file.
 
