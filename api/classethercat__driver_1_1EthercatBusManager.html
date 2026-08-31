@@ -134,6 +134,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a55e39af295a8d230283f6249a740daad" id="r_a55e39af295a8d230283f6249a740daad"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classethercat__interface_1_1EcTransferNet.html">ethercat_interface::EcTransferNet</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a55e39af295a8d230283f6249a740daad">getEcTransferNets</a> (const YAML::Node &amp;config)</td></tr>
 <tr class="memdesc:a55e39af295a8d230283f6249a740daad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get transfer nets from YAML file.  <br /></td></tr>
 <tr class="separator:a55e39af295a8d230283f6249a740daad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26537edd6ab338bbed87173197806db6" id="r_a26537edd6ab338bbed87173197806db6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a26537edd6ab338bbed87173197806db6">setDiagnosticsNode</a> (rclcpp::Node::SharedPtr node)</td></tr>
+<tr class="memdesc:a26537edd6ab338bbed87173197806db6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Give this bus manager a node to publish diagnostics from. Optional — with no node set, diagnostics are simply not published. Creates the bus-diagnostics publisher; call before <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#af6b73c79fb4192de193caae1da19623b" title="Request the master, register/activate the network, then block (bounded by bus_config_....">activateBus()</a> so the first cycle can publish.  <br /></td></tr>
+<tr class="separator:a26537edd6ab338bbed87173197806db6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-methods" name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
@@ -160,6 +163,12 @@ Protected Member Functions</h2></td></tr>
 <tr class="memitem:a44d5022ea5038aebb8ad5ebedf99d0f4" id="r_a44d5022ea5038aebb8ad5ebedf99d0f4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a44d5022ea5038aebb8ad5ebedf99d0f4">waitForSlavesOperational</a> ()</td></tr>
 <tr class="memdesc:a44d5022ea5038aebb8ad5ebedf99d0f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Poll <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#ad524d2f83c82df1925fbffcc9d87da06">read()</a>/write() (the ordinary cyclic exchange, not a raw sleep) until <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#ad31b39e4e2db8ead529a108058916d58" title="Per-slave AL state / online / operational, as last observed by the master plugin&#39;s periodic check dur...">slaveStates()</a> reports every slave operational, or bus_config_.readiness_timeout_s elapses. Deliberately called with ec_mutex_ NOT held (see <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#af6b73c79fb4192de193caae1da19623b" title="Request the master, register/activate the network, then block (bounded by bus_config_....">activateBus()</a>): <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#ad524d2f83c82df1925fbffcc9d87da06">read()</a>/write() take their own try_to_lock, so holding the lock across this call would make every iteration observe kSkippedBusy and never actually progress.  <br /></td></tr>
 <tr class="separator:a44d5022ea5038aebb8ad5ebedf99d0f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a98f0368451821671a60e07c9e67d1cae" id="r_a98f0368451821671a60e07c9e67d1cae"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a98f0368451821671a60e07c9e67d1cae">publishBusDiagnostics</a> ()</td></tr>
+<tr class="memdesc:a98f0368451821671a60e07c9e67d1cae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Publish bus-wide diagnostics (link_up, slaves_responding, al_states, domain_working_counter, domain_wc_state) if a diagnostics node has been set. Heartbeat every second, or immediately on change. Realtime-safe (trylock()); a busy publisher just skips that cycle. No-op if <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a26537edd6ab338bbed87173197806db6" title="Give this bus manager a node to publish diagnostics from. Optional — with no node set,...">setDiagnosticsNode()</a> was never called.  <br /></td></tr>
+<tr class="separator:a98f0368451821671a60e07c9e67d1cae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac9da0ce27c18ccf5d1ea327541e476a0" id="r_ac9da0ce27c18ccf5d1ea327541e476a0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#ac9da0ce27c18ccf5d1ea327541e476a0">publishSlaveDiagnostics</a> ()</td></tr>
+<tr class="memdesc:ac9da0ce27c18ccf5d1ea327541e476a0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Push this cycle's per-slave online/al_state into each module (a slave has no visibility into its own — see EcSlaveBase::setHealth()), then publish one DiagnosticArray with one status per module, built from each module's own collectDiagnostics(). Same heartbeat/on-change/realtime-safety notes as <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a98f0368451821671a60e07c9e67d1cae" title="Publish bus-wide diagnostics (link_up, slaves_responding, al_states, domain_working_counter,...">publishBusDiagnostics()</a>.  <br /></td></tr>
+<tr class="separator:ac9da0ce27c18ccf5d1ea327541e476a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
@@ -189,6 +198,28 @@ Protected Attributes</h2></td></tr>
 <tr class="separator:a9930493d36413eb874659cf6fe22fad3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adb65b8ca040164fec106485332b12861" id="r_adb65b8ca040164fec106485332b12861"><td class="memItemLeft" align="right" valign="top">std::vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#adb65b8ca040164fec106485332b12861">empty_interface_</a></td></tr>
 <tr class="separator:adb65b8ca040164fec106485332b12861"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a247df49237f3f7813d578894a4639cb8" id="r_a247df49237f3f7813d578894a4639cb8"><td class="memItemLeft" align="right" valign="top">rclcpp::Node::SharedPtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a247df49237f3f7813d578894a4639cb8">diagnostics_node_</a></td></tr>
+<tr class="separator:a247df49237f3f7813d578894a4639cb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9226bfa70c945598ac0e39931b789eec" id="r_a9226bfa70c945598ac0e39931b789eec"><td class="memItemLeft" align="right" valign="top">rclcpp::Publisher&lt; diagnostic_msgs::msg::DiagnosticArray &gt;::SharedPtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a9226bfa70c945598ac0e39931b789eec">bus_diagnostics_publisher_</a></td></tr>
+<tr class="separator:a9226bfa70c945598ac0e39931b789eec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7358edef0a50a2ad0416b742b17ff265" id="r_a7358edef0a50a2ad0416b742b17ff265"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; realtime_tools::RealtimePublisher&lt; diagnostic_msgs::msg::DiagnosticArray &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a7358edef0a50a2ad0416b742b17ff265">rt_bus_diagnostics_publisher_</a></td></tr>
+<tr class="separator:a7358edef0a50a2ad0416b742b17ff265"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa14e6c909f3b0548268f76f150796392" id="r_aa14e6c909f3b0548268f76f150796392"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#aa14e6c909f3b0548268f76f150796392">previous_bus_state_</a></td></tr>
+<tr class="separator:aa14e6c909f3b0548268f76f150796392"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a276ba192e300b1f190ad860d60f9abaa" id="r_a276ba192e300b1f190ad860d60f9abaa"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a276ba192e300b1f190ad860d60f9abaa">bus_diagnostics_publish_time_valid_</a> {false}</td></tr>
+<tr class="separator:a276ba192e300b1f190ad860d60f9abaa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a28ef11fdd4bd895f9205e7419264507d" id="r_a28ef11fdd4bd895f9205e7419264507d"><td class="memItemLeft" align="right" valign="top">rclcpp::Time&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a28ef11fdd4bd895f9205e7419264507d">last_bus_diagnostics_publish_time_</a></td></tr>
+<tr class="separator:a28ef11fdd4bd895f9205e7419264507d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a790fe8c12468998f28f0faa75c604e55" id="r_a790fe8c12468998f28f0faa75c604e55"><td class="memItemLeft" align="right" valign="top">rclcpp::Publisher&lt; diagnostic_msgs::msg::DiagnosticArray &gt;::SharedPtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a790fe8c12468998f28f0faa75c604e55">slave_diagnostics_publisher_</a></td></tr>
+<tr class="separator:a790fe8c12468998f28f0faa75c604e55"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a54559d57f1fc2a61000aeac188f61a67" id="r_a54559d57f1fc2a61000aeac188f61a67"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; realtime_tools::RealtimePublisher&lt; diagnostic_msgs::msg::DiagnosticArray &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a54559d57f1fc2a61000aeac188f61a67">rt_slave_diagnostics_publisher_</a></td></tr>
+<tr class="separator:a54559d57f1fc2a61000aeac188f61a67"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3fe04ed182e8d62fd7175968ab3e485e" id="r_a3fe04ed182e8d62fd7175968ab3e485e"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a3fe04ed182e8d62fd7175968ab3e485e">previous_slave_states_</a></td></tr>
+<tr class="separator:a3fe04ed182e8d62fd7175968ab3e485e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab1d99be0d33d48ecae0008c949761bb6" id="r_ab1d99be0d33d48ecae0008c949761bb6"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#ab1d99be0d33d48ecae0008c949761bb6">slave_diagnostics_publish_time_valid_</a> {false}</td></tr>
+<tr class="separator:ab1d99be0d33d48ecae0008c949761bb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a811b8576ca4e7843e44af86f001c67e1" id="r_a811b8576ca4e7843e44af86f001c67e1"><td class="memItemLeft" align="right" valign="top">rclcpp::Time&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a811b8576ca4e7843e44af86f001c67e1">last_slave_diagnostics_publish_time_</a></td></tr>
+<tr class="separator:a811b8576ca4e7843e44af86f001c67e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-static-attribs" name="pro-static-attribs"></a>
 Static Protected Attributes</h2></td></tr>
@@ -545,6 +576,26 @@ Static Protected Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="a26537edd6ab338bbed87173197806db6" name="a26537edd6ab338bbed87173197806db6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a26537edd6ab338bbed87173197806db6">&#9670;&#160;</a></span>setDiagnosticsNode()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ethercat_driver::EthercatBusManager::setDiagnosticsNode </td>
+          <td>(</td>
+          <td class="paramtype">rclcpp::Node::SharedPtr&#160;</td>
+          <td class="paramname"><em>node</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Give this bus manager a node to publish diagnostics from. Optional — with no node set, diagnostics are simply not published. Creates the bus-diagnostics publisher; call before <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#af6b73c79fb4192de193caae1da19623b" title="Request the master, register/activate the network, then block (bounded by bus_config_....">activateBus()</a> so the first cycle can publish. </p>
+
+</div>
+</div>
 <a id="adf611eb4dab17c171bbddc22adbdae84" name="adf611eb4dab17c171bbddc22adbdae84"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#adf611eb4dab17c171bbddc22adbdae84">&#9670;&#160;</a></span>getAliasOrDefaultAlias()</h2>
 
@@ -798,6 +849,60 @@ Static Protected Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Poll <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#ad524d2f83c82df1925fbffcc9d87da06">read()</a>/write() (the ordinary cyclic exchange, not a raw sleep) until <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#ad31b39e4e2db8ead529a108058916d58" title="Per-slave AL state / online / operational, as last observed by the master plugin&#39;s periodic check dur...">slaveStates()</a> reports every slave operational, or bus_config_.readiness_timeout_s elapses. Deliberately called with ec_mutex_ NOT held (see <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#af6b73c79fb4192de193caae1da19623b" title="Request the master, register/activate the network, then block (bounded by bus_config_....">activateBus()</a>): <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#ad524d2f83c82df1925fbffcc9d87da06">read()</a>/write() take their own try_to_lock, so holding the lock across this call would make every iteration observe kSkippedBusy and never actually progress. </p>
+
+</div>
+</div>
+<a id="a98f0368451821671a60e07c9e67d1cae" name="a98f0368451821671a60e07c9e67d1cae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a98f0368451821671a60e07c9e67d1cae">&#9670;&#160;</a></span>publishBusDiagnostics()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ethercat_driver::EthercatBusManager::publishBusDiagnostics </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Publish bus-wide diagnostics (link_up, slaves_responding, al_states, domain_working_counter, domain_wc_state) if a diagnostics node has been set. Heartbeat every second, or immediately on change. Realtime-safe (trylock()); a busy publisher just skips that cycle. No-op if <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a26537edd6ab338bbed87173197806db6" title="Give this bus manager a node to publish diagnostics from. Optional — with no node set,...">setDiagnosticsNode()</a> was never called. </p>
+
+</div>
+</div>
+<a id="ac9da0ce27c18ccf5d1ea327541e476a0" name="ac9da0ce27c18ccf5d1ea327541e476a0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac9da0ce27c18ccf5d1ea327541e476a0">&#9670;&#160;</a></span>publishSlaveDiagnostics()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ethercat_driver::EthercatBusManager::publishSlaveDiagnostics </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Push this cycle's per-slave online/al_state into each module (a slave has no visibility into its own — see EcSlaveBase::setHealth()), then publish one DiagnosticArray with one status per module, built from each module's own collectDiagnostics(). Same heartbeat/on-change/realtime-safety notes as <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a98f0368451821671a60e07c9e67d1cae" title="Publish bus-wide diagnostics (link_up, slaves_responding, al_states, domain_working_counter,...">publishBusDiagnostics()</a>. </p>
 
 </div>
 </div>
@@ -1133,6 +1238,248 @@ Static Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <p>Empty interfaces </p>
+
+</div>
+</div>
+<a id="a247df49237f3f7813d578894a4639cb8" name="a247df49237f3f7813d578894a4639cb8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a247df49237f3f7813d578894a4639cb8">&#9670;&#160;</a></span>diagnostics_node_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">rclcpp::Node::SharedPtr ethercat_driver::EthercatBusManager::diagnostics_node_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a9226bfa70c945598ac0e39931b789eec" name="a9226bfa70c945598ac0e39931b789eec"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9226bfa70c945598ac0e39931b789eec">&#9670;&#160;</a></span>bus_diagnostics_publisher_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">rclcpp::Publisher&lt;diagnostic_msgs::msg::DiagnosticArray&gt;::SharedPtr ethercat_driver::EthercatBusManager::bus_diagnostics_publisher_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a7358edef0a50a2ad0416b742b17ff265" name="a7358edef0a50a2ad0416b742b17ff265"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7358edef0a50a2ad0416b742b17ff265">&#9670;&#160;</a></span>rt_bus_diagnostics_publisher_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::unique_ptr&lt;realtime_tools::RealtimePublisher&lt;diagnostic_msgs::msg::DiagnosticArray&gt; &gt; ethercat_driver::EthercatBusManager::rt_bus_diagnostics_publisher_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aa14e6c909f3b0548268f76f150796392" name="aa14e6c909f3b0548268f76f150796392"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa14e6c909f3b0548268f76f150796392">&#9670;&#160;</a></span>previous_bus_state_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string ethercat_driver::EthercatBusManager::previous_bus_state_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a276ba192e300b1f190ad860d60f9abaa" name="a276ba192e300b1f190ad860d60f9abaa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a276ba192e300b1f190ad860d60f9abaa">&#9670;&#160;</a></span>bus_diagnostics_publish_time_valid_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool ethercat_driver::EthercatBusManager::bus_diagnostics_publish_time_valid_ {false}</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a28ef11fdd4bd895f9205e7419264507d" name="a28ef11fdd4bd895f9205e7419264507d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a28ef11fdd4bd895f9205e7419264507d">&#9670;&#160;</a></span>last_bus_diagnostics_publish_time_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">rclcpp::Time ethercat_driver::EthercatBusManager::last_bus_diagnostics_publish_time_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a790fe8c12468998f28f0faa75c604e55" name="a790fe8c12468998f28f0faa75c604e55"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a790fe8c12468998f28f0faa75c604e55">&#9670;&#160;</a></span>slave_diagnostics_publisher_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">rclcpp::Publisher&lt;diagnostic_msgs::msg::DiagnosticArray&gt;::SharedPtr ethercat_driver::EthercatBusManager::slave_diagnostics_publisher_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a54559d57f1fc2a61000aeac188f61a67" name="a54559d57f1fc2a61000aeac188f61a67"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a54559d57f1fc2a61000aeac188f61a67">&#9670;&#160;</a></span>rt_slave_diagnostics_publisher_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::unique_ptr&lt;realtime_tools::RealtimePublisher&lt;diagnostic_msgs::msg::DiagnosticArray&gt; &gt; ethercat_driver::EthercatBusManager::rt_slave_diagnostics_publisher_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a3fe04ed182e8d62fd7175968ab3e485e" name="a3fe04ed182e8d62fd7175968ab3e485e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3fe04ed182e8d62fd7175968ab3e485e">&#9670;&#160;</a></span>previous_slave_states_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;std::string&gt; ethercat_driver::EthercatBusManager::previous_slave_states_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ab1d99be0d33d48ecae0008c949761bb6" name="ab1d99be0d33d48ecae0008c949761bb6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab1d99be0d33d48ecae0008c949761bb6">&#9670;&#160;</a></span>slave_diagnostics_publish_time_valid_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool ethercat_driver::EthercatBusManager::slave_diagnostics_publish_time_valid_ {false}</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a811b8576ca4e7843e44af86f001c67e1" name="a811b8576ca4e7843e44af86f001c67e1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a811b8576ca4e7843e44af86f001c67e1">&#9670;&#160;</a></span>last_slave_diagnostics_publish_time_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">rclcpp::Time ethercat_driver::EthercatBusManager::last_slave_diagnostics_publish_time_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
 
 </div>
 </div>
