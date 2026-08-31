@@ -138,6 +138,9 @@ Public Member Functions</h2></td></tr>
 Protected Member Functions</h2></td></tr>
 <tr class="memitem:adf611eb4dab17c171bbddc22adbdae84" id="r_adf611eb4dab17c171bbddc22adbdae84"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#adf611eb4dab17c171bbddc22adbdae84">getAliasOrDefaultAlias</a> (const std::unordered_map&lt; std::string, std::string &gt; &amp;slave_parameters)</td></tr>
 <tr class="separator:adf611eb4dab17c171bbddc22adbdae84"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa3b9980b78ecd159a180dd6e3f2314c5" id="r_aa3b9980b78ecd159a180dd6e3f2314c5"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#aa3b9980b78ecd159a180dd6e3f2314c5">getRequiredOrDefault</a> (const std::unordered_map&lt; std::string, std::string &gt; &amp;slave_parameters)</td></tr>
+<tr class="memdesc:aa3b9980b78ecd159a180dd6e3f2314c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether a module's absence/misconfiguration should refuse to configure the whole bus (true, the default when the "required" param is absent — today's behavior, unchanged) or just exclude that module while the rest of the bus still comes up (false).  <br /></td></tr>
+<tr class="separator:aa3b9980b78ecd159a180dd6e3f2314c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8c8eb6396912b55120eae44000240b3d" id="r_a8c8eb6396912b55120eae44000240b3d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a8c8eb6396912b55120eae44000240b3d">loadTransferConfigYamlFile</a> (YAML::Node &amp;node, const std::string &amp;path=&quot;&quot;)</td></tr>
 <tr class="memdesc:a8c8eb6396912b55120eae44000240b3d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load transfer config YAML file One use case is to load transfers for FailSafe Over EtherCAT Safety.  <br /></td></tr>
 <tr class="separator:a8c8eb6396912b55120eae44000240b3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -547,6 +550,34 @@ Static Protected Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="aa3b9980b78ecd159a180dd6e3f2314c5" name="aa3b9980b78ecd159a180dd6e3f2314c5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa3b9980b78ecd159a180dd6e3f2314c5">&#9670;&#160;</a></span>getRequiredOrDefault()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool ethercat_driver::EthercatBusManager::getRequiredOrDefault </td>
+          <td>(</td>
+          <td class="paramtype">const std::unordered_map&lt; std::string, std::string &gt; &amp;&#160;</td>
+          <td class="paramname"><em>slave_parameters</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Whether a module's absence/misconfiguration should refuse to configure the whole bus (true, the default when the "required" param is absent — today's behavior, unchanged) or just exclude that module while the rest of the bus still comes up (false). </p>
 
 </div>
 </div>

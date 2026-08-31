@@ -93,6 +93,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a188e932d041d5275f70edca780f29cd2" id="r_a188e932d041d5275f70edca780f29cd2"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcMasterBase.html#a188e932d041d5275f70edca780f29cd2">is_valid</a> () const =0</td></tr>
 <tr class="memdesc:a188e932d041d5275f70edca780f29cd2"><td class="mdescLeft">&#160;</td><td class="mdescRight">whether the underlying EtherCAT master was successfully obtained (<a class="el" href="classethercat__interface_1_1EcMasterBase.html#a33838e18de308e2bf36b9f4bf3c3cbf9">init()</a> succeeded and <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a7920e4cbe2b1374eebe7bc3193861699">stop()</a> has not since released it). Callers should check this before using the master.  <br /></td></tr>
 <tr class="separator:a188e932d041d5275f70edca780f29cd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad1876e0e87ea8cd8ed11dc3b405532f0" id="r_ad1876e0e87ea8cd8ed11dc3b405532f0"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcMasterBase.html#ad1876e0e87ea8cd8ed11dc3b405532f0">check_slave</a> (std::shared_ptr&lt; <a class="el" href="classethercat__interface_1_1EcSlaveBase.html">EcSlaveBase</a> &gt; slave)=0</td></tr>
+<tr class="memdesc:ad1876e0e87ea8cd8ed11dc3b405532f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Validate a slave — vendor/product identity against what's physically on the bus, plus its sdo_check: preconditions — WITHOUT registering it (no ecrt_master_slave_config, no PDO/domain registration, no side effects). Safe to call for every configured module before deciding which ones to <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a54b47f1d331dd89f95d7353ea5589819" title="add a slave device to the master">add_slave()</a>: both checks are addressed by ring position at the master level and need no prior slave configuration.  <br /></td></tr>
+<tr class="separator:ad1876e0e87ea8cd8ed11dc3b405532f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a54b47f1d331dd89f95d7353ea5589819" id="r_a54b47f1d331dd89f95d7353ea5589819"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcMasterBase.html#a54b47f1d331dd89f95d7353ea5589819">add_slave</a> (std::shared_ptr&lt; <a class="el" href="classethercat__interface_1_1EcSlaveBase.html">EcSlaveBase</a> &gt; slave)=0</td></tr>
 <tr class="memdesc:a54b47f1d331dd89f95d7353ea5589819"><td class="mdescLeft">&#160;</td><td class="mdescRight">add a slave device to the master  <br /></td></tr>
 <tr class="separator:a54b47f1d331dd89f95d7353ea5589819"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -212,6 +215,35 @@ Protected Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>whether the underlying EtherCAT master was successfully obtained (<a class="el" href="classethercat__interface_1_1EcMasterBase.html#a33838e18de308e2bf36b9f4bf3c3cbf9">init()</a> succeeded and <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a7920e4cbe2b1374eebe7bc3193861699">stop()</a> has not since released it). Callers should check this before using the master. </p>
+
+</div>
+</div>
+<a id="ad1876e0e87ea8cd8ed11dc3b405532f0" name="ad1876e0e87ea8cd8ed11dc3b405532f0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad1876e0e87ea8cd8ed11dc3b405532f0">&#9670;&#160;</a></span>check_slave()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual bool ethercat_interface::EcMasterBase::check_slave </td>
+          <td>(</td>
+          <td class="paramtype">std::shared_ptr&lt; <a class="el" href="classethercat__interface_1_1EcSlaveBase.html">EcSlaveBase</a> &gt;&#160;</td>
+          <td class="paramname"><em>slave</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Validate a slave — vendor/product identity against what's physically on the bus, plus its sdo_check: preconditions — WITHOUT registering it (no ecrt_master_slave_config, no PDO/domain registration, no side effects). Safe to call for every configured module before deciding which ones to <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a54b47f1d331dd89f95d7353ea5589819" title="add a slave device to the master">add_slave()</a>: both checks are addressed by ring position at the master level and need no prior slave configuration. </p>
+<dl class="section return"><dt>Returns</dt><dd>true if the slave may be added; false if it failed a check (see logged detail). </dd></dl>
 
 </div>
 </div>

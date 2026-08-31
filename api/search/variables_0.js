@@ -8,5 +8,6 @@ var searchData=
   ['alias_5f_5',['alias_',['../classethercat__interface_1_1EcSlaveBase.html#af63a6b6df7f2c29a0e3d63cbd8f013ad',1,'ethercat_interface::EcSlaveBase']]],
   ['all_5fcommand_5finterface_5fnames_6',['all_command_interface_names',['../namespaceethercat__interface.html#ad2594ab1c4df36385e13ce220c003fdf',1,'ethercat_interface']]],
   ['all_5fstate_5finterface_5fnames_7',['all_state_interface_names',['../namespaceethercat__interface.html#af02088a20e0b8fbd5f484f7a7840427d',1,'ethercat_interface']]],
-  ['allow_5fec_5fwrite_8',['allow_ec_write',['../classethercat__interface_1_1EcPdoChannelManager.html#a6c11d429961cb57771d906599f133a73',1,'ethercat_interface::EcPdoChannelManager']]]
+  ['allow_5fec_5fwrite_8',['allow_ec_write',['../classethercat__interface_1_1EcPdoChannelManager.html#a6c11d429961cb57771d906599f133a73',1,'ethercat_interface::EcPdoChannelManager']]],
+  ['allowed_5fvalues_9',['allowed_values',['../classethercat__interface_1_1SdoCheckEntry.html#a92c86019ba72097b3a760305c294f690',1,'ethercat_interface::SdoCheckEntry']]]
 ];
