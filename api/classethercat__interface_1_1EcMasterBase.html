@@ -90,6 +90,9 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:adc619d42c52168d6afd165a484f55060"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af0137d97272b915bf20034ce57d0b22c" id="r_af0137d97272b915bf20034ce57d0b22c"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcMasterBase.html#af0137d97272b915bf20034ce57d0b22c">~EcMasterBase</a> ()</td></tr>
 <tr class="separator:af0137d97272b915bf20034ce57d0b22c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a188e932d041d5275f70edca780f29cd2" id="r_a188e932d041d5275f70edca780f29cd2"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcMasterBase.html#a188e932d041d5275f70edca780f29cd2">is_valid</a> () const =0</td></tr>
+<tr class="memdesc:a188e932d041d5275f70edca780f29cd2"><td class="mdescLeft">&#160;</td><td class="mdescRight">whether the underlying EtherCAT master was successfully obtained (<a class="el" href="classethercat__interface_1_1EcMasterBase.html#a33838e18de308e2bf36b9f4bf3c3cbf9">init()</a> succeeded and <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a7920e4cbe2b1374eebe7bc3193861699">stop()</a> has not since released it). Callers should check this before using the master.  <br /></td></tr>
+<tr class="separator:a188e932d041d5275f70edca780f29cd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a54b47f1d331dd89f95d7353ea5589819" id="r_a54b47f1d331dd89f95d7353ea5589819"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcMasterBase.html#a54b47f1d331dd89f95d7353ea5589819">add_slave</a> (std::shared_ptr&lt; <a class="el" href="classethercat__interface_1_1EcSlaveBase.html">EcSlaveBase</a> &gt; slave)=0</td></tr>
 <tr class="memdesc:a54b47f1d331dd89f95d7353ea5589819"><td class="mdescLeft">&#160;</td><td class="mdescRight">add a slave device to the master  <br /></td></tr>
 <tr class="separator:a54b47f1d331dd89f95d7353ea5589819"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -106,6 +109,18 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a847fc7515be947b6a8a786c73bcdce8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5831009a53e9c9b8928b1f1945b715b5" id="r_a5831009a53e9c9b8928b1f1945b715b5"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcMasterBase.html#a5831009a53e9c9b8928b1f1945b715b5">spin_slaves_until_operational</a> ()=0</td></tr>
 <tr class="separator:a5831009a53e9c9b8928b1f1945b715b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae4c677283ba337c29a227cad90a00e68" id="r_ae4c677283ba337c29a227cad90a00e68"><td class="memItemLeft" align="right" valign="top">virtual int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcMasterBase.html#ae4c677283ba337c29a227cad90a00e68">upload_slave_sdo</a> (uint16_t slave_position, uint16_t index, uint8_t sub_index, uint8_t *target, size_t target_size, size_t *result_size, uint32_t *abort_code)=0</td></tr>
+<tr class="memdesc:ae4c677283ba337c29a227cad90a00e68"><td class="mdescLeft">&#160;</td><td class="mdescRight">Blocking CoE SDO upload (read). ONLY valid during the "configure" phase — after <a class="el" href="classethercat__interface_1_1EcMasterBase.html#adca1a7a20238efc6fdb98cef571625eb" title="configure slave using SDO">configure_slaves()</a> and before <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a5c6cce4e6bd120ba1aa163a3df85e691">start()</a> (or after <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a7920e4cbe2b1374eebe7bc3193861699">stop()</a>, before the next <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a5c6cce4e6bd120ba1aa163a3df85e691">start()</a>). Must NEVER be called while the master is activated (cyclic process-data exchange running): it blocks the calling thread on a mailbox round-trip, which would stall the real-time cycle. Implementations must refuse (return a negative value and log an error) rather than perform the transfer if called while activated.  <br /></td></tr>
+<tr class="separator:ae4c677283ba337c29a227cad90a00e68"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a48c2fbdc7d3041a8230091ce6caed72c" id="r_a48c2fbdc7d3041a8230091ce6caed72c"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="structethercat__interface_1_1EcMasterStateInfo.html">EcMasterStateInfo</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcMasterBase.html#a48c2fbdc7d3041a8230091ce6caed72c">get_master_state</a> () const =0</td></tr>
+<tr class="memdesc:a48c2fbdc7d3041a8230091ce6caed72c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Last-observed master state (link up/down, responding-slave count, aggregate AL states bitmask), as last updated by the periodic state check during <a class="el" href="classethercat__interface_1_1EcMasterBase.html#ab846fcbfc1776999bacaa81714ce3c0b">read_process_data()</a>/update(). No new bus transaction: returns the cached result of that periodic check.  <br /></td></tr>
+<tr class="separator:a48c2fbdc7d3041a8230091ce6caed72c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8f33fd3c1ae28472ca9314e4c0e63656" id="r_a8f33fd3c1ae28472ca9314e4c0e63656"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="structethercat__interface_1_1EcDomainStateInfo.html">EcDomainStateInfo</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcMasterBase.html#a8f33fd3c1ae28472ca9314e4c0e63656">get_domain_state</a> (uint32_t domain=0) const =0</td></tr>
+<tr class="memdesc:a8f33fd3c1ae28472ca9314e4c0e63656"><td class="mdescLeft">&#160;</td><td class="mdescRight">Last-observed domain state (working counter / completeness), as last updated by the periodic state check. No new bus transaction: returns the cached result.  <br /></td></tr>
+<tr class="separator:a8f33fd3c1ae28472ca9314e4c0e63656"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac00a2bd02131368239119a83a57d4514" id="r_ac00a2bd02131368239119a83a57d4514"><td class="memItemLeft" align="right" valign="top">virtual std::vector&lt; <a class="el" href="structethercat__interface_1_1EcSlaveStateInfo.html">EcSlaveStateInfo</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcMasterBase.html#ac00a2bd02131368239119a83a57d4514">get_slave_states</a> () const =0</td></tr>
+<tr class="memdesc:ac00a2bd02131368239119a83a57d4514"><td class="mdescLeft">&#160;</td><td class="mdescRight">Last-observed per-slave AL state / online / operational, as last updated by the periodic state check. No new bus transaction: returns the cached result.  <br /></td></tr>
+<tr class="separator:ac00a2bd02131368239119a83a57d4514"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8b94755bcfd2164e46ffb98b2eb23319" id="r_a8b94755bcfd2164e46ffb98b2eb23319"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcMasterBase.html#a8b94755bcfd2164e46ffb98b2eb23319">registerTransferInDomain</a> (const std::vector&lt; <a class="el" href="classethercat__interface_1_1EcTransferNet.html">EcTransferNet</a> &gt; &amp;transfer_nets)=0</td></tr>
 <tr class="memdesc:a8b94755bcfd2164e46ffb98b2eb23319"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fill in the <a class="el" href="structethercat__interface_1_1EcTransferInfo.html">EcTransferInfo</a> structures.  <br /></td></tr>
 <tr class="separator:a8b94755bcfd2164e46ffb98b2eb23319"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -173,6 +188,33 @@ Protected Attributes</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a188e932d041d5275f70edca780f29cd2" name="a188e932d041d5275f70edca780f29cd2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a188e932d041d5275f70edca780f29cd2">&#9670;&#160;</a></span>is_valid()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual bool ethercat_interface::EcMasterBase::is_valid </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>whether the underlying EtherCAT master was successfully obtained (<a class="el" href="classethercat__interface_1_1EcMasterBase.html#a33838e18de308e2bf36b9f4bf3c3cbf9">init()</a> succeeded and <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a7920e4cbe2b1374eebe7bc3193861699">stop()</a> has not since released it). Callers should check this before using the master. </p>
+
+</div>
+</div>
 <a id="a54b47f1d331dd89f95d7353ea5589819" name="a54b47f1d331dd89f95d7353ea5589819"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a54b47f1d331dd89f95d7353ea5589819">&#9670;&#160;</a></span>add_slave()</h2>
 
@@ -351,6 +393,157 @@ Protected Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="ae4c677283ba337c29a227cad90a00e68" name="ae4c677283ba337c29a227cad90a00e68"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae4c677283ba337c29a227cad90a00e68">&#9670;&#160;</a></span>upload_slave_sdo()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual int ethercat_interface::EcMasterBase::upload_slave_sdo </td>
+          <td>(</td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>slave_position</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>index</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>sub_index</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t *&#160;</td>
+          <td class="paramname"><em>target</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>target_size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t *&#160;</td>
+          <td class="paramname"><em>result_size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t *&#160;</td>
+          <td class="paramname"><em>abort_code</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Blocking CoE SDO upload (read). ONLY valid during the "configure" phase — after <a class="el" href="classethercat__interface_1_1EcMasterBase.html#adca1a7a20238efc6fdb98cef571625eb" title="configure slave using SDO">configure_slaves()</a> and before <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a5c6cce4e6bd120ba1aa163a3df85e691">start()</a> (or after <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a7920e4cbe2b1374eebe7bc3193861699">stop()</a>, before the next <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a5c6cce4e6bd120ba1aa163a3df85e691">start()</a>). Must NEVER be called while the master is activated (cyclic process-data exchange running): it blocks the calling thread on a mailbox round-trip, which would stall the real-time cycle. Implementations must refuse (return a negative value and log an error) rather than perform the transfer if called while activated. </p>
+<dl class="section return"><dt>Returns</dt><dd>0 on success (see ecrt_master_sdo_upload's return convention); negative if refused or the transfer failed. </dd></dl>
+
+</div>
+</div>
+<a id="a48c2fbdc7d3041a8230091ce6caed72c" name="a48c2fbdc7d3041a8230091ce6caed72c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a48c2fbdc7d3041a8230091ce6caed72c">&#9670;&#160;</a></span>get_master_state()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual <a class="el" href="structethercat__interface_1_1EcMasterStateInfo.html">EcMasterStateInfo</a> ethercat_interface::EcMasterBase::get_master_state </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Last-observed master state (link up/down, responding-slave count, aggregate AL states bitmask), as last updated by the periodic state check during <a class="el" href="classethercat__interface_1_1EcMasterBase.html#ab846fcbfc1776999bacaa81714ce3c0b">read_process_data()</a>/update(). No new bus transaction: returns the cached result of that periodic check. </p>
+
+</div>
+</div>
+<a id="a8f33fd3c1ae28472ca9314e4c0e63656" name="a8f33fd3c1ae28472ca9314e4c0e63656"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8f33fd3c1ae28472ca9314e4c0e63656">&#9670;&#160;</a></span>get_domain_state()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual <a class="el" href="structethercat__interface_1_1EcDomainStateInfo.html">EcDomainStateInfo</a> ethercat_interface::EcMasterBase::get_domain_state </td>
+          <td>(</td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>domain</em> = <code>0</code></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Last-observed domain state (working counter / completeness), as last updated by the periodic state check. No new bus transaction: returns the cached result. </p>
+
+</div>
+</div>
+<a id="ac00a2bd02131368239119a83a57d4514" name="ac00a2bd02131368239119a83a57d4514"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac00a2bd02131368239119a83a57d4514">&#9670;&#160;</a></span>get_slave_states()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual std::vector&lt; <a class="el" href="structethercat__interface_1_1EcSlaveStateInfo.html">EcSlaveStateInfo</a> &gt; ethercat_interface::EcMasterBase::get_slave_states </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Last-observed per-slave AL state / online / operational, as last updated by the periodic state check. No new bus transaction: returns the cached result. </p>
 
 </div>
 </div>

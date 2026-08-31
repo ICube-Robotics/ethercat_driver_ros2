@@ -104,6 +104,9 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ae68c0d145e26581c93233a7593442b57"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8c1d1802bd81fbd046aca9550a17aed2" id="r_a8c1d1802bd81fbd046aca9550a17aed2"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a8c1d1802bd81fbd046aca9550a17aed2">configureModules</a> (const <a class="el" href="structethercat__driver_1_1EthercatBusConfig.html">EthercatBusConfig</a> &amp;bus_config, const std::vector&lt; <a class="el" href="structethercat__driver_1_1ConfiguredEcModule.html">ConfiguredEcModule</a> &gt; &amp;modules)</td></tr>
 <tr class="separator:a8c1d1802bd81fbd046aca9550a17aed2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acbf0220dba67668a5e437d14bf6123c9" id="r_acbf0220dba67668a5e437d14bf6123c9"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#acbf0220dba67668a5e437d14bf6123c9">configureBus</a> ()</td></tr>
+<tr class="memdesc:acbf0220dba67668a5e437d14bf6123c9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Request the master and configure the network, leaving the bus in the idle/PRE-OP phase (not yet activated). Idempotent. This is the phase in which blocking SDO access (configSlaveSdo, readSlaveSdo) is valid — once the bus is activated the application must drive the cyclic loop and blocking SDO calls would stall. <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#af6b73c79fb4192de193caae1da19623b">activateBus()</a> calls this automatically if not already configured, so existing callers are unaffected.  <br /></td></tr>
+<tr class="separator:acbf0220dba67668a5e437d14bf6123c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af6b73c79fb4192de193caae1da19623b" id="r_af6b73c79fb4192de193caae1da19623b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#af6b73c79fb4192de193caae1da19623b">activateBus</a> ()</td></tr>
 <tr class="separator:af6b73c79fb4192de193caae1da19623b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a31b3797ffadc9aba2e1d3ac48218e841" id="r_a31b3797ffadc9aba2e1d3ac48218e841"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a31b3797ffadc9aba2e1d3ac48218e841">deactivateBus</a> ()</td></tr>
@@ -112,6 +115,18 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ad524d2f83c82df1925fbffcc9d87da06"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa38fe8438ed86e76c44948722cf3ed46" id="r_aa38fe8438ed86e76c44948722cf3ed46"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceethercat__driver.html#a9d46d1b3b55f21e2a83c0d3070860a35">EthercatCycleResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#aa38fe8438ed86e76c44948722cf3ed46">write</a> ()</td></tr>
 <tr class="separator:aa38fe8438ed86e76c44948722cf3ed46"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a59f41ec31f7588bfd0f642d5d188c9ed" id="r_a59f41ec31f7588bfd0f642d5d188c9ed"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a59f41ec31f7588bfd0f642d5d188c9ed">readSlaveSdo</a> (uint16_t slave_position, uint16_t index, uint8_t sub_index, uint8_t *target, size_t target_size, size_t *result_size, uint32_t *abort_code)</td></tr>
+<tr class="memdesc:a59f41ec31f7588bfd0f642d5d188c9ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read a slave SDO entry (CoE upload). Must be called in the idle/PRE-OP phase — i.e. after <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#acbf0220dba67668a5e437d14bf6123c9" title="Request the master and configure the network, leaving the bus in the idle/PRE-OP phase (not yet activ...">configureBus()</a> but BEFORE <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#af6b73c79fb4192de193caae1da19623b">activateBus()</a>. This is a blocking mailbox call; after the bus is activated the application owns the cyclic loop and a blocking upload would stall the master (and the calling thread).  <br /></td></tr>
+<tr class="separator:a59f41ec31f7588bfd0f642d5d188c9ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a66f84d835b2e7a09d759c8a9c01b2884" id="r_a66f84d835b2e7a09d759c8a9c01b2884"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structethercat__interface_1_1EcMasterStateInfo.html">ethercat_interface::EcMasterStateInfo</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a66f84d835b2e7a09d759c8a9c01b2884">masterState</a> () const</td></tr>
+<tr class="memdesc:a66f84d835b2e7a09d759c8a9c01b2884"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bus-wide master state (link up/down, responding-slave count, aggregate AL states), as last observed by the master plugin's periodic check during <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#ad524d2f83c82df1925fbffcc9d87da06">read()</a>. No new bus transaction — a zero-initialized struct if the master was never obtained. Not internally locked: intended to be called from the same thread immediately after <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#ad524d2f83c82df1925fbffcc9d87da06">read()</a>, matching how <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#ad524d2f83c82df1925fbffcc9d87da06">read()</a>/write() are used from the single ros2_control RT cycle.  <br /></td></tr>
+<tr class="separator:a66f84d835b2e7a09d759c8a9c01b2884"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a63f2b42b9a39a49860e9ec6e331d095d" id="r_a63f2b42b9a39a49860e9ec6e331d095d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structethercat__interface_1_1EcDomainStateInfo.html">ethercat_interface::EcDomainStateInfo</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a63f2b42b9a39a49860e9ec6e331d095d">domainState</a> (uint32_t domain=0) const</td></tr>
+<tr class="memdesc:a63f2b42b9a39a49860e9ec6e331d095d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Domain (cyclic PDO exchange) state — working counter and completeness — as last observed by the master plugin during <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#ad524d2f83c82df1925fbffcc9d87da06">read()</a>. No new bus transaction. Same threading note as <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a66f84d835b2e7a09d759c8a9c01b2884" title="Bus-wide master state (link up/down, responding-slave count, aggregate AL states),...">masterState()</a>.  <br /></td></tr>
+<tr class="separator:a63f2b42b9a39a49860e9ec6e331d095d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad31b39e4e2db8ead529a108058916d58" id="r_ad31b39e4e2db8ead529a108058916d58"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structethercat__interface_1_1EcSlaveStateInfo.html">ethercat_interface::EcSlaveStateInfo</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#ad31b39e4e2db8ead529a108058916d58">slaveStates</a> () const</td></tr>
+<tr class="memdesc:ad31b39e4e2db8ead529a108058916d58"><td class="mdescLeft">&#160;</td><td class="mdescRight">Per-slave AL state / online / operational, as last observed by the master plugin's periodic check during <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#ad524d2f83c82df1925fbffcc9d87da06">read()</a>. No new bus transaction. Same threading note as <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a66f84d835b2e7a09d759c8a9c01b2884" title="Bus-wide master state (link up/down, responding-slave count, aggregate AL states),...">masterState()</a>.  <br /></td></tr>
+<tr class="separator:ad31b39e4e2db8ead529a108058916d58"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6f3c22c38076a4b5a5d17a9d9e55479a" id="r_a6f3c22c38076a4b5a5d17a9d9e55479a"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::unordered_map&lt; std::string, std::string &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a6f3c22c38076a4b5a5d17a9d9e55479a">getEcTransferModuleParam</a> (const YAML::Node &amp;config)</td></tr>
 <tr class="memdesc:a6f3c22c38076a4b5a5d17a9d9e55479a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get transfer module parameters from YAML file.  <br /></td></tr>
 <tr class="separator:a6f3c22c38076a4b5a5d17a9d9e55479a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -130,6 +145,10 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:ab4dfe59a67a278225a9222501a50bd59"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab79e44986f4c1ce2ec04600b9597ed24" id="r_ab79e44986f4c1ce2ec04600b9597ed24"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#ab79e44986f4c1ce2ec04600b9597ed24">configNetwork</a> ()</td></tr>
 <tr class="separator:ab79e44986f4c1ce2ec04600b9597ed24"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a74fddbc65c9ab350b81ca1c1642bff41" id="r_a74fddbc65c9ab350b81ca1c1642bff41"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a74fddbc65c9ab350b81ca1c1642bff41">configureBusLocked</a> ()</td></tr>
+<tr class="separator:a74fddbc65c9ab350b81ca1c1642bff41"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab8db0c8d1afa82a9c00f9a1e42654aec" id="r_ab8db0c8d1afa82a9c00f9a1e42654aec"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#ab8db0c8d1afa82a9c00f9a1e42654aec">activateBusLocked</a> ()</td></tr>
+<tr class="separator:ab8db0c8d1afa82a9c00f9a1e42654aec"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
@@ -145,6 +164,8 @@ Protected Attributes</h2></td></tr>
 <tr class="separator:adb1199ae17a2ab0f140f083cc04de3e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acf76ed684e4aefae77986fd3272382c3" id="r_acf76ed684e4aefae77986fd3272382c3"><td class="memItemLeft" align="right" valign="top">std::mutex&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#acf76ed684e4aefae77986fd3272382c3">ec_mutex_</a></td></tr>
 <tr class="separator:acf76ed684e4aefae77986fd3272382c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2210133d2278f78fd44e27f8e450ca2b" id="r_a2210133d2278f78fd44e27f8e450ca2b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a2210133d2278f78fd44e27f8e450ca2b">configured_</a> {false}</td></tr>
+<tr class="separator:a2210133d2278f78fd44e27f8e450ca2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab0b9147d64b6edb8792f900205ff4cac" id="r_ab0b9147d64b6edb8792f900205ff4cac"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#ab0b9147d64b6edb8792f900205ff4cac">activated_</a> {false}</td></tr>
 <tr class="separator:ab0b9147d64b6edb8792f900205ff4cac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aad490b885048115b2df694e2ab50b53d" id="r_aad490b885048115b2df694e2ab50b53d"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classethercat__interface_1_1EcTransferNet.html">ethercat_interface::EcTransferNet</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#aad490b885048115b2df694e2ab50b53d">ec_transfer_nets_</a></td></tr>
@@ -243,6 +264,25 @@ Static Protected Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="acbf0220dba67668a5e437d14bf6123c9" name="acbf0220dba67668a5e437d14bf6123c9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acbf0220dba67668a5e437d14bf6123c9">&#9670;&#160;</a></span>configureBus()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool ethercat_driver::EthercatBusManager::configureBus </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Request the master and configure the network, leaving the bus in the idle/PRE-OP phase (not yet activated). Idempotent. This is the phase in which blocking SDO access (configSlaveSdo, readSlaveSdo) is valid — once the bus is activated the application must drive the cyclic loop and blocking SDO calls would stall. <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#af6b73c79fb4192de193caae1da19623b">activateBus()</a> calls this automatically if not already configured, so existing callers are unaffected. </p>
+
+</div>
+</div>
 <a id="af6b73c79fb4192de193caae1da19623b" name="af6b73c79fb4192de193caae1da19623b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af6b73c79fb4192de193caae1da19623b">&#9670;&#160;</a></span>activateBus()</h2>
 
@@ -308,6 +348,125 @@ Static Protected Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a59f41ec31f7588bfd0f642d5d188c9ed" name="a59f41ec31f7588bfd0f642d5d188c9ed"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a59f41ec31f7588bfd0f642d5d188c9ed">&#9670;&#160;</a></span>readSlaveSdo()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int ethercat_driver::EthercatBusManager::readSlaveSdo </td>
+          <td>(</td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>slave_position</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>index</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>sub_index</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t *&#160;</td>
+          <td class="paramname"><em>target</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>target_size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t *&#160;</td>
+          <td class="paramname"><em>result_size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t *&#160;</td>
+          <td class="paramname"><em>abort_code</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Read a slave SDO entry (CoE upload). Must be called in the idle/PRE-OP phase — i.e. after <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#acbf0220dba67668a5e437d14bf6123c9" title="Request the master and configure the network, leaving the bus in the idle/PRE-OP phase (not yet activ...">configureBus()</a> but BEFORE <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#af6b73c79fb4192de193caae1da19623b">activateBus()</a>. This is a blocking mailbox call; after the bus is activated the application owns the cyclic loop and a blocking upload would stall the master (and the calling thread). </p>
+<dl class="section return"><dt>Returns</dt><dd>0 on success, negative if the master does not exist, else the ecrt_master_sdo_upload return code. </dd></dl>
+
+</div>
+</div>
+<a id="a66f84d835b2e7a09d759c8a9c01b2884" name="a66f84d835b2e7a09d759c8a9c01b2884"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a66f84d835b2e7a09d759c8a9c01b2884">&#9670;&#160;</a></span>masterState()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structethercat__interface_1_1EcMasterStateInfo.html">ethercat_interface::EcMasterStateInfo</a> ethercat_driver::EthercatBusManager::masterState </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Bus-wide master state (link up/down, responding-slave count, aggregate AL states), as last observed by the master plugin's periodic check during <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#ad524d2f83c82df1925fbffcc9d87da06">read()</a>. No new bus transaction — a zero-initialized struct if the master was never obtained. Not internally locked: intended to be called from the same thread immediately after <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#ad524d2f83c82df1925fbffcc9d87da06">read()</a>, matching how <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#ad524d2f83c82df1925fbffcc9d87da06">read()</a>/write() are used from the single ros2_control RT cycle. </p>
+
+</div>
+</div>
+<a id="a63f2b42b9a39a49860e9ec6e331d095d" name="a63f2b42b9a39a49860e9ec6e331d095d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a63f2b42b9a39a49860e9ec6e331d095d">&#9670;&#160;</a></span>domainState()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structethercat__interface_1_1EcDomainStateInfo.html">ethercat_interface::EcDomainStateInfo</a> ethercat_driver::EthercatBusManager::domainState </td>
+          <td>(</td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>domain</em> = <code>0</code></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Domain (cyclic PDO exchange) state — working counter and completeness — as last observed by the master plugin during <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#ad524d2f83c82df1925fbffcc9d87da06">read()</a>. No new bus transaction. Same threading note as <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a66f84d835b2e7a09d759c8a9c01b2884" title="Bus-wide master state (link up/down, responding-slave count, aggregate AL states),...">masterState()</a>. </p>
+
+</div>
+</div>
+<a id="ad31b39e4e2db8ead529a108058916d58" name="ad31b39e4e2db8ead529a108058916d58"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad31b39e4e2db8ead529a108058916d58">&#9670;&#160;</a></span>slaveStates()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="structethercat__interface_1_1EcSlaveStateInfo.html">ethercat_interface::EcSlaveStateInfo</a> &gt; ethercat_driver::EthercatBusManager::slaveStates </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Per-slave AL state / online / operational, as last observed by the master plugin's periodic check during <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#ad524d2f83c82df1925fbffcc9d87da06">read()</a>. No new bus transaction. Same threading note as <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a66f84d835b2e7a09d759c8a9c01b2884" title="Bus-wide master state (link up/down, responding-slave count, aggregate AL states),...">masterState()</a>. </p>
 
 </div>
 </div>
@@ -472,6 +631,57 @@ Static Protected Attributes</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">bool ethercat_driver::EthercatBusManager::configNetwork </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a74fddbc65c9ab350b81ca1c1642bff41" name="a74fddbc65c9ab350b81ca1c1642bff41"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a74fddbc65c9ab350b81ca1c1642bff41">&#9670;&#160;</a></span>configureBusLocked()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool ethercat_driver::EthercatBusManager::configureBusLocked </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Implementations of <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#acbf0220dba67668a5e437d14bf6123c9" title="Request the master and configure the network, leaving the bus in the idle/PRE-OP phase (not yet activ...">configureBus()</a>/activateBus() that assume ec_mutex_ is already held by the caller (avoids recursive locking when <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#af6b73c79fb4192de193caae1da19623b">activateBus()</a> needs to configure first). </p>
+
+</div>
+</div>
+<a id="ab8db0c8d1afa82a9c00f9a1e42654aec" name="ab8db0c8d1afa82a9c00f9a1e42654aec"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab8db0c8d1afa82a9c00f9a1e42654aec">&#9670;&#160;</a></span>activateBusLocked()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool ethercat_driver::EthercatBusManager::activateBusLocked </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -652,6 +862,28 @@ Static Protected Attributes</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">std::mutex ethercat_driver::EthercatBusManager::ec_mutex_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a2210133d2278f78fd44e27f8e450ca2b" name="a2210133d2278f78fd44e27f8e450ca2b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2210133d2278f78fd44e27f8e450ca2b">&#9670;&#160;</a></span>configured_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool ethercat_driver::EthercatBusManager::configured_ {false}</td>
         </tr>
       </table>
   </td>

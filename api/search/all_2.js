@@ -11,11 +11,14 @@ var searchData=
   ['component_5fname_8',['component_name',['../structethercat__driver_1_1ConfiguredEcModule.html#ab2d332a8f260f07caf18646bc5e16f65',1,'ethercat_driver::ConfiguredEcModule']]],
   ['confignetwork_9',['configNetwork',['../classethercat__driver_1_1EthercatBusManager.html#ab79e44986f4c1ce2ec04600b9597ed24',1,'ethercat_driver::EthercatBusManager']]],
   ['configure_5fslaves_10',['configure_slaves',['../classethercat__interface_1_1EcMasterBase.html#adca1a7a20238efc6fdb98cef571625eb',1,'ethercat_interface::EcMasterBase']]],
-  ['configuredecmodule_11',['ConfiguredEcModule',['../structethercat__driver_1_1ConfiguredEcModule.html',1,'ethercat_driver']]],
-  ['configuremodules_12',['configureModules',['../classethercat__driver_1_1EthercatBusManager.html#a8c1d1802bd81fbd046aca9550a17aed2',1,'ethercat_driver::EthercatBusManager']]],
-  ['control_5ffrequency_13',['control_frequency',['../structethercat__driver_1_1EthercatBusConfig.html#a2f45925a54c16d32da96ebcf23dee96a',1,'ethercat_driver::EthercatBusConfig']]],
-  ['control_5ffrequency_5f_14',['control_frequency_',['../classethercat__driver_1_1EthercatBusManager.html#a2041e20978cd7db42b9cb0fdf2d730e8',1,'ethercat_driver::EthercatBusManager']]],
-  ['cpu_5fto_5fle16_15',['cpu_to_le16',['../ec__buffer__tools_8h.html#aeda3065f344779edb9023e22d84d5f92',1,'ec_buffer_tools.h']]],
-  ['cpu_5fto_5fle32_16',['cpu_to_le32',['../ec__buffer__tools_8h.html#a1d5ae0c36d519a1b0a789db69a598f28',1,'ec_buffer_tools.h']]],
-  ['cpu_5fto_5fle64_17',['cpu_to_le64',['../ec__buffer__tools_8h.html#aa170dc4b2dae5b00bdec3a307427240f',1,'ec_buffer_tools.h']]]
+  ['configurebus_11',['configureBus',['../classethercat__driver_1_1EthercatBusManager.html#acbf0220dba67668a5e437d14bf6123c9',1,'ethercat_driver::EthercatBusManager']]],
+  ['configurebuslocked_12',['configureBusLocked',['../classethercat__driver_1_1EthercatBusManager.html#a74fddbc65c9ab350b81ca1c1642bff41',1,'ethercat_driver::EthercatBusManager']]],
+  ['configured_5f_13',['configured_',['../classethercat__driver_1_1EthercatBusManager.html#a2210133d2278f78fd44e27f8e450ca2b',1,'ethercat_driver::EthercatBusManager']]],
+  ['configuredecmodule_14',['ConfiguredEcModule',['../structethercat__driver_1_1ConfiguredEcModule.html',1,'ethercat_driver']]],
+  ['configuremodules_15',['configureModules',['../classethercat__driver_1_1EthercatBusManager.html#a8c1d1802bd81fbd046aca9550a17aed2',1,'ethercat_driver::EthercatBusManager']]],
+  ['control_5ffrequency_16',['control_frequency',['../structethercat__driver_1_1EthercatBusConfig.html#a2f45925a54c16d32da96ebcf23dee96a',1,'ethercat_driver::EthercatBusConfig']]],
+  ['control_5ffrequency_5f_17',['control_frequency_',['../classethercat__driver_1_1EthercatBusManager.html#a2041e20978cd7db42b9cb0fdf2d730e8',1,'ethercat_driver::EthercatBusManager']]],
+  ['cpu_5fto_5fle16_18',['cpu_to_le16',['../ec__buffer__tools_8h.html#aeda3065f344779edb9023e22d84d5f92',1,'ec_buffer_tools.h']]],
+  ['cpu_5fto_5fle32_19',['cpu_to_le32',['../ec__buffer__tools_8h.html#a1d5ae0c36d519a1b0a789db69a598f28',1,'ec_buffer_tools.h']]],
+  ['cpu_5fto_5fle64_20',['cpu_to_le64',['../ec__buffer__tools_8h.html#aa170dc4b2dae5b00bdec3a307427240f',1,'ec_buffer_tools.h']]]
 ];

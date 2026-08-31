@@ -13,7 +13,8 @@ var searchData=
   ['read_5fu32_10',['read_u32',['../ec__buffer__tools_8h.html#ae09644b2fa090273979b2b3eeaf2b156',1,'ec_buffer_tools.h']]],
   ['read_5fu64_11',['read_u64',['../ec__buffer__tools_8h.html#ac4e2b0ec2cce38a2c5556bcc43cb1577',1,'ec_buffer_tools.h']]],
   ['read_5fu8_12',['read_u8',['../ec__buffer__tools_8h.html#a6e617e8f13b71cd654cfa73506f2bb2e',1,'ec_buffer_tools.h']]],
-  ['registertransferindomain_13',['registerTransferInDomain',['../classethercat__interface_1_1EcMasterBase.html#a8b94755bcfd2164e46ffb98b2eb23319',1,'ethercat_interface::EcMasterBase']]],
-  ['reset_14',['reset',['../classethercat__interface_1_1EcMasterBase.html#a847fc7515be947b6a8a786c73bcdce8d',1,'ethercat_interface::EcMasterBase::reset()'],['../classethercat__interface_1_1EcTransferNet.html#ae9457a97c0b78e86ef56e5917503354c',1,'ethercat_interface::EcTransferNet::reset()']]],
-  ['rpdo_15',['RPDO',['../namespaceethercat__interface.html#a36921a332ee2abf4ed1e02bf884b26deae5ea830341ade3adc7054e3aa87232cf',1,'ethercat_interface']]]
+  ['readslavesdo_13',['readSlaveSdo',['../classethercat__driver_1_1EthercatBusManager.html#a59f41ec31f7588bfd0f642d5d188c9ed',1,'ethercat_driver::EthercatBusManager']]],
+  ['registertransferindomain_14',['registerTransferInDomain',['../classethercat__interface_1_1EcMasterBase.html#a8b94755bcfd2164e46ffb98b2eb23319',1,'ethercat_interface::EcMasterBase']]],
+  ['reset_15',['reset',['../classethercat__interface_1_1EcTransferNet.html#ae9457a97c0b78e86ef56e5917503354c',1,'ethercat_interface::EcTransferNet::reset()'],['../classethercat__interface_1_1EcMasterBase.html#a847fc7515be947b6a8a786c73bcdce8d',1,'ethercat_interface::EcMasterBase::reset()']]],
+  ['rpdo_16',['RPDO',['../namespaceethercat__interface.html#a36921a332ee2abf4ed1e02bf884b26deae5ea830341ade3adc7054e3aa87232cf',1,'ethercat_interface']]]
 ];

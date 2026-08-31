@@ -1,7 +1,5 @@
 var searchData=
 [
-  ['on_5factivate_0',['on_activate',['../classethercat__driver_1_1EthercatDriver.html#ae1a55b8b587c04bd364941f9ec8aa5da',1,'ethercat_driver::EthercatDriver']]],
-  ['on_5fconfigure_1',['on_configure',['../classethercat__driver_1_1EthercatDriver.html#a247cd9bfbf64a8915b084444d619b6ab',1,'ethercat_driver::EthercatDriver']]],
-  ['on_5fdeactivate_2',['on_deactivate',['../classethercat__driver_1_1EthercatDriver.html#acc14d903f14cf7a11860f92ac298902f',1,'ethercat_driver::EthercatDriver']]],
-  ['on_5finit_3',['on_init',['../classethercat__driver_1_1EthercatDriver.html#af86a69596105dfe3e346df86a9c79ac4',1,'ethercat_driver::EthercatDriver']]]
+  ['number_5fof_5finterfaces_0',['number_of_interfaces',['../classethercat__interface_1_1EcPdoChannelManager.html#a9d555615998b7620ca3b0750a4d7b12a',1,'ethercat_interface::EcPdoChannelManager::number_of_interfaces()'],['../classethercat__interface_1_1EcPdoGroupInterfaceChannelManager.html#ac165c0b62a40d89ae50cddd4c3c3fd00',1,'ethercat_interface::EcPdoGroupInterfaceChannelManager::number_of_interfaces()'],['../classethercat__interface_1_1EcPdoSingleInterfaceChannelManager.html#a9cde25cd7b8f2bfda381560d76f0fc9f',1,'ethercat_interface::EcPdoSingleInterfaceChannelManager::number_of_interfaces()']]],
+  ['number_5fof_5fmanaged_5finterfaces_1',['number_of_managed_interfaces',['../classethercat__interface_1_1EcPdoChannelManager.html#ae8343c36420d0ff417bf0d0f36df6bc0',1,'ethercat_interface::EcPdoChannelManager::number_of_managed_interfaces()'],['../classethercat__interface_1_1EcPdoGroupInterfaceChannelManager.html#a82b59e1273c6d2b36ae43c5c3cac9134',1,'ethercat_interface::EcPdoGroupInterfaceChannelManager::number_of_managed_interfaces()'],['../classethercat__interface_1_1EcPdoSingleInterfaceChannelManager.html#abc0d497b6fb66d0b55ae5e232bd482b4',1,'ethercat_interface::EcPdoSingleInterfaceChannelManager::number_of_managed_interfaces()']]]
 ];
