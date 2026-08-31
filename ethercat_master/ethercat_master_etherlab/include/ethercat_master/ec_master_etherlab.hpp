@@ -74,6 +74,8 @@ public:
 
   bool init(std::string master_interface = "0");
 
+  bool check_slave(std::shared_ptr<ethercat_interface::EcSlaveBase> slave);
+
   bool add_slave(std::shared_ptr<ethercat_interface::EcSlaveBase> slave);
 
 
@@ -159,6 +161,15 @@ private:
 
   uint32_t get_interval() {return interval_;}
 
+
+  /** Vendor/product identity check against what's physically on the bus at this slave's ring
+   *  position — shared by add_slave() and check_slave() so both see identical behavior. No
+   *  side effects; safe before ecrt_master_slave_config(). */
+  bool checkSlaveIdentity(std::shared_ptr<ethercat_interface::EcSlaveBase> slave) const;
+
+  /** Run a slave's sdo_check: preconditions (read + allowed-value match). No side effects;
+   *  addressed by ring position, safe before ecrt_master_slave_config(). */
+  bool checkSlaveSdoChecks(std::shared_ptr<ethercat_interface::EcSlaveBase> slave) const;
 
   /** register a domain of the slave */
   void registerPDOInDomain(

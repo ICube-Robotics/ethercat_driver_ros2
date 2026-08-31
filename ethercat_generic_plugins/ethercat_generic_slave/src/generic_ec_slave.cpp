@@ -157,6 +157,15 @@ bool GenericEcSlave::setup_from_config(YAML::Node slave_config)
       }
     }
 
+    if (slave_config["sdo_check"]) {
+      for (const auto & sdo_check : slave_config["sdo_check"]) {
+        ethercat_interface::SdoCheckEntry check;
+        if (check.load_from_config(sdo_check)) {
+          sdo_check_config_.push_back(check);
+        }
+      }
+    }
+
       /*auto channels_nbr = 0;
 
       if (slave_config["rpdo"]) {

@@ -122,5 +122,118 @@ private:
   }
 };
 
+/// One-shot SDO upload (read) + allowed-value validation, done once at configure time
+/// (before the master is activated). A slave whose read value isn't in `allowed_values`
+/// fails configuration outright — for hardware preconditions that must already be true on
+/// the physical drive (e.g. a commissioned sensor type), as opposed to `SdoConfigEntry`,
+/// which pushes a value onto the drive.
+class SdoCheckEntry
+{
+public:
+  SdoCheckEntry() {}
+  ~SdoCheckEntry() {}
+
+  bool load_from_config(YAML::Node sdo_config)
+  {
+    // index
+    if (sdo_config["index"]) {
+      index = sdo_config["index"].as<uint16_t>();
+    } else {
+      std::cerr << "missing sdo_check index info" << std::endl;
+      return false;
+    }
+    // sub_index
+    if (sdo_config["sub_index"]) {
+      sub_index = sdo_config["sub_index"].as<uint8_t>();
+    } else {
+      std::cerr << "sdo_check " << index << ": missing sub_index info" << std::endl;
+      return false;
+    }
+    // data type
+    if (sdo_config["type"]) {
+      data_type = sdo_config["type"].as<std::string>();
+    } else {
+      std::cerr << "sdo_check " << index << ": missing sdo_check data type info" << std::endl;
+      return false;
+    }
+    if (type2bytes(data_type) == 0) {
+      std::cerr << "sdo_check " << index << ": unsupported type '" << data_type << "'" <<
+        std::endl;
+      return false;
+    }
+    // optional human-readable label, surfaced in the failure message
+    if (sdo_config["description"]) {
+      description = sdo_config["description"].as<std::string>();
+    }
+    // allowed value(s): either a single scalar `value`, or a list `values`
+    allowed_values.clear();
+    if (sdo_config["values"]) {
+      for (const auto & v : sdo_config["values"]) {
+        allowed_values.push_back(v.as<int64_t>());
+      }
+    } else if (sdo_config["value"]) {
+      allowed_values.push_back(sdo_config["value"].as<int64_t>());
+    } else {
+      std::cerr << "sdo_check " << index << ": missing 'value' or 'values'" << std::endl;
+      return false;
+    }
+    if (allowed_values.empty()) {
+      std::cerr << "sdo_check " << index << ": 'values' is empty" << std::endl;
+      return false;
+    }
+    return true;
+  }
+
+  size_t data_size()
+  {
+    return type2bytes(data_type);
+  }
+
+  /// Decode `data_size()` little-endian bytes at `buffer` (as just SDO-uploaded) per
+  /// `data_type`, sign/zero-extended to int64_t so it can compare against `allowed_values`.
+  int64_t decode(const uint8_t * buffer) const
+  {
+    if (data_type == "uint8") {return read_u8(buffer);}
+    if (data_type == "int8") {return read_s8(buffer);}
+    if (data_type == "uint16") {return read_u16(buffer);}
+    if (data_type == "int16") {return read_s16(buffer);}
+    if (data_type == "uint32") {return read_u32(buffer);}
+    if (data_type == "int32") {return read_s32(buffer);}
+    if (data_type == "uint64") {return static_cast<int64_t>(read_u64(buffer));}
+    if (data_type == "int64") {return read_s64(buffer);}
+    return 0;
+  }
+
+  bool matches(const uint8_t * buffer) const
+  {
+    const int64_t value = decode(buffer);
+    for (const int64_t allowed : allowed_values) {
+      if (value == allowed) {return true;}
+    }
+    return false;
+  }
+
+  uint16_t index;
+  uint8_t sub_index;
+  std::string data_type;
+  std::string description;
+  std::vector<int64_t> allowed_values;
+
+private:
+  size_t type2bytes(const std::string & type)
+  {
+    if (type == "int8" || type == "uint8") {
+      return 1;
+    } else if (type == "int16" || type == "uint16") {
+      return 2;
+    } else if (type == "int32" || type == "uint32") {
+      return 4;
+    } else if (type == "int64" || type == "uint64") {
+      return 8;
+    }
+    return 0;
+  }
+};
+
 }  // namespace ethercat_interface
 #endif  // ETHERCAT_INTERFACE__EC_SDO_MANAGER_HPP_

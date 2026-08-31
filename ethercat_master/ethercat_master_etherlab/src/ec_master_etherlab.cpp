@@ -93,15 +93,9 @@ bool EtherlabMaster::init(std::string master_interface)
   return true;
 }
 
-bool EtherlabMaster::add_slave(std::shared_ptr<ethercat_interface::EcSlaveBase> slave)
+bool EtherlabMaster::checkSlaveIdentity(
+  std::shared_ptr<ethercat_interface::EcSlaveBase> slave) const
 {
-  if (false == slave->isAliasAndPositionSet()) {
-    std::string error_message = "Alias and position not set for slave (vendor id=" +
-      std::to_string(slave->get_vendor_id()) + ",product_code=" +
-      std::to_string(slave->get_product_id()) + ").";
-    throw std::runtime_error(error_message);
-  }
-
   // Verify the drive actually on the bus matches what the slave_config declares (vendor +
   // product). The master would otherwise leave a mismatched slave unconfigured and it would
   // silently never reach OPERATIONAL; surface it loudly and refuse to configure the drive
@@ -138,6 +132,90 @@ bool EtherlabMaster::add_slave(std::shared_ptr<ethercat_interface::EcSlaveBase> 
         << ": skipping the vendor/product identity check (only enforced for alias-0 slaves "
       "addressed by absolute ring position).";
     printWarning(msg.str());
+  }
+  return true;
+}
+
+bool EtherlabMaster::checkSlaveSdoChecks(
+  std::shared_ptr<ethercat_interface::EcSlaveBase> slave) const
+{
+  for (auto & check : slave->get_sdo_check_config()) {
+    uint8_t buffer[8] = {0};
+    size_t result_size = 0;
+    uint32_t abort_code = 0;
+    const int ret = ecrt_master_sdo_upload(
+          master_,
+          slave->get_position(),
+          check.index,
+          check.sub_index,
+          buffer,
+          sizeof(buffer),
+          &result_size,
+          &abort_code);
+    if (ret) {
+      RCLCPP_ERROR(
+            rclcpp::get_logger("EtherlabMaster"),
+            "Failed to read check SDO 0x%04X:%u (%s) for module at position %i with "
+            "Error: %d",
+            check.index, check.sub_index,
+            check.description.empty() ? "sdo_check" : check.description.c_str(),
+            slave->get_position(),
+            abort_code);
+      return false;
+    }
+    if (result_size != check.data_size()) {
+      RCLCPP_ERROR(
+            rclcpp::get_logger("EtherlabMaster"),
+            "Check SDO 0x%04X:%u (%s) for module at position %i returned %zu byte(s), "
+            "expected %zu.",
+            check.index, check.sub_index,
+            check.description.empty() ? "sdo_check" : check.description.c_str(),
+            slave->get_position(),
+            result_size, check.data_size());
+      return false;
+    }
+    if (!check.matches(buffer)) {
+      std::ostringstream allowed;
+      for (std::size_t v = 0; v < check.allowed_values.size(); ++v) {
+        if (v) {allowed << ", ";}
+        allowed << check.allowed_values[v];
+      }
+      RCLCPP_ERROR(
+            rclcpp::get_logger("EtherlabMaster"),
+            "Check SDO 0x%04X:%u (%s) for module at position %i read %ld, expected one "
+            "of [%s]. The drive is not commissioned as this slave_config requires.",
+            check.index, check.sub_index,
+            check.description.empty() ? "sdo_check" : check.description.c_str(),
+            slave->get_position(),
+            check.decode(buffer), allowed.str().c_str());
+      return false;
+    }
+  }
+  return true;
+}
+
+bool EtherlabMaster::check_slave(std::shared_ptr<ethercat_interface::EcSlaveBase> slave)
+{
+  if (false == slave->isAliasAndPositionSet()) {
+    std::string error_message = "Alias and position not set for slave (vendor id=" +
+      std::to_string(slave->get_vendor_id()) + ",product_code=" +
+      std::to_string(slave->get_product_id()) + ").";
+    throw std::runtime_error(error_message);
+  }
+  return checkSlaveIdentity(slave) && checkSlaveSdoChecks(slave);
+}
+
+bool EtherlabMaster::add_slave(std::shared_ptr<ethercat_interface::EcSlaveBase> slave)
+{
+  if (false == slave->isAliasAndPositionSet()) {
+    std::string error_message = "Alias and position not set for slave (vendor id=" +
+      std::to_string(slave->get_vendor_id()) + ",product_code=" +
+      std::to_string(slave->get_product_id()) + ").";
+    throw std::runtime_error(error_message);
+  }
+
+  if (!checkSlaveIdentity(slave)) {
+    return false;
   }
 
   // configure slave in master
