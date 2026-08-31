@@ -136,16 +136,37 @@ bool EtherlabMaster::checkSlaveIdentity(
   return true;
 }
 
+int EtherlabMaster::resolveAbsolutePosition(uint16_t alias, uint16_t position) const
+{
+  if (alias == 0) {
+    return position;
+  }
+  ec_slave_info_t info;
+  for (uint16_t ring = 0; ecrt_master_get_slave(master_, ring, &info) == 0; ++ring) {
+    if (info.alias == alias) {
+      return ring + position;
+    }
+  }
+  return -1;
+}
+
 bool EtherlabMaster::checkSlaveSdoChecks(
   std::shared_ptr<ethercat_interface::EcSlaveBase> slave) const
 {
+  const int position = resolveAbsolutePosition(slave->get_alias(), slave->get_position());
+  if (position < 0) {
+    RCLCPP_ERROR(
+          rclcpp::get_logger("EtherlabMaster"),
+          "sdo_check: no slave found for alias %u on the bus.", slave->get_alias());
+    return false;
+  }
   for (auto & check : slave->get_sdo_check_config()) {
     uint8_t buffer[8] = {0};
     size_t result_size = 0;
     uint32_t abort_code = 0;
     const int ret = ecrt_master_sdo_upload(
           master_,
-          slave->get_position(),
+          position,
           check.index,
           check.sub_index,
           buffer,
@@ -297,22 +318,19 @@ bool EtherlabMaster::configure_slaves()
     for (auto & sdo : slave_info_[i].slave->get_slave()->get_sdo_config()) {
       uint8_t buffer[8];
       sdo.buffer_write(buffer);
-      uint32_t abort_code;
-      int ret = ecrt_master_sdo_download(
-            master_,
-            slave_info_[i].slave->get_slave()->get_position(),
+      int ret = ecrt_slave_config_sdo(
+            slave_info_[i].config,
             sdo.index,
             sdo.sub_index,
             buffer,
-            sdo.data_size(),
-            &abort_code);
+            sdo.data_size());
 
       if (ret) {
         RCLCPP_FATAL(
               rclcpp::get_logger("EtherlabMaster"),
               "Failed to download config SDO for module at position %i with Error: %d",
               slave_info_[i].slave->get_slave()->get_position(),
-              abort_code);
+              ret);
         return false;
       }
     }
@@ -323,7 +341,8 @@ bool EtherlabMaster::configure_slaves()
 
 int EtherlabMaster::upload_slave_sdo(
   uint16_t slave_position, uint16_t index, uint8_t sub_index,
-  uint8_t * target, size_t target_size, size_t * result_size, uint32_t * abort_code)
+  uint8_t * target, size_t target_size, size_t * result_size, uint32_t * abort_code,
+  uint16_t alias)
 {
   if (activated_) {
     printError(
@@ -332,8 +351,13 @@ int EtherlabMaster::upload_slave_sdo(
       "while the master is activated — it would stall the real-time cycle.");
     return -1;
   }
+  const int position = resolveAbsolutePosition(alias, slave_position);
+  if (position < 0) {
+    printError("Upload slave SDO. No slave found for alias " + std::to_string(alias) + ".");
+    return -1;
+  }
   return ecrt_master_sdo_upload(
-    master_, slave_position, index, sub_index, target, target_size, result_size, abort_code);
+    master_, position, index, sub_index, target, target_size, result_size, abort_code);
 }
 
 ethercat_interface::EcMasterStateInfo EtherlabMaster::get_master_state() const

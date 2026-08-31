@@ -100,7 +100,8 @@ public:
    *  stop(). See EcMasterBase::upload_slave_sdo(). */
   int upload_slave_sdo(
     uint16_t slave_position, uint16_t index, uint8_t sub_index,
-    uint8_t * target, size_t target_size, size_t * result_size, uint32_t * abort_code);
+    uint8_t * target, size_t target_size, size_t * result_size, uint32_t * abort_code,
+    uint16_t alias = 0);
 
   ethercat_interface::EcMasterStateInfo get_master_state() const;
   ethercat_interface::EcDomainStateInfo get_domain_state(uint32_t domain = 0) const;
@@ -166,6 +167,11 @@ private:
   /** Run a slave's sdo_check: preconditions (read + allowed-value match). No side effects;
    *  addressed by ring position, safe before ecrt_master_slave_config(). */
   bool checkSlaveSdoChecks(std::shared_ptr<ethercat_interface::EcSlaveBase> slave) const;
+
+  /** Resolve (alias, position) to an absolute ring position, as required by the blocking
+   *  SDO calls (they address by absolute position only). alias 0 returns position
+   *  unchanged. Negative if the alias is not found on the bus. No side effects. */
+  int resolveAbsolutePosition(uint16_t alias, uint16_t position) const;
 
   /** register a domain of the slave */
   void registerPDOInDomain(
