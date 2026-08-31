@@ -113,9 +113,9 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:af57c7dfb48fbac5bb49d0dd2294cbd28"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a847fc7515be947b6a8a786c73bcdce8d" id="r_a847fc7515be947b6a8a786c73bcdce8d"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcMasterBase.html#a847fc7515be947b6a8a786c73bcdce8d">reset</a> ()=0</td></tr>
 <tr class="separator:a847fc7515be947b6a8a786c73bcdce8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae4c677283ba337c29a227cad90a00e68" id="r_ae4c677283ba337c29a227cad90a00e68"><td class="memItemLeft" align="right" valign="top">virtual int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcMasterBase.html#ae4c677283ba337c29a227cad90a00e68">upload_slave_sdo</a> (uint16_t slave_position, uint16_t index, uint8_t sub_index, uint8_t *target, size_t target_size, size_t *result_size, uint32_t *abort_code)=0</td></tr>
-<tr class="memdesc:ae4c677283ba337c29a227cad90a00e68"><td class="mdescLeft">&#160;</td><td class="mdescRight">Blocking CoE SDO upload (read). ONLY valid during the "configure" phase — after <a class="el" href="classethercat__interface_1_1EcMasterBase.html#adca1a7a20238efc6fdb98cef571625eb" title="configure slave using SDO">configure_slaves()</a> and before <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a5c6cce4e6bd120ba1aa163a3df85e691">start()</a> (or after <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a7920e4cbe2b1374eebe7bc3193861699">stop()</a>, before the next <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a5c6cce4e6bd120ba1aa163a3df85e691">start()</a>). Must NEVER be called while the master is activated (cyclic process-data exchange running): it blocks the calling thread on a mailbox round-trip, which would stall the real-time cycle. Implementations must refuse (return a negative value and log an error) rather than perform the transfer if called while activated.  <br /></td></tr>
-<tr class="separator:ae4c677283ba337c29a227cad90a00e68"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5c9afe492569ace54c37cb90d6701dc6" id="r_a5c9afe492569ace54c37cb90d6701dc6"><td class="memItemLeft" align="right" valign="top">virtual int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcMasterBase.html#a5c9afe492569ace54c37cb90d6701dc6">upload_slave_sdo</a> (uint16_t slave_position, uint16_t index, uint8_t sub_index, uint8_t *target, size_t target_size, size_t *result_size, uint32_t *abort_code, uint16_t alias=0)=0</td></tr>
+<tr class="memdesc:a5c9afe492569ace54c37cb90d6701dc6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Blocking CoE SDO upload (read). ONLY valid during the "configure" phase — after <a class="el" href="classethercat__interface_1_1EcMasterBase.html#adca1a7a20238efc6fdb98cef571625eb" title="configure slave using SDO">configure_slaves()</a> and before <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a5c6cce4e6bd120ba1aa163a3df85e691">start()</a> (or after <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a7920e4cbe2b1374eebe7bc3193861699">stop()</a>, before the next <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a5c6cce4e6bd120ba1aa163a3df85e691">start()</a>). Must NEVER be called while the master is activated (cyclic process-data exchange running): it blocks the calling thread on a mailbox round-trip, which would stall the real-time cycle. Implementations must refuse (return a negative value and log an error) rather than perform the transfer if called while activated. alias 0 addresses slave_position as an absolute ring position; a non-zero alias makes slave_position relative to it.  <br /></td></tr>
+<tr class="separator:a5c9afe492569ace54c37cb90d6701dc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a48c2fbdc7d3041a8230091ce6caed72c" id="r_a48c2fbdc7d3041a8230091ce6caed72c"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="structethercat__interface_1_1EcMasterStateInfo.html">EcMasterStateInfo</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcMasterBase.html#a48c2fbdc7d3041a8230091ce6caed72c">get_master_state</a> () const =0</td></tr>
 <tr class="memdesc:a48c2fbdc7d3041a8230091ce6caed72c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Last-observed master state (link up/down, responding-slave count, aggregate AL states bitmask), as last updated by the periodic state check during <a class="el" href="classethercat__interface_1_1EcMasterBase.html#ab846fcbfc1776999bacaa81714ce3c0b">read_process_data()</a>/update(). No new bus transaction: returns the cached result of that periodic check.  <br /></td></tr>
 <tr class="separator:a48c2fbdc7d3041a8230091ce6caed72c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -432,8 +432,8 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="ae4c677283ba337c29a227cad90a00e68" name="ae4c677283ba337c29a227cad90a00e68"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae4c677283ba337c29a227cad90a00e68">&#9670;&#160;</a></span>upload_slave_sdo()</h2>
+<a id="a5c9afe492569ace54c37cb90d6701dc6" name="a5c9afe492569ace54c37cb90d6701dc6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5c9afe492569ace54c37cb90d6701dc6">&#9670;&#160;</a></span>upload_slave_sdo()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -481,7 +481,13 @@ Protected Attributes</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">uint32_t *&#160;</td>
-          <td class="paramname"><em>abort_code</em>&#160;</td>
+          <td class="paramname"><em>abort_code</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>alias</em> = <code>0</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -496,7 +502,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Blocking CoE SDO upload (read). ONLY valid during the "configure" phase — after <a class="el" href="classethercat__interface_1_1EcMasterBase.html#adca1a7a20238efc6fdb98cef571625eb" title="configure slave using SDO">configure_slaves()</a> and before <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a5c6cce4e6bd120ba1aa163a3df85e691">start()</a> (or after <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a7920e4cbe2b1374eebe7bc3193861699">stop()</a>, before the next <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a5c6cce4e6bd120ba1aa163a3df85e691">start()</a>). Must NEVER be called while the master is activated (cyclic process-data exchange running): it blocks the calling thread on a mailbox round-trip, which would stall the real-time cycle. Implementations must refuse (return a negative value and log an error) rather than perform the transfer if called while activated. </p>
+<p>Blocking CoE SDO upload (read). ONLY valid during the "configure" phase — after <a class="el" href="classethercat__interface_1_1EcMasterBase.html#adca1a7a20238efc6fdb98cef571625eb" title="configure slave using SDO">configure_slaves()</a> and before <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a5c6cce4e6bd120ba1aa163a3df85e691">start()</a> (or after <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a7920e4cbe2b1374eebe7bc3193861699">stop()</a>, before the next <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a5c6cce4e6bd120ba1aa163a3df85e691">start()</a>). Must NEVER be called while the master is activated (cyclic process-data exchange running): it blocks the calling thread on a mailbox round-trip, which would stall the real-time cycle. Implementations must refuse (return a negative value and log an error) rather than perform the transfer if called while activated. alias 0 addresses slave_position as an absolute ring position; a non-zero alias makes slave_position relative to it. </p>
 <dl class="section return"><dt>Returns</dt><dd>0 on success (see ecrt_master_sdo_upload's return convention); negative if refused or the transfer failed. </dd></dl>
 
 </div>

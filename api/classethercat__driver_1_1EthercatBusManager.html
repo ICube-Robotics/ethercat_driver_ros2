@@ -116,9 +116,9 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ad524d2f83c82df1925fbffcc9d87da06"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa38fe8438ed86e76c44948722cf3ed46" id="r_aa38fe8438ed86e76c44948722cf3ed46"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceethercat__driver.html#a9d46d1b3b55f21e2a83c0d3070860a35">EthercatCycleResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#aa38fe8438ed86e76c44948722cf3ed46">write</a> ()</td></tr>
 <tr class="separator:aa38fe8438ed86e76c44948722cf3ed46"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a59f41ec31f7588bfd0f642d5d188c9ed" id="r_a59f41ec31f7588bfd0f642d5d188c9ed"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a59f41ec31f7588bfd0f642d5d188c9ed">readSlaveSdo</a> (uint16_t slave_position, uint16_t index, uint8_t sub_index, uint8_t *target, size_t target_size, size_t *result_size, uint32_t *abort_code)</td></tr>
-<tr class="memdesc:a59f41ec31f7588bfd0f642d5d188c9ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read a slave SDO entry (CoE upload). Must be called in the idle/PRE-OP phase — i.e. after <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#acbf0220dba67668a5e437d14bf6123c9" title="Request the master and configure the network, leaving the bus in the idle/PRE-OP phase (not yet activ...">configureBus()</a> but BEFORE <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#af6b73c79fb4192de193caae1da19623b" title="Request the master, register/activate the network, then block (bounded by bus_config_....">activateBus()</a>. This is a blocking mailbox call; after the bus is activated the application owns the cyclic loop and a blocking upload would stall the master (and the calling thread).  <br /></td></tr>
-<tr class="separator:a59f41ec31f7588bfd0f642d5d188c9ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa3360f951e51ddb8df5b2a49cdf6b3ab" id="r_aa3360f951e51ddb8df5b2a49cdf6b3ab"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#aa3360f951e51ddb8df5b2a49cdf6b3ab">readSlaveSdo</a> (uint16_t slave_position, uint16_t index, uint8_t sub_index, uint8_t *target, size_t target_size, size_t *result_size, uint32_t *abort_code, uint16_t alias=0)</td></tr>
+<tr class="memdesc:aa3360f951e51ddb8df5b2a49cdf6b3ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read a slave SDO entry (CoE upload). Must be called in the idle/PRE-OP phase — i.e. after <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#acbf0220dba67668a5e437d14bf6123c9" title="Request the master and configure the network, leaving the bus in the idle/PRE-OP phase (not yet activ...">configureBus()</a> but BEFORE <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#af6b73c79fb4192de193caae1da19623b" title="Request the master, register/activate the network, then block (bounded by bus_config_....">activateBus()</a>. This is a blocking mailbox call; after the bus is activated the application owns the cyclic loop and a blocking upload would stall the master (and the calling thread). alias 0 addresses slave_position as an absolute ring position; a non-zero alias makes slave_position relative to it.  <br /></td></tr>
+<tr class="separator:aa3360f951e51ddb8df5b2a49cdf6b3ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a66f84d835b2e7a09d759c8a9c01b2884" id="r_a66f84d835b2e7a09d759c8a9c01b2884"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structethercat__interface_1_1EcMasterStateInfo.html">ethercat_interface::EcMasterStateInfo</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__driver_1_1EthercatBusManager.html#a66f84d835b2e7a09d759c8a9c01b2884">masterState</a> () const</td></tr>
 <tr class="memdesc:a66f84d835b2e7a09d759c8a9c01b2884"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bus-wide master state (link up/down, responding-slave count, aggregate AL states), as last observed by the master plugin's periodic check during <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#ad524d2f83c82df1925fbffcc9d87da06">read()</a>. No new bus transaction — a zero-initialized struct if the master was never obtained. Not internally locked: intended to be called from the same thread immediately after <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#ad524d2f83c82df1925fbffcc9d87da06">read()</a>, matching how <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#ad524d2f83c82df1925fbffcc9d87da06">read()</a>/write() are used from the single ros2_control RT cycle.  <br /></td></tr>
 <tr class="separator:a66f84d835b2e7a09d759c8a9c01b2884"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -366,8 +366,8 @@ Static Protected Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a59f41ec31f7588bfd0f642d5d188c9ed" name="a59f41ec31f7588bfd0f642d5d188c9ed"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a59f41ec31f7588bfd0f642d5d188c9ed">&#9670;&#160;</a></span>readSlaveSdo()</h2>
+<a id="aa3360f951e51ddb8df5b2a49cdf6b3ab" name="aa3360f951e51ddb8df5b2a49cdf6b3ab"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa3360f951e51ddb8df5b2a49cdf6b3ab">&#9670;&#160;</a></span>readSlaveSdo()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -412,7 +412,13 @@ Static Protected Attributes</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">uint32_t *&#160;</td>
-          <td class="paramname"><em>abort_code</em>&#160;</td>
+          <td class="paramname"><em>abort_code</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>alias</em> = <code>0</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -422,7 +428,7 @@ Static Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Read a slave SDO entry (CoE upload). Must be called in the idle/PRE-OP phase — i.e. after <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#acbf0220dba67668a5e437d14bf6123c9" title="Request the master and configure the network, leaving the bus in the idle/PRE-OP phase (not yet activ...">configureBus()</a> but BEFORE <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#af6b73c79fb4192de193caae1da19623b" title="Request the master, register/activate the network, then block (bounded by bus_config_....">activateBus()</a>. This is a blocking mailbox call; after the bus is activated the application owns the cyclic loop and a blocking upload would stall the master (and the calling thread). </p>
+<p>Read a slave SDO entry (CoE upload). Must be called in the idle/PRE-OP phase — i.e. after <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#acbf0220dba67668a5e437d14bf6123c9" title="Request the master and configure the network, leaving the bus in the idle/PRE-OP phase (not yet activ...">configureBus()</a> but BEFORE <a class="el" href="classethercat__driver_1_1EthercatBusManager.html#af6b73c79fb4192de193caae1da19623b" title="Request the master, register/activate the network, then block (bounded by bus_config_....">activateBus()</a>. This is a blocking mailbox call; after the bus is activated the application owns the cyclic loop and a blocking upload would stall the master (and the calling thread). alias 0 addresses slave_position as an absolute ring position; a non-zero alias makes slave_position relative to it. </p>
 <dl class="section return"><dt>Returns</dt><dd>0 on success, negative if the master does not exist, else the ecrt_master_sdo_upload return code. </dd></dl>
 
 </div>
