@@ -165,8 +165,12 @@ void EcCiA402Drive::process_data(int index, uint8_t * domain_address)
       // clears the flag (its STATE_FAULT case). Without this, a reset_fault request with
       // auto_state_transitions_ false — the common configuration for a caller driving the
       // state machine itself — would latch fault_reset_ above and then never actually consume
-      // it: the pulse would never reach the wire at all.
-      if (auto_state_transitions_ || walking_to_enabled_ || fault_reset_) {
+      // it: the pulse would never reach the wire at all. auto_state_transitions_ is
+      // suppressed while walking_to_disabled_ is active so a disable request isn't starved by
+      // the (default-true) auto-walk.
+      if ((auto_state_transitions_ && !walking_to_disabled_) || walking_to_enabled_ ||
+        fault_reset_)
+      {
         if (fault_reset_) {
           fault_reset_pulse_active_ = true;
         }
