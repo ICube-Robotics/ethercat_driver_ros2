@@ -14,13 +14,45 @@
 //
 // Author: Maciej Bednarczyk (macbednarczyk@gmail.com)
 
+#include <algorithm>
+#include <cstdio>
 #include <numeric>
+#include <string>
 
+#include "diagnostic_msgs/msg/key_value.hpp"
 #include "ethercat_generic_plugins/generic_ec_cia402_drive.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 namespace ethercat_generic_plugins
 {
+namespace
+{
+uint8_t diagnostic_level_for_state(DeviceState state)
+{
+  if (state == STATE_FAULT || state == STATE_FAULT_REACTION_ACTIVE) {
+    return diagnostic_msgs::msg::DiagnosticStatus::ERROR;
+  } else if (state == STATE_OPERATION_ENABLED) {
+    return diagnostic_msgs::msg::DiagnosticStatus::OK;
+  }
+  return diagnostic_msgs::msg::DiagnosticStatus::WARN;
+}
+
+std::string mode_of_operation_str(int8_t mode)
+{
+  switch (mode) {
+    case MODE_NO_MODE: return "MODE_NO_MODE";
+    case MODE_PROFILED_POSITION: return "MODE_PROFILED_POSITION";
+    case MODE_PROFILED_VELOCITY: return "MODE_PROFILED_VELOCITY";
+    case MODE_PROFILED_TORQUE: return "MODE_PROFILED_TORQUE";
+    case MODE_HOMING: return "MODE_HOMING";
+    case MODE_INTERPOLATED_POSITION: return "MODE_INTERPOLATED_POSITION";
+    case MODE_CYCLIC_SYNC_POSITION: return "MODE_CYCLIC_SYNC_POSITION";
+    case MODE_CYCLIC_SYNC_VELOCITY: return "MODE_CYCLIC_SYNC_VELOCITY";
+    case MODE_CYCLIC_SYNC_TORQUE: return "MODE_CYCLIC_SYNC_TORQUE";
+    default: return "MODE_VENDOR_SPECIFIC";
+  }
+}
+}  // namespace
 
 EcCiA402Drive::EcCiA402Drive()
 : GenericEcSlave() {}
@@ -42,6 +74,25 @@ void EcCiA402Drive::updateState()
       );
     }
   }
+  if (walking_to_enabled_) {
+    if (state_ == STATE_OPERATION_ENABLED) {
+      walking_to_enabled_ = false;
+    } else if (std::chrono::steady_clock::now() >= walking_to_enabled_deadline_) {
+      walking_to_enabled_ = false;
+      walk_timed_out_ = true;
+      walk_timeout_target_ = STATE_OPERATION_ENABLED;
+    }
+  }
+  if (walking_to_disabled_) {
+    if (state_ == STATE_SWITCH_ON_DISABLED) {
+      walking_to_disabled_ = false;
+    } else if (std::chrono::steady_clock::now() >= walking_to_disabled_deadline_) {
+      walking_to_disabled_ = false;
+      walk_timed_out_ = true;
+      walk_timeout_target_ = STATE_SWITCH_ON_DISABLED;
+    }
+  }
+
   last_status_word_ = status_word_;
   last_state_ = state_;
   counter_++;
@@ -93,18 +144,47 @@ void EcCiA402Drive::process_data(int index, uint8_t * domain_address)
         }
       }
 
+      if (enable_drive_command_interface_index_ >= 0) {
+        const double v = command_interface_ptr_->at(enable_drive_command_interface_index_);
+        const bool requested = !std::isnan(v) && v != 0;
+        if (requested != last_enable_drive_command_) {
+          // Rising edge (0/NaN -> nonzero): walk up to Operation Enabled. Falling edge
+          // (nonzero -> 0/NaN): walk down to Switch-on-Disabled. One interface, one edge
+          // decides the direction - no separate disable_drive interface needed.
+          walking_to_enabled_ = requested;
+          walking_to_disabled_ = !requested;
+          const auto deadline = std::chrono::steady_clock::now() + kWalkTimeout;
+          walking_to_enabled_deadline_ = deadline;
+          walking_to_disabled_deadline_ = deadline;
+          walk_timed_out_ = false;
+        }
+        last_enable_drive_command_ = requested;
+      }
+
       // fault_reset_ must also force a transition() call: it's the only place that reads and
       // clears the flag (its STATE_FAULT case). Without this, a reset_fault request with
       // auto_state_transitions_ false — the common configuration for a caller driving the
       // state machine itself — would latch fault_reset_ above and then never actually consume
-      // it: the pulse would never reach the wire at all.
-      if (auto_state_transitions_ || fault_reset_) {
+      // it: the pulse would never reach the wire at all. auto_state_transitions_ is
+      // suppressed while walking_to_disabled_ is active so a disable request isn't starved by
+      // the (default-true) auto-walk.
+      if ((auto_state_transitions_ && !walking_to_disabled_) || walking_to_enabled_ ||
+        fault_reset_)
+      {
         if (fault_reset_) {
           fault_reset_pulse_active_ = true;
         }
         channel.default_value = transition(
           state_,
           channel.ec_read(domain_address));
+      } else if (walking_to_disabled_) {
+        // Route through Quick Stop before dropping voltage, the standard controlled CiA402
+        // shutdown: any powered state -> Quick Stop (0x02) -> once Quick Stop Active is
+        // reached, Disable Voltage (0x00) -> Switch-on-Disabled. A single unconditional 0x00
+        // from whatever state the drive happens to be in would cut power immediately instead.
+        channel.default_value =
+          (state_ == STATE_QUICK_STOP_ACTIVE || state_ == STATE_SWITCH_ON_DISABLED) ?
+          0x00 : 0x02;
       } else if (fault_reset_pulse_active_) {
         // Nothing above is driving this channel this cycle, so transition()'s own bit-7
         // clearing (see its STATE_FAULT case) never runs again for this pulse — clear it here
@@ -148,6 +228,11 @@ void EcCiA402Drive::process_data(int index, uint8_t * domain_address)
     status_word_ = channel.last_value;
   }
 
+  // Latched fault code (0x603F), for diagnostics. Optional — stays 0 if not mapped.
+  if (channel.index == CiA402D_TPDO_ERROR_CODE) {
+    error_code_ = channel.last_value;
+  }
+
 
   // CHECK FOR STATE CHANGE
   /*if (entry_idx == domain_map_.size() - 1) {  // if last entry in domain
@@ -182,6 +267,10 @@ bool EcCiA402Drive::setup_slave(
 
   if (parameters_.find("command_interface/reset_fault") != parameters_.end()) {
     fault_reset_command_interface_index_ = std::stoi(parameters_["command_interface/reset_fault"]);
+  }
+  if (parameters_.find("command_interface/enable_drive") != parameters_.end()) {
+    enable_drive_command_interface_index_ =
+      std::stoi(parameters_["command_interface/enable_drive"]);
   }
 
   return true;
@@ -289,6 +378,42 @@ uint16_t EcCiA402Drive::transition(DeviceState state, uint16_t control_word)
       break;
   }
   return control_word;
+}
+
+void EcCiA402Drive::collectDiagnostics(diagnostic_msgs::msg::DiagnosticStatus & status) const
+{
+  GenericEcSlave::collectDiagnostics(status);
+  if (!online_) {
+    return;  // base already reported this as offline/ERROR; nothing CiA402-specific to add
+  }
+
+  status.level = diagnostic_level_for_state(state_);
+  status.message = "drive in " + DEVICE_STATE_STR.at(state_) + " state";
+
+  diagnostic_msgs::msg::KeyValue mode_kv;
+  mode_kv.key = "mode_of_operation";
+  mode_kv.value = mode_of_operation_str(mode_of_operation_display_);
+  status.values.push_back(mode_kv);
+
+  // error_code is only meaningful once actually faulted.
+  if (state_ == STATE_FAULT) {
+    diagnostic_msgs::msg::KeyValue error_kv;
+    error_kv.key = "error_code";
+    char buf[8];
+    std::snprintf(buf, sizeof(buf), "0x%04X", error_code_);
+    error_kv.value = buf;
+    status.values.push_back(error_kv);
+  }
+
+  // A missed enable_drive deadline is not a runtime error — just a condition
+  // worth a human's attention, so report it as a warning rather than failing anything.
+  if (walk_timed_out_) {
+    status.level = std::max(status.level, diagnostic_msgs::msg::DiagnosticStatus::WARN);
+    diagnostic_msgs::msg::KeyValue timeout_kv;
+    timeout_kv.key = "drive_command";
+    timeout_kv.value = "timed out walking to " + DEVICE_STATE_STR.at(walk_timeout_target_);
+    status.values.push_back(timeout_kv);
+  }
 }
 
 }  // namespace ethercat_generic_plugins

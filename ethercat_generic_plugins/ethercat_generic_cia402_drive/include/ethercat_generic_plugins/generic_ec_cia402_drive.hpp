@@ -17,11 +17,13 @@
 #ifndef ETHERCAT_GENERIC_PLUGINS__GENERIC_EC_CIA402_DRIVE_HPP_
 #define ETHERCAT_GENERIC_PLUGINS__GENERIC_EC_CIA402_DRIVE_HPP_
 
+#include <chrono>
 #include <vector>
 #include <string>
 #include <unordered_map>
 #include <limits>
 
+#include "diagnostic_msgs/msg/diagnostic_status.hpp"
 #include "yaml-cpp/yaml.h"
 #include "ethercat_interface/ec_slave_base.hpp"
 #include "ethercat_interface/ec_pdo_single_interface_channel_manager.hpp"
@@ -52,6 +54,11 @@ public:
 
   void updateState();
 
+  /** Appends CiA402 device state / mode of operation / (while faulted) error code to
+   *  GenericEcSlave's generic online/al_state diagnostics. See EcSlaveBase::collectDiagnostics()
+   *  — call the base first, this only adds to it. */
+  virtual void collectDiagnostics(diagnostic_msgs::msg::DiagnosticStatus & status) const;
+
 protected:
   /** \brief Whether this cycle's commanded target position (0x607a) passes through
     * to the drive (true) or is overridden with the actual position (false). The
@@ -64,15 +71,45 @@ protected:
   uint16_t last_status_word_ = -1;
   uint16_t status_word_ = 0;
   uint16_t control_word_ = 0;
+  // CoE 0x603F, only meaningful once faulted. Stays 0 if the slave_config doesn't map it.
+  uint16_t error_code_ = 0;
   DeviceState last_state_ = STATE_START;
   DeviceState state_ = STATE_START;
   bool initialized_ = false;
   bool auto_fault_reset_ = false;
   bool auto_state_transitions_ = true;
+  // Whether the auto-walk (auto_state_transitions_) goes all the way to Operation Enabled on
+  // its own, or stops at Switched On (powered, not yet producing torque/motion) until an
+  // explicit enable_drive request takes the last step. False by default — a caller not using
+  // enable_drive at all gets the old always-auto-enable behaviour back by setting this true.
+  // See transition()'s STATE_SWITCH_ON case.
+  bool auto_enable_ = false;
   bool fault_reset_ = false;
   int fault_reset_command_interface_index_ = -1;
   bool last_fault_reset_command_ = false;
   double last_position_ = std::numeric_limits<double>::quiet_NaN();
+
+  // enable_drive: one level-triggered command interface (no PDO object of its own) that walks
+  // the drive toward Operation Enabled on a rising edge (0/NaN -> nonzero) and toward
+  // Switch-on-Disabled on a falling edge (nonzero -> 0/NaN), over as many cycles as it takes,
+  // independently of auto_state_transitions_. Meant for a caller that wants explicit control
+  // without hand-rolling the CiA402 walk itself.
+  int enable_drive_command_interface_index_ = -1;
+  bool last_enable_drive_command_ = false;
+  bool walking_to_enabled_ = false;
+  bool walking_to_disabled_ = false;
+
+  // How long a walk may run before giving up. Not a runtime error — updateState() just stops
+  // driving the controlword and latches walk_timed_out_ for collectDiagnostics() to report as
+  // a warning.
+  static constexpr std::chrono::seconds kWalkTimeout{5};
+  std::chrono::steady_clock::time_point walking_to_enabled_deadline_;
+  std::chrono::steady_clock::time_point walking_to_disabled_deadline_;
+  // Set when a walk misses its deadline; cleared by the next enable_drive edge (whether that
+  // one succeeds or times out again). walk_timeout_target_ names what it was walking toward,
+  // for the diagnostics message.
+  bool walk_timed_out_ = false;
+  DeviceState walk_timeout_target_ = STATE_UNDEFINED;
 
   // True for one cycle after a fault_reset_ pulse is sent while nothing else
   // (auto_state_transitions_) keeps calling transition() on later cycles — that path has no

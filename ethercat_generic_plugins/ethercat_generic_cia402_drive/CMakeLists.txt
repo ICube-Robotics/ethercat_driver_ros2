@@ -14,6 +14,7 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_ros REQUIRED)
+find_package(diagnostic_msgs REQUIRED)
 find_package(ethercat_interface REQUIRED)
 find_package(ethercat_generic_slave REQUIRED)
 find_package(pluginlib REQUIRED)
@@ -31,6 +32,7 @@ target_link_libraries(${PROJECT_NAME} yaml-cpp)
 
 ament_target_dependencies(
   ${PROJECT_NAME}
+  diagnostic_msgs
   ethercat_interface
   ethercat_generic_slave
   pluginlib
