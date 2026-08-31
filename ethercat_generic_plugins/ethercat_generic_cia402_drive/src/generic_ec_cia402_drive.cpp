@@ -161,7 +161,7 @@ void EcCiA402Drive::process_data(int index, uint8_t * domain_address)
         last_enable_drive_command_ = requested;
       }
 
-      if (auto_state_transitions_ || walking_to_enabled_) {
+      if ((auto_state_transitions_ && !walking_to_disabled_) || walking_to_enabled_) {
         channel.default_value = transition(
           state_,
           channel.ec_read(domain_address));
