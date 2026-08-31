@@ -108,10 +108,11 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a5c6cce4e6bd120ba1aa163a3df85e691"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7920e4cbe2b1374eebe7bc3193861699" id="r_a7920e4cbe2b1374eebe7bc3193861699"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcMasterBase.html#a7920e4cbe2b1374eebe7bc3193861699">stop</a> ()=0</td></tr>
 <tr class="separator:a7920e4cbe2b1374eebe7bc3193861699"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af57c7dfb48fbac5bb49d0dd2294cbd28" id="r_af57c7dfb48fbac5bb49d0dd2294cbd28"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcMasterBase.html#af57c7dfb48fbac5bb49d0dd2294cbd28">deactivate</a> ()=0</td></tr>
+<tr class="memdesc:af57c7dfb48fbac5bb49d0dd2294cbd28"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deactivate the master (releasing the domain/slave-config objects it created for <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a54b47f1d331dd89f95d7353ea5589819" title="add a slave device to the master">add_slave()</a>/registerTransferInDomain()) so the bus drops out of cyclic exchange without releasing the master reservation itself. Per the EtherCAT spec, loss of cyclic process data should make each slave's Sync Manager Watchdog autonomously drop OP -&gt; Safe-OP (still allowing mailbox/SDO access), rather than leaving slaves stuck at OP indefinitely as merely stopping the local cyclic loop (<a class="el" href="classethercat__interface_1_1EcMasterBase.html#a7920e4cbe2b1374eebe7bc3193861699">stop()</a>) would. A subsequent <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a54b47f1d331dd89f95d7353ea5589819" title="add a slave device to the master">add_slave()</a>/start() cycle must rebuild the registration this frees; config SDOs already sent via <a class="el" href="classethercat__interface_1_1EcMasterBase.html#adca1a7a20238efc6fdb98cef571625eb" title="configure slave using SDO">configure_slaves()</a> must NOT be resent. Must not be called in realtime context (blocking).  <br /></td></tr>
+<tr class="separator:af57c7dfb48fbac5bb49d0dd2294cbd28"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a847fc7515be947b6a8a786c73bcdce8d" id="r_a847fc7515be947b6a8a786c73bcdce8d"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcMasterBase.html#a847fc7515be947b6a8a786c73bcdce8d">reset</a> ()=0</td></tr>
 <tr class="separator:a847fc7515be947b6a8a786c73bcdce8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5831009a53e9c9b8928b1f1945b715b5" id="r_a5831009a53e9c9b8928b1f1945b715b5"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcMasterBase.html#a5831009a53e9c9b8928b1f1945b715b5">spin_slaves_until_operational</a> ()=0</td></tr>
-<tr class="separator:a5831009a53e9c9b8928b1f1945b715b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae4c677283ba337c29a227cad90a00e68" id="r_ae4c677283ba337c29a227cad90a00e68"><td class="memItemLeft" align="right" valign="top">virtual int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classethercat__interface_1_1EcMasterBase.html#ae4c677283ba337c29a227cad90a00e68">upload_slave_sdo</a> (uint16_t slave_position, uint16_t index, uint8_t sub_index, uint8_t *target, size_t target_size, size_t *result_size, uint32_t *abort_code)=0</td></tr>
 <tr class="memdesc:ae4c677283ba337c29a227cad90a00e68"><td class="mdescLeft">&#160;</td><td class="mdescRight">Blocking CoE SDO upload (read). ONLY valid during the "configure" phase — after <a class="el" href="classethercat__interface_1_1EcMasterBase.html#adca1a7a20238efc6fdb98cef571625eb" title="configure slave using SDO">configure_slaves()</a> and before <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a5c6cce4e6bd120ba1aa163a3df85e691">start()</a> (or after <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a7920e4cbe2b1374eebe7bc3193861699">stop()</a>, before the next <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a5c6cce4e6bd120ba1aa163a3df85e691">start()</a>). Must NEVER be called while the master is activated (cyclic process-data exchange running): it blocks the calling thread on a mailbox round-trip, which would stall the real-time cycle. Implementations must refuse (return a negative value and log an error) rather than perform the transfer if called while activated.  <br /></td></tr>
 <tr class="separator:ae4c677283ba337c29a227cad90a00e68"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -378,8 +379,8 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a847fc7515be947b6a8a786c73bcdce8d" name="a847fc7515be947b6a8a786c73bcdce8d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a847fc7515be947b6a8a786c73bcdce8d">&#9670;&#160;</a></span>reset()</h2>
+<a id="af57c7dfb48fbac5bb49d0dd2294cbd28" name="af57c7dfb48fbac5bb49d0dd2294cbd28"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af57c7dfb48fbac5bb49d0dd2294cbd28">&#9670;&#160;</a></span>deactivate()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -388,7 +389,7 @@ Protected Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool ethercat_interface::EcMasterBase::reset </td>
+          <td class="memname">virtual bool ethercat_interface::EcMasterBase::deactivate </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -401,10 +402,13 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Deactivate the master (releasing the domain/slave-config objects it created for <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a54b47f1d331dd89f95d7353ea5589819" title="add a slave device to the master">add_slave()</a>/registerTransferInDomain()) so the bus drops out of cyclic exchange without releasing the master reservation itself. Per the EtherCAT spec, loss of cyclic process data should make each slave's Sync Manager Watchdog autonomously drop OP -&gt; Safe-OP (still allowing mailbox/SDO access), rather than leaving slaves stuck at OP indefinitely as merely stopping the local cyclic loop (<a class="el" href="classethercat__interface_1_1EcMasterBase.html#a7920e4cbe2b1374eebe7bc3193861699">stop()</a>) would. A subsequent <a class="el" href="classethercat__interface_1_1EcMasterBase.html#a54b47f1d331dd89f95d7353ea5589819" title="add a slave device to the master">add_slave()</a>/start() cycle must rebuild the registration this frees; config SDOs already sent via <a class="el" href="classethercat__interface_1_1EcMasterBase.html#adca1a7a20238efc6fdb98cef571625eb" title="configure slave using SDO">configure_slaves()</a> must NOT be resent. Must not be called in realtime context (blocking). </p>
+<dl class="section return"><dt>Returns</dt><dd>true on success. </dd></dl>
+
 </div>
 </div>
-<a id="a5831009a53e9c9b8928b1f1945b715b5" name="a5831009a53e9c9b8928b1f1945b715b5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5831009a53e9c9b8928b1f1945b715b5">&#9670;&#160;</a></span>spin_slaves_until_operational()</h2>
+<a id="a847fc7515be947b6a8a786c73bcdce8d" name="a847fc7515be947b6a8a786c73bcdce8d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a847fc7515be947b6a8a786c73bcdce8d">&#9670;&#160;</a></span>reset()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -413,7 +417,7 @@ Protected Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool ethercat_interface::EcMasterBase::spin_slaves_until_operational </td>
+          <td class="memname">virtual bool ethercat_interface::EcMasterBase::reset </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
