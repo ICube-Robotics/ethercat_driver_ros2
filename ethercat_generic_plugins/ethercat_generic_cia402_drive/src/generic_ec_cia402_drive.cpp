@@ -36,7 +36,7 @@ void EcCiA402Drive::updateState()
     if (state_ != last_state_) {
       RCLCPP_INFO(
         rclcpp::get_logger("EthercatDriver"),
-        "STATE: %s with status word :%d",
+        "STATE: %s with status word :0x%04X",
         DEVICE_STATE_STR.at(state_).c_str(),
         status_word_
       );
@@ -48,12 +48,13 @@ void EcCiA402Drive::updateState()
   initialized_ = is_operational_;
 }
 
+bool EcCiA402Drive::targetPositionPassthrough() const
+{
+  return mode_of_operation_display_ == ModeOfOperation::MODE_CYCLIC_SYNC_POSITION;
+}
 
-// void EcCiA402Drive::process_data(size_t entry_idx, uint8_t * domain_address)
 void EcCiA402Drive::process_data(int index, uint8_t * domain_address)
 {
-  // auto index = domain_map_[entry_idx];
-
   // Bounds check to prevent out-of-bounds access
   if (index < 0 || static_cast<size_t>(index) >= pdo_channels_info_.size()) {
     RCLCPP_ERROR(
@@ -106,8 +107,7 @@ void EcCiA402Drive::process_data(int index, uint8_t * domain_address)
       channel.default_value =
         channel.factor * last_position_ + channel.offset;
     }
-    channel.override_command =
-      (mode_of_operation_display_ != ModeOfOperation::MODE_CYCLIC_SYNC_POSITION) ? true : false;
+    channel.override_command = !targetPositionPassthrough();
   }
 
   // setup mode of operation

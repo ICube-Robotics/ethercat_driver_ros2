@@ -40,7 +40,6 @@ public:
    *  The transition through the state machine is handled automatically. */
   bool initialized();
 
-  // virtual void process_data(size_t entry_idx, uint8_t * domain_address);
   virtual void process_data(int index, uint8_t * domain_address);
 
   virtual bool setup_slave(
@@ -54,6 +53,13 @@ public:
   void updateState();
 
 protected:
+  /** \brief Whether this cycle's commanded target position (0x607a) passes through
+    * to the drive (true) or is overridden with the actual position (false). The
+    * stock plugin passes it through only in Cyclic Synchronous Position mode;
+    * vendor subclasses may extend this to other modes that use 0x607a as a
+    * position/equilibrium setpoint (e.g. an impedance-style vendor mode, 0x6060 = -6). */
+  virtual bool targetPositionPassthrough() const;
+
   uint32_t counter_ = 0;
   uint16_t last_status_word_ = -1;
   uint16_t status_word_ = 0;
