@@ -93,10 +93,25 @@ void EcCiA402Drive::process_data(int index, uint8_t * domain_address)
         }
       }
 
-      if (auto_state_transitions_) {
+      // fault_reset_ must also force a transition() call: it's the only place that reads and
+      // clears the flag (its STATE_FAULT case). Without this, a reset_fault request with
+      // auto_state_transitions_ false — the common configuration for a caller driving the
+      // state machine itself — would latch fault_reset_ above and then never actually consume
+      // it: the pulse would never reach the wire at all.
+      if (auto_state_transitions_ || fault_reset_) {
+        if (fault_reset_) {
+          fault_reset_pulse_active_ = true;
+        }
         channel.default_value = transition(
           state_,
           channel.ec_read(domain_address));
+      } else if (fault_reset_pulse_active_) {
+        // Nothing above is driving this channel this cycle, so transition()'s own bit-7
+        // clearing (see its STATE_FAULT case) never runs again for this pulse — clear it here
+        // instead, or it would keep streaming and a later reset_fault couldn't produce a fresh
+        // edge on the wire.
+        channel.default_value = 0x00;
+        fault_reset_pulse_active_ = false;
       }
     }
   }
@@ -264,7 +279,11 @@ uint16_t EcCiA402Drive::transition(DeviceState state, uint16_t control_word)
         fault_reset_ = false;
         return (control_word & 0b11111111) | 0b10000000;     // automatic reset
       } else {
-        return control_word;
+        // Explicitly drop bit 7 rather than echoing control_word unchanged: once consumed
+        // above, a reset pulse must not keep re-asserting itself on every later call this
+        // still stays in — that would leave a later fault_reset_ request unable to produce a
+        // fresh 0->1 edge on the wire.
+        return control_word & 0b01111111;
       }
     default:
       break;
