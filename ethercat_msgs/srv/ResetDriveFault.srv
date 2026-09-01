@@ -1,0 +1,7 @@
+# This service triggers the fault reset for a CiA402 drive.
+
+# DoF name
+string dof_name
+---
+# Return message
+string return_message
